@@ -13,7 +13,7 @@ with open("README.md") as readme_file:
 
 setup(
     name="prefect-gcp",
-    description="Prefect tasks and subflows for interacting with GCP.",
+    description="Prefect tasks and subflows for interacting with Google Cloud Platform.",
     license="Apache License 2.0",
     author="Prefect Technologies, Inc.",
     author_email="help@prefect.io",

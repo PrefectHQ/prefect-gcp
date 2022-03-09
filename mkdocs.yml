@@ -35,6 +35,6 @@ plugins:
 
 nav:
     - Home: index.md
-    - Tasks: tasks.md
-    - Flows: flows.md
+    - Credentials: credentials.md
+    - Cloud Storage: cloud_storage.md
 
