@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from google.cloud.storage import Client
+from google.cloud.bigquery import Client as BigQueryClient
+from google.cloud.storage import Client as StorageClient
 from google.oauth2.service_account import Credentials
 
 
@@ -57,7 +58,7 @@ class GCPCredentials:
             credentials = Credentials.from_service_account_file(service_account_json)
         return credentials
 
-    def get_cloud_storage_client(self, project: str = None) -> Client:
+    def get_cloud_storage_client(self, project: str = None) -> StorageClient:
         """
         Args:
             project: Name of the project to use; overrides the base
@@ -111,5 +112,62 @@ class GCPCredentials:
 
         # override class project if method project is provided
         project = project or self.project
-        storage_client = Client(credentials=credentials, project=project)
+        storage_client = StorageClient(credentials=credentials, project=project)
         return storage_client
+
+    def get_bigquery_client(self, project: str = None) -> BigQueryClient:
+        """
+        Args:
+            project: Name of the project to use; overrides the base
+                class's project if provided.
+
+        Examples:
+            Gets a GCP Cloud Storage client from a path.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GCPCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_json_path = "~/.secrets/prefect-service-account.json"
+                client = GCPCredentials(
+                    service_account_json=service_account_json_path
+                ).get_cloud_storage_client()
+
+            example_get_client_flow()
+            ```
+
+            Gets a GCP Cloud Storage client from a dict.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GCPCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_json = {
+                    "type": "service_account",
+                    "project_id": "project_id",
+                    "private_key_id": "private_key_id",
+                    "private_key": private_key",
+                    "client_email": "client_email",
+                    "client_id": "client_id",
+                    "auth_uri": "auth_uri",
+                    "token_uri": "token_uri",
+                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
+                    "client_x509_cert_url": "client_x509_cert_url"
+                }
+                client = GCPCredentials(
+                    service_account_json=service_account_json
+                ).get_bigquery_client(json)
+
+            example_get_client_flow()
+            ```
+        """
+        credentials = self._get_credentials_from_service_account(
+            self.service_account_json
+        )
+
+        # override class project if method project is provided
+        project = project or self.project
+        bigquery_client = BigQueryClient(credentials=credentials, project=project)
+        return bigquery_client
