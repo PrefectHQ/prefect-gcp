@@ -92,7 +92,7 @@ class GcpCredentials:
 
             @flow()
             def example_get_client_flow():
-                service_account_json = {
+                service_account_info = {
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
