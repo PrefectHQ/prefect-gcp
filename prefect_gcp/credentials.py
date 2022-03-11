@@ -74,7 +74,7 @@ class GCPCredentials:
                 service_account_json_path = "~/.secrets/prefect-service-account.json"
                 client = GCPCredentials(
                     service_account_json=service_account_json_path
-                ).get_client()
+                ).get_cloud_storage_client()
 
             test_flow()
             ```
@@ -100,7 +100,7 @@ class GCPCredentials:
                 }
                 client = GCPCredentials(
                     service_account_json=service_account_json
-                ).get_client(json)
+                ).get_cloud_storage_client(json)
 
             example_get_client_flow()
             ```
