@@ -52,6 +52,8 @@ class GcpCredentials:
         elif service_account_file is not None:
             if not os.path.exists(service_account_file):
                 raise ValueError("The provided path to the service account is invalid")
+            elif isinstance(service_account_file, Path):
+                service_account_file = service_account_file.expanduser()
             else:
                 service_account_file = os.path.expanduser(service_account_file)
             credentials = Credentials.from_service_account_file(service_account_file)
