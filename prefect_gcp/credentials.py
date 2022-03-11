@@ -106,7 +106,7 @@ class GcpCredentials:
                 }
                 client = GcpCredentials(
                     service_account_info=service_account_info
-                ).get_cloud_storage_client(json)
+                ).get_cloud_storage_client()
 
             example_get_client_flow()
             ```
