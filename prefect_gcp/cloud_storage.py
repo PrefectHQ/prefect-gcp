@@ -144,7 +144,7 @@ def cloud_storage_download_blob(
             path = str(path)
         if os.path.isdir(path):
             path = os.path.join(path, blob)
-        blob.download_to_filename(path)
+        blob_obj.download_to_filename(path)
         return path
     else:
         blob_contents = blob_obj.download_as_bytes()
@@ -199,6 +199,8 @@ def cloud_storage_upload_blob(
     is_file_path = os.path.exists(data) and os.path.isfile(data)
     if is_file_path and blob is None:
         blob = os.path.basename(data)
+    elif blob is None:
+        raise ValueError("Since data is not a path, blob must be provided")
 
     blob_obj = bucket_obj.blob(blob)
 

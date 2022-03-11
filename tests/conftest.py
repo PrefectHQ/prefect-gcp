@@ -5,10 +5,10 @@ import pytest
 
 @pytest.fixture
 def oauth2_credentials(monkeypatch):
-    OAuth2Credentials = MagicMock()
-    OAuth2Credentials.from_service_account_info.side_effect = lambda json: json
-    OAuth2Credentials.from_service_account_file.side_effect = lambda file: file
-    monkeypatch.setattr("prefect_gcp.credentials.Credentials", OAuth2Credentials)
+    CredentialsMock = MagicMock()
+    CredentialsMock.from_service_account_info.side_effect = lambda json: json
+    CredentialsMock.from_service_account_file.side_effect = lambda file: file
+    monkeypatch.setattr("prefect_gcp.credentials.Credentials", CredentialsMock)
 
 
 class CloudStorageClient:
@@ -16,7 +16,24 @@ class CloudStorageClient:
         self.credentials = credentials
         self.project = project
 
+    def create_bucket(self, bucket):
+        return bucket
+
+    def get_bucket(self, bucket):
+        blob_obj = MagicMock()
+        blob_obj.download_as_bytes.return_value = b"bytes"
+        bucket_obj = MagicMock(bucket=bucket)
+        bucket_obj.blob.side_effect = lambda blob: blob_obj
+        return bucket_obj
+
 
 @pytest.fixture
 def storage_client(monkeypatch):
     monkeypatch.setattr("prefect_gcp.credentials.Client", CloudStorageClient)
+
+
+@pytest.fixture
+def gcp_credentials():
+    gcp_credentials_mock = MagicMock()
+    gcp_credentials_mock.get_cloud_storage_client.return_value = CloudStorageClient()
+    return gcp_credentials_mock
