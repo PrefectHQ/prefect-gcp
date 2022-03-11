@@ -29,11 +29,13 @@ class CloudStorageClient:
 
 @pytest.fixture
 def storage_client(monkeypatch):
-    monkeypatch.setattr("prefect_gcp.credentials.Client", CloudStorageClient)
+    monkeypatch.setattr("prefect_gcp.credentials.StorageClient", CloudStorageClient)
+    monkeypatch.setattr("prefect_gcp.credentials.BigQueryClient", CloudStorageClient)
 
 
 @pytest.fixture
 def gcp_credentials():
     gcp_credentials_mock = MagicMock()
     gcp_credentials_mock.get_cloud_storage_client.return_value = CloudStorageClient()
+    gcp_credentials_mock.get_bigquery_client.return_value = CloudStorageClient()
     return gcp_credentials_mock

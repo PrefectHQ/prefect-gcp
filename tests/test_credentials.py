@@ -68,3 +68,16 @@ def test_get_cloud_storage_client(method_project, oauth2_credentials, storage_cl
         assert client.project == project
     else:
         assert client.project == method_project
+
+
+@pytest.mark.parametrize("method_project", [None, "override_project"])
+def test_get_bigquery_client(method_project, oauth2_credentials, storage_client):
+    project = "test_project"
+    client = GcpCredentials(
+        service_account_info=SERVICE_ACCOUNT_INFOS[0], project=project
+    ).get_bigquery_client(project=method_project)
+    assert client.credentials == SERVICE_ACCOUNT_INFOS[0]
+    if method_project is None:
+        assert client.project == project
+    else:
+        assert client.project == method_project
