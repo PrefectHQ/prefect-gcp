@@ -1,13 +1,13 @@
 """Module handling GCP credentials"""
 
-import os
 import json
-from pathlib import Path
+import os
 from dataclasses import dataclass
-from typing import Union, Dict, Optional
+from pathlib import Path
+from typing import Dict, Optional, Union
 
-from google.oauth2.service_account import Credentials
 from google.cloud.storage import Client
+from google.oauth2.service_account import Credentials
 
 
 @dataclass
@@ -19,7 +19,7 @@ class GCPCredentials:
     for more info about the possible credential configurations.
     Args:
         service_account_json: Path to the service account JSON keyfile or
-            the JSON string / dictionary. If not provided 
+            the JSON string / dictionary. If not provided
         project: Name of the project to use.
     """
 
@@ -28,6 +28,10 @@ class GCPCredentials:
 
     @staticmethod
     def _get_credentials_from_service_account(service_account_json) -> Credentials:
+        """
+        Helper method to serialize credentials by converting
+        service_account_json as necessary.
+        """
         if service_account_json is None:
             return None
 
@@ -49,7 +53,7 @@ class GCPCredentials:
             elif "$HOME" in service_account_json:
                 service_account_json = os.path.expandvars(service_account_json)
             if not os.path.exists(service_account_json):
-                raise ValueError(f"The provided path to the service account is invalid")
+                raise ValueError("The provided path to the service account is invalid")
             credentials = Credentials.from_service_account_file(service_account_json)
         return credentials
 
@@ -101,7 +105,9 @@ class GCPCredentials:
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(self.service_account_json)
+        credentials = self._get_credentials_from_service_account(
+            self.service_account_json
+        )
 
         # override class project if method project is provided
         project = project or self.project

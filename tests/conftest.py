@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 
 @pytest.fixture
@@ -10,7 +11,7 @@ def oauth2_credentials(monkeypatch):
     monkeypatch.setattr("prefect_gcp.credentials.Credentials", OAuth2Credentials)
 
 
-class CloudStorageClient():
+class CloudStorageClient:
     def __init__(self, credentials=None, project=None):
         self.credentials = credentials
         self.project = project

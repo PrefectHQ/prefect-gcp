@@ -1,17 +1,20 @@
+"""Tasks for interacting with GCP Cloud Storage"""
+
 import os
 from pathlib import Path
-from typing import Optional, Union, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
-from prefect import task, get_run_logger
+from prefect import get_run_logger, task
+
 if TYPE_CHECKING:
     from google.cloud.storage import Bucket
+
     from .credentials import GCPCredentials
 
 
 @task
 def cloud_storage_create_bucket(
-    bucket: str,
-    gcp_credentials: "GCPCredentials"
+    bucket: str, gcp_credentials: "GCPCredentials"
 ) -> "Bucket":
     """
     Creates a bucket.
@@ -22,7 +25,7 @@ def cloud_storage_create_bucket(
 
     Returns:
         The bucket name.
-    
+
     Example:
         Creates a bucket named "prefect".
         ```python
@@ -47,10 +50,7 @@ def cloud_storage_create_bucket(
     return bucket_obj
 
 
-def _get_bucket(
-        bucket: str,
-        gcp_credentials: "GCPCredentials"
-    ) -> "Bucket":
+def _get_bucket(bucket: str, gcp_credentials: "GCPCredentials") -> "Bucket":
     """
     Helper function to retrieve a bucket.
     """
@@ -61,8 +61,7 @@ def _get_bucket(
 
 @task
 def cloud_storage_get_bucket(
-    bucket: str,
-    gcp_credentials: "GCPCredentials"
+    bucket: str, gcp_credentials: "GCPCredentials"
 ) -> "Bucket":
     """
     Retrieve a bucket.
@@ -73,7 +72,7 @@ def cloud_storage_get_bucket(
 
     Returns:
         The bucket object.
-    
+
     Example:
         Retrieves a bucket named "prefect".
         ```python
