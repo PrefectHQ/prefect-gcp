@@ -25,6 +25,14 @@ def test_get_credentials_from_service_account(service_account_json, oauth2_crede
     assert credentials == service_account_json
 
 
+@pytest.mark.parametrize("service_account_json", ["~/bad/path", "$HOME/bad/too"])
+def test_get_credentials_from_service_account_error(
+    service_account_json, oauth2_credentials
+):
+    with pytest.raises(ValueError):
+        GCPCredentials._get_credentials_from_service_account(service_account_json)
+
+
 @pytest.mark.parametrize("method_project", [None, "override_project"])
 def test_get_cloud_storage_client(method_project, oauth2_credentials, storage_client):
     project = "test_project"
