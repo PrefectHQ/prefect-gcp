@@ -38,7 +38,8 @@ async def cloud_storage_create_bucket(
 
         @flow()
         def example_cloud_storage_create_bucket_flow():
-            gcp_credentials = GcpCredentials("/path/to/service/account/keyfile.json")
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
             bucket = cloud_storage_create_bucket("prefect", gcp_credentials)
 
         example_cloud_storage_create_bucket_flow()
@@ -86,7 +87,8 @@ async def cloud_storage_get_bucket(
 
         @flow()
         def example_cloud_storage_get_bucket_flow():
-            gcp_credentials = GcpCredentials("/path/to/service/account/keyfile.json")
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
             bucket = cloud_storage_get_bucket(gcp_credentials)
             return bucket
 
@@ -130,7 +132,8 @@ async def cloud_storage_download_blob(
 
         @flow()
         def example_cloud_storage_download_blob_flow():
-            gcp_credentials = GcpCredentials("/path/to/service/account/keyfile.json")
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
             contents = cloud_storage_download_blob("bucket", "blob", gcp_credentials)
             return contents
 
@@ -186,7 +189,8 @@ async def cloud_storage_upload_blob(
 
         @flow()
         def example_cloud_storage_upload_blob_flow():
-            gcp_credentials = GcpCredentials("/path/to/service/account/keyfile.json")
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
             blob = cloud_storage_upload_blob("data", "bucket", "blob", gcp_credentials)
             return blob
 
