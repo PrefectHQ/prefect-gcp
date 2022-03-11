@@ -76,7 +76,7 @@ class GCPCredentials:
                     service_account_json=service_account_json_path
                 ).get_cloud_storage_client()
 
-            test_flow()
+            example_get_client_flow()
             ```
 
             Gets a GCP Cloud Storage client from a dict.
