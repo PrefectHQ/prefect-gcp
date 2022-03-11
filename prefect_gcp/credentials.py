@@ -12,50 +12,56 @@ from google.oauth2.service_account import Credentials
 
 
 @dataclass
-class GCPCredentials:
+class GcpCredentials:
     """
     Dataclass used to manage authentication with GCP. GCP authentication is
-    handled via the `google.oauth2` module or through the CLI. Refer to the
+    handled via the `google.oauth2` module or through the CLI.
+    Specify either one of service account_file or service_account_info; if both
+    are not specified, the client will try to detect the service account info stored
+    in the env from the command, `gcloud auth application-default login`. Refer to the
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
     for more info about the possible credential configurations.
+
     Args:
-        service_account_json: Path to the service account JSON keyfile or
-            the JSON string / dictionary. If not provided
+        service_account_file: Path to the service account JSON keyfile.
+        service_account_info: The contents of the keyfile as a JSON string / dictionary.
         project: Name of the project to use.
     """
 
-    service_account_json: Optional[Union[Dict[str, str], str, Path]] = None
+    service_account_file: Optional[Union[str, Path]] = None
+    service_account_info: Optional[Union[str, Dict[str, str]]] = None
     project: str = None
 
     @staticmethod
-    def _get_credentials_from_service_account(service_account_json) -> Credentials:
+    def _get_credentials_from_service_account(
+        service_account_file=None,
+        service_account_info=None,
+    ) -> Credentials:
         """
-        Helper method to serialize credentials by converting
-        service_account_json as necessary.
+        Helper method to serialize credentials by using either
+        service_account_file or service_account_info.
         """
-        if service_account_json is None:
+        file_is_none = service_account_file is None
+        info_is_none = service_account_info is None
+        if file_is_none and info_is_none:
             return None
-
-        if isinstance(service_account_json, Path):
-            service_account_json = str(service_account_json)
-
-        is_str = isinstance(service_account_json, str)
-        if isinstance(service_account_json, dict):
-            # if is a JSON dict
-            credentials = Credentials.from_service_account_info(service_account_json)
-        elif is_str and "{" in service_account_json:
-            # if is a JSON string
-            service_account_json = json.loads(service_account_json)
-            credentials = Credentials.from_service_account_info(service_account_json)
-        elif is_str:
-            # if is a path string
-            if "~" in service_account_json:
-                service_account_json = os.path.expanduser(service_account_json)
-            elif "$HOME" in service_account_json:
-                service_account_json = os.path.expandvars(service_account_json)
-            if not os.path.exists(service_account_json):
+        elif not file_is_none and not info_is_none:
+            raise ValueError(
+                "Only one of service_account_info or service_account_file "
+                "can be specified at once"
+            )
+        elif service_account_file is not None:
+            if not os.path.exists(service_account_file):
                 raise ValueError("The provided path to the service account is invalid")
-            credentials = Credentials.from_service_account_file(service_account_json)
+            elif isinstance(service_account_file, Path):
+                service_account_file = service_account_file.expanduser()
+            else:
+                service_account_file = os.path.expanduser(service_account_file)
+            credentials = Credentials.from_service_account_file(service_account_file)
+        else:
+            if isinstance(service_account_info, str):
+                service_account_info = json.loads(service_account_info)
+            credentials = Credentials.from_service_account_info(service_account_info)
         return credentials
 
     def get_cloud_storage_client(self, project: str = None) -> StorageClient:
@@ -68,22 +74,22 @@ class GCPCredentials:
             Gets a GCP Cloud Storage client from a path.
             ```python
             from prefect import flow
-            from prefect_gcp.credentials import GCPCredentials
+            from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
                 service_account_json_path = "~/.secrets/prefect-service-account.json"
-                client = GCPCredentials(
+                client = GcpCredentials(
                     service_account_json=service_account_json_path
-                ).get_client()
+                ).get_cloud_storage_client()
 
-            test_flow()
+            example_get_client_flow()
             ```
 
             Gets a GCP Cloud Storage client from a dict.
             ```python
             from prefect import flow
-            from prefect_gcp.credentials import GCPCredentials
+            from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
@@ -99,15 +105,16 @@ class GCPCredentials:
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
                 }
-                client = GCPCredentials(
+                client = GcpCredentials(
                     service_account_json=service_account_json
-                ).get_client(json)
+                ).get_cloud_storage_client(json)
 
             example_get_client_flow()
             ```
         """
         credentials = self._get_credentials_from_service_account(
-            self.service_account_json
+            service_account_file=self.service_account_file,
+            service_account_info=self.service_account_info,
         )
 
         # override class project if method project is provided

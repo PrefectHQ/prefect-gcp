@@ -1,20 +1,23 @@
 """Tasks for interacting with GCP Cloud Storage"""
 
 import os
-from pathlib import Path
+from functools import partial
 from typing import TYPE_CHECKING, Optional, Union
 
+from anyio import to_thread
 from prefect import get_run_logger, task
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from google.cloud.storage import Bucket
 
-    from .credentials import GCPCredentials
+    from .credentials import GcpCredentials
 
 
 @task
-def cloud_storage_create_bucket(
-    bucket: str, gcp_credentials: "GCPCredentials"
+async def cloud_storage_create_bucket(
+    bucket: str, gcp_credentials: "GcpCredentials"
 ) -> "Bucket":
     """
     Creates a bucket.
@@ -24,20 +27,20 @@ def cloud_storage_create_bucket(
         gcp_credentials: Credentials to use for authentication with GCP.
 
     Returns:
-        The bucket name.
+        The Bucket object.
 
     Example:
         Creates a bucket named "prefect".
         ```python
         from prefect import flow
-        from prefect_gcp import GCPCredentials
+        from prefect_gcp import GcpCredentials
         from prefect_gcp.cloud_storage import cloud_storage_create_bucket
 
         @flow()
         def example_cloud_storage_create_bucket_flow():
-            gcp_credentials = GCPCredentials("/path/to/service/account/keyfile.json")
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
             bucket = cloud_storage_create_bucket("prefect", gcp_credentials)
-            return bucket
 
         example_cloud_storage_create_bucket_flow()
         ```
@@ -46,22 +49,24 @@ def cloud_storage_create_bucket(
     logger.info("Creating %s bucket", bucket)
 
     client = gcp_credentials.get_cloud_storage_client()
-    bucket_obj = client.create_bucket(bucket)
+    partial_create_bucket = partial(client.create_bucket, bucket)
+    bucket_obj = await to_thread.run_sync(partial_create_bucket)
     return bucket_obj
 
 
-def _get_bucket(bucket: str, gcp_credentials: "GCPCredentials") -> "Bucket":
+async def _get_bucket(bucket: str, gcp_credentials: "GcpCredentials") -> "Bucket":
     """
     Helper function to retrieve a bucket.
     """
     client = gcp_credentials.get_cloud_storage_client()
-    bucket_obj = client.get_bucket(bucket)
+    partial_get_bucket = partial(client.get_bucket, bucket)
+    bucket_obj = await to_thread.run_sync(partial_get_bucket)
     return bucket_obj
 
 
 @task
-def cloud_storage_get_bucket(
-    bucket: str, gcp_credentials: "GCPCredentials"
+async def cloud_storage_get_bucket(
+    bucket: str, gcp_credentials: "GcpCredentials"
 ) -> "Bucket":
     """
     Retrieve a bucket.
@@ -71,18 +76,19 @@ def cloud_storage_get_bucket(
         gcp_credentials: Credentials to use for authentication with GCP.
 
     Returns:
-        The bucket object.
+        The Bucket object.
 
     Example:
         Retrieves a bucket named "prefect".
         ```python
         from prefect import flow
-        from prefect_gcp import GCPCredentials
+        from prefect_gcp import GcpCredentials
         from prefect_gcp.cloud_storage import cloud_storage_get_bucket
 
         @flow()
         def example_cloud_storage_get_bucket_flow():
-            gcp_credentials = GCPCredentials("/path/to/service/account/keyfile.json")
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
             bucket = cloud_storage_get_bucket(gcp_credentials)
             return bucket
 
@@ -92,17 +98,17 @@ def cloud_storage_get_bucket(
     logger = get_run_logger()
     logger.info("Getting %s bucket", bucket)
 
-    bucket_obj = _get_bucket(bucket, gcp_credentials)
+    bucket_obj = await _get_bucket(bucket, gcp_credentials)
     return bucket_obj
 
 
 @task
-def cloud_storage_download_blob(
+async def cloud_storage_download_blob(
     bucket: str,
     blob: str,
-    gcp_credentials: "GCPCredentials",
-    path: Optional[Union[str, Path]] = None,
-) -> Union[str, bytes]:
+    gcp_credentials: "GcpCredentials",
+    path: Optional[Union[str, "Path"]] = None,
+) -> Union[str, "Path", bytes]:
     """
     Downloads a blob.
 
@@ -121,12 +127,13 @@ def cloud_storage_download_blob(
         Downloads blob from bucket.
         ```python
         from prefect import flow
-        from prefect_gcp import GCPCredentials
+        from prefect_gcp import GcpCredentials
         from prefect_gcp.cloud_storage import cloud_storage_download_blob
 
         @flow()
         def example_cloud_storage_download_blob_flow():
-            gcp_credentials = GCPCredentials("/path/to/service/account/keyfile.json")
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
             contents = cloud_storage_download_blob("bucket", "blob", gcp_credentials)
             return contents
 
@@ -136,26 +143,27 @@ def cloud_storage_download_blob(
     logger = get_run_logger()
     logger.info("Downloading blob named %s from the %s bucket", blob, bucket)
 
-    bucket_obj = _get_bucket(bucket, gcp_credentials)
-    blob_obj = bucket_obj.blob(blob)
+    bucket_obj = await _get_bucket(bucket, gcp_credentials)
+    partial_blob = partial(bucket_obj.blob, blob)
+    blob_obj = await to_thread.run_sync(partial_blob)
 
     if path is not None:
-        if isinstance(path, Path):
-            path = str(path)
         if os.path.isdir(path):
             path = os.path.join(path, blob)
-        blob_obj.download_to_filename(path)
+        partial_download = partial(blob_obj.download_to_filename, path)
+        await to_thread.run_sync(partial_download)
         return path
     else:
-        blob_contents = blob_obj.download_as_bytes()
-        return blob_contents
+        partial_download = partial(blob_obj.download_as_bytes)
+        contents = await to_thread.run_sync(partial_download)
+        return contents
 
 
 @task
-def cloud_storage_upload_blob(
-    data: Union[bytes, str, Path],
+async def cloud_storage_upload_blob(
+    data: Union[bytes, str, "Path"],
     bucket: str,
-    gcp_credentials: "GCPCredentials",
+    gcp_credentials: "GcpCredentials",
     blob: Optional[str] = None,
 ) -> str:
     """
@@ -176,12 +184,13 @@ def cloud_storage_upload_blob(
         Uploads blob to bucket.
         ```
         from prefect import flow
-        from prefect_gcp import GCPCredentials
+        from prefect_gcp import GcpCredentials
         from prefect_gcp.cloud_storage import cloud_storage_upload_blob
 
         @flow()
         def example_cloud_storage_upload_blob_flow():
-            gcp_credentials = GCPCredentials("/path/to/service/account/keyfile.json")
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
             blob = cloud_storage_upload_blob("data", "bucket", "blob", gcp_credentials)
             return blob
 
@@ -191,10 +200,7 @@ def cloud_storage_upload_blob(
     logger = get_run_logger()
     logger.info("Uploading blob named %s to the %s bucket", blob, bucket)
 
-    bucket_obj = _get_bucket(bucket, gcp_credentials)
-
-    if isinstance(data, Path):
-        data = str(data)
+    bucket_obj = await _get_bucket(bucket, gcp_credentials)
 
     is_file_path = os.path.exists(data) and os.path.isfile(data)
     if is_file_path and blob is None:
@@ -202,13 +208,15 @@ def cloud_storage_upload_blob(
     elif blob is None:
         raise ValueError("Since data is not a path, blob must be provided")
 
-    blob_obj = bucket_obj.blob(blob)
+    partial_blob = partial(bucket_obj.blob, blob)
+    blob_obj = await to_thread.run_sync(partial_blob)
 
     if is_file_path:
-        blob_obj.upload_from_filename(data)
+        partial_upload = partial(blob_obj.upload_from_filename, data)
     elif isinstance(data, bytes):
-        blob_obj.upload_from_bytes(data)
+        partial_upload = partial(blob_obj.upload_from_bytes, data)
     else:
-        blob_obj.upload_from_string(data)
+        partial_upload = partial(blob_obj.upload_from_string, data)
+    await to_thread.run_sync(partial_upload)
 
     return blob

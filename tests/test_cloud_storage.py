@@ -41,7 +41,7 @@ def test_cloud_storage_download_blob(path, gcp_credentials):
     if path is None:
         assert test_flow().result().result() == b"bytes"
     else:
-        assert test_flow().result().result() == str(path)
+        assert test_flow().result().result() == path
 
 
 @pytest.mark.parametrize(
