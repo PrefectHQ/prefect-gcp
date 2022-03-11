@@ -129,29 +129,29 @@ class GcpCredentials:
                 class's project if provided.
 
         Examples:
-            Gets a GCP Cloud Storage client from a path.
+            Gets a GCP BigQuery client from a path.
             ```python
             from prefect import flow
-            from prefect_gcp.credentials import GCPCredentials
+            from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_json_path = "~/.secrets/prefect-service-account.json"
-                client = GCPCredentials(
-                    service_account_json=service_account_json_path
-                ).get_cloud_storage_client()
+                service_account_file = "~/.secrets/prefect-service-account.json"
+                client = GcpCredentials(
+                    service_account_file=service_account_file
+                ).get_bigquery_client()
 
             example_get_client_flow()
             ```
 
-            Gets a GCP Cloud Storage client from a dict.
+            Gets a GCP BigQuery client from a dict.
             ```python
             from prefect import flow
-            from prefect_gcp.credentials import GCPCredentials
+            from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_json = {
+                service_account_info = {
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
@@ -163,18 +163,19 @@ class GcpCredentials:
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
                 }
-                client = GCPCredentials(
-                    service_account_json=service_account_json
+                client = GcpCredentials(
+                    service_account_info=service_account_info
                 ).get_bigquery_client(json)
 
             example_get_client_flow()
             ```
         """
         credentials = self._get_credentials_from_service_account(
-            self.service_account_json
+            service_account_file=self.service_account_file,
+            service_account_info=self.service_account_info,
         )
 
         # override class project if method project is provided
         project = project or self.project
-        bigquery_client = BigQueryClient(credentials=credentials, project=project)
-        return bigquery_client
+        storage_client = BigQueryClient(credentials=credentials, project=project)
+        return storage_client
