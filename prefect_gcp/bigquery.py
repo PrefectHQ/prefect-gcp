@@ -4,6 +4,7 @@ from functools import partial
 from typing import TYPE_CHECKING, List
 
 from anyio import to_thread
+from bigquery import QueryJobConfig, ScalarQueryParameter
 from prefect import get_run_logger, task
 
 if TYPE_CHECKING:
@@ -13,13 +14,25 @@ if TYPE_CHECKING:
 
 
 @task
-async def bigquery_query(query: str, gcp_credentials: "GcpCredentials") -> List["Row"]:
+async def bigquery_query(
+    query: str,
+    gcp_credentials: "GcpCredentials",
+    query_params: List[tuple] = None,
+    job_config: dict = None,
+) -> List["Row"]:
     """
     Runs a BigQuery query.
 
     Args:
         query: SQL query.
         gcp_credentials: Credentials to use for authentication with GCP.
+        query_params: List of 3-tuples specifying BigQuery query parameters;
+            currently only scalar query parameters are supported. See the
+            [Google documentation](https://cloud.google.com/bigquery/docs/parameterized-queries#bigquery-query-params-python)  # noqa
+            for more details on how both the query and the query parameters should beformatted
+        job_config: an optional dictionary of job configuration parameters; note
+            that the parameters provided here must be pickleable
+            (e.g., dataset references will be rejected).
 
     Returns:
         A list of rows matching the query criteria.
@@ -51,6 +64,10 @@ async def bigquery_query(query: str, gcp_credentials: "GcpCredentials") -> List[
     logger.info("Running query")
 
     client = gcp_credentials.get_bigquery_client()
-    partial_query = partial(client.query(query).result)
+    job_config = QueryJobConfig(**job_config)
+    if query_params is not None:
+        hydrated_params = [ScalarQueryParameter(*qp) for qp in query_params]
+        job_config.query_parameters = hydrated_params
+    partial_query = partial(client.query(query, job_config=job_config).result)
     result = await to_thread.run_sync(partial_query)
     return list(result)
