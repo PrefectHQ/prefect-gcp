@@ -83,22 +83,22 @@ class GcpCredentials:
 
             @flow()
             def example_get_client_flow():
-                service_account_json_path = "~/.secrets/prefect-service-account.json"
+                service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
-                    service_account_json=service_account_json_path
+                    service_account_file=service_account_file
                 ).get_cloud_storage_client()
 
             example_get_client_flow()
             ```
 
-            Gets a GCP Cloud Storage client from a dict.
+            Gets a GCP Cloud Storage client from a JSON dict.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_json = {
+                service_account_info = {
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
@@ -111,8 +111,8 @@ class GcpCredentials:
                     "client_x509_cert_url": "client_x509_cert_url"
                 }
                 client = GcpCredentials(
-                    service_account_json=service_account_json
-                ).get_cloud_storage_client(json)
+                    service_account_info=service_account_info
+                ).get_cloud_storage_client()
 
             example_get_client_flow()
             ```
