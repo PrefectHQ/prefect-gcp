@@ -17,14 +17,14 @@ class CloudStorageClient:
         self.project = project
         self.location = location
 
-    def create_bucket(self, bucket):
-        return bucket
+    def create_bucket(self, bucket, location=None):
+        return {"bucket": bucket, "location": location}
 
     def get_bucket(self, bucket):
         blob_obj = MagicMock()
         blob_obj.download_as_bytes.return_value = b"bytes"
         bucket_obj = MagicMock(bucket=bucket)
-        bucket_obj.blob.side_effect = lambda blob: blob_obj
+        bucket_obj.blob.side_effect = lambda blob, **kwds: blob_obj
         return bucket_obj
 
 

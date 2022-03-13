@@ -25,13 +25,11 @@ class GcpCredentials:
         service_account_file: Path to the service account JSON keyfile.
         service_account_info: The contents of the keyfile as a JSON string / dictionary.
         project: Name of the project to use.
-        location: Location for jobs / datasets / tables.
     """
 
     service_account_file: Optional[Union[str, Path]] = None
     service_account_info: Optional[Union[str, Dict[str, str]]] = None
     project: Optional[str] = None
-    location: Optional[str] = None
 
     @staticmethod
     def _get_credentials_from_service_account(
@@ -65,14 +63,10 @@ class GcpCredentials:
             credentials = Credentials.from_service_account_info(service_account_info)
         return credentials
 
-    def get_cloud_storage_client(
-        self, project: Optional[str] = None, location: Optional[str] = None
-    ) -> Client:
+    def get_cloud_storage_client(self, project: Optional[str] = None) -> Client:
         """
         Args:
             project: Name of the project to use; overrides the base
-                class's project if provided.
-            location: Location for jobs / datasets / tables; overrides the base
                 class's project if provided.
 
         Examples:
@@ -124,8 +118,5 @@ class GcpCredentials:
 
         # override class project if method project is provided
         project = project or self.project
-        location = location or self.location
-        storage_client = Client(
-            credentials=credentials, project=project, location=location
-        )
+        storage_client = Client(credentials=credentials, project=project)
         return storage_client

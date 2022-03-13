@@ -58,25 +58,15 @@ def test_get_credentials_from_service_account_both_error(oauth2_credentials):
 
 
 @pytest.mark.parametrize("override_project", [None, "override_project"])
-@pytest.mark.parametrize("override_location", [None, "override_location"])
-def test_get_cloud_storage_client(
-    override_project, override_location, oauth2_credentials, storage_client
-):
+def test_get_cloud_storage_client(override_project, oauth2_credentials, storage_client):
     project = "test_project"
-    location = "test_location"
     client = GcpCredentials(
         service_account_info=SERVICE_ACCOUNT_INFOS[0],
         project=project,
-        location=location,
-    ).get_cloud_storage_client(project=override_project, location=override_location)
+    ).get_cloud_storage_client(project=override_project)
     assert client.credentials == SERVICE_ACCOUNT_INFOS[0]
 
     if override_project is None:
         assert client.project == project
     else:
         assert client.project == override_project
-
-    if override_location is None:
-        assert client.location == location
-    else:
-        assert client.location == override_location
