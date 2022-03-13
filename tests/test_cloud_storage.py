@@ -66,11 +66,19 @@ def test_cloud_storage_upload_blob(data, blob, gcp_credentials):
         assert test_flow().result().result() == blob
 
 
-def test_cloud_storage_copy_blob(gcp_credentials):
+@pytest.mark.parametrize("dest_blob", [None, "dest_blob"])
+def test_cloud_storage_copy_blob(dest_blob, gcp_credentials):
     @flow
     def test_flow():
         return cloud_storage_copy_blob(
-            "source_bucket", "source_blob", "dest_bucket", gcp_credentials
+            "source_bucket",
+            "dest_bucket",
+            "source_blob",
+            gcp_credentials,
+            dest_blob=dest_blob,
         )
 
-    assert test_flow().result().result() == "dest_bucket"
+    if dest_blob is None:
+        assert test_flow().result().result() == "source_blob"
+    else:
+        assert test_flow().result().result() == "dest_blob"
