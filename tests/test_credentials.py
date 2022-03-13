@@ -57,18 +57,16 @@ def test_get_credentials_from_service_account_both_error(oauth2_credentials):
         )
 
 
-@pytest.mark.parametrize("method_project", [None, "override_project"])
-@pytest.mark.parametrize(
-    "get_client", ["get_cloud_storage_client", "get_bigquery_client"]
-)
-def test_get_client(method_project, get_client, oauth2_credentials, storage_client):
+@pytest.mark.parametrize("override_project", [None, "override_project"])
+def test_get_cloud_storage_client(override_project, oauth2_credentials, storage_client):
     project = "test_project"
-    client = getattr(
-        GcpCredentials(service_account_info=SERVICE_ACCOUNT_INFOS[0], project=project),
-        get_client,
-    )(project=method_project)
+    client = GcpCredentials(
+        service_account_info=SERVICE_ACCOUNT_INFOS[0],
+        project=project,
+    ).get_cloud_storage_client(project=override_project)
     assert client.credentials == SERVICE_ACCOUNT_INFOS[0]
-    if method_project is None:
+
+    if override_project is None:
         assert client.project == project
     else:
-        assert client.project == method_project
+        assert client.project == override_project

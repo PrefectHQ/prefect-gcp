@@ -30,12 +30,12 @@ class GcpCredentials:
 
     service_account_file: Optional[Union[str, Path]] = None
     service_account_info: Optional[Union[str, Dict[str, str]]] = None
-    project: str = None
+    project: Optional[str] = None
 
     @staticmethod
     def _get_credentials_from_service_account(
-        service_account_file=None,
-        service_account_info=None,
+        service_account_file: Optional[str] = None,
+        service_account_info: Optional[str] = None,
     ) -> Credentials:
         """
         Helper method to serialize credentials by using either
@@ -64,7 +64,7 @@ class GcpCredentials:
             credentials = Credentials.from_service_account_info(service_account_info)
         return credentials
 
-    def get_cloud_storage_client(self, project: str = None) -> StorageClient:
+    def get_cloud_storage_client(self, project: Optional[str] = None) -> StorageClient:
         """
         Args:
             project: Name of the project to use; overrides the base
@@ -78,22 +78,22 @@ class GcpCredentials:
 
             @flow()
             def example_get_client_flow():
-                service_account_json_path = "~/.secrets/prefect-service-account.json"
+                service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
-                    service_account_json=service_account_json_path
+                    service_account_file=service_account_file
                 ).get_cloud_storage_client()
 
             example_get_client_flow()
             ```
 
-            Gets a GCP Cloud Storage client from a dict.
+            Gets a GCP Cloud Storage client from a JSON dict.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_json = {
+                service_account_info = {
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
@@ -106,8 +106,8 @@ class GcpCredentials:
                     "client_x509_cert_url": "client_x509_cert_url"
                 }
                 client = GcpCredentials(
-                    service_account_json=service_account_json
-                ).get_cloud_storage_client(json)
+                    service_account_info=service_account_info
+                ).get_cloud_storage_client()
 
             example_get_client_flow()
             ```
