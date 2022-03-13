@@ -12,9 +12,10 @@ def oauth2_credentials(monkeypatch):
 
 
 class CloudStorageClient:
-    def __init__(self, credentials=None, project=None):
+    def __init__(self, credentials=None, project=None, location=None):
         self.credentials = credentials
         self.project = project
+        self.location = location
 
     def create_bucket(self, bucket):
         return bucket

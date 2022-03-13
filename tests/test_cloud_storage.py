@@ -22,14 +22,20 @@ def test_cloud_storage_create_bucket(gcp_credentials):
     assert test_flow().result().result() == bucket
 
 
-def test_cloud_storage_get_bucket(gcp_credentials):
+@pytest.mark.parametrize("project", [None, "override_project"])
+@pytest.mark.parametrize("location", [None, "override_location"])
+def test_cloud_storage_get_bucket(project, location, gcp_credentials):
     bucket = "expected"
 
     @flow
     def test_flow():
-        return cloud_storage_get_bucket(bucket, gcp_credentials)
+        return cloud_storage_get_bucket(
+            bucket, gcp_credentials, project=project, location=location
+        )
 
     assert test_flow().result().result().bucket == bucket
+    assert project == project
+    assert location == location
 
 
 @pytest.mark.parametrize("path", [None, "/path/somewhere/", Path("/path/somewhere/")])

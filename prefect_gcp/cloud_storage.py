@@ -17,7 +17,10 @@ if TYPE_CHECKING:
 
 @task
 async def cloud_storage_create_bucket(
-    bucket: str, gcp_credentials: "GcpCredentials"
+    bucket: str,
+    gcp_credentials: "GcpCredentials",
+    project: Optional[str] = None,
+    location: Optional[str] = None,
 ) -> "Bucket":
     """
     Creates a bucket.
@@ -25,6 +28,10 @@ async def cloud_storage_create_bucket(
     Args:
         bucket: Name of the bucket.
         gcp_credentials: Credentials to use for authentication with GCP.
+        project: Name of the project to use; overrides the
+            gcp_credentials project if provided.
+        location: Location for jobs / datasets / tables; overrides the
+            gcp_credentials location if provided.
 
     Returns:
         The Bucket object.
@@ -48,17 +55,26 @@ async def cloud_storage_create_bucket(
     logger = get_run_logger()
     logger.info("Creating %s bucket", bucket)
 
-    client = gcp_credentials.get_cloud_storage_client()
+    client = gcp_credentials.get_cloud_storage_client(
+        project=project, location=location
+    )
     partial_create_bucket = partial(client.create_bucket, bucket)
     bucket_obj = await to_thread.run_sync(partial_create_bucket)
     return bucket_obj
 
 
-async def _get_bucket(bucket: str, gcp_credentials: "GcpCredentials") -> "Bucket":
+async def _get_bucket(
+    bucket: str,
+    gcp_credentials: "GcpCredentials",
+    project: Optional[str] = None,
+    location: Optional[str] = None,
+) -> "Bucket":
     """
     Helper function to retrieve a bucket.
     """
-    client = gcp_credentials.get_cloud_storage_client()
+    client = gcp_credentials.get_cloud_storage_client(
+        project=project, location=location
+    )
     partial_get_bucket = partial(client.get_bucket, bucket)
     bucket_obj = await to_thread.run_sync(partial_get_bucket)
     return bucket_obj
@@ -66,7 +82,10 @@ async def _get_bucket(bucket: str, gcp_credentials: "GcpCredentials") -> "Bucket
 
 @task
 async def cloud_storage_get_bucket(
-    bucket: str, gcp_credentials: "GcpCredentials"
+    bucket: str,
+    gcp_credentials: "GcpCredentials",
+    project: Optional[str] = None,
+    location: Optional[str] = None,
 ) -> "Bucket":
     """
     Retrieve a bucket.
@@ -74,6 +93,10 @@ async def cloud_storage_get_bucket(
     Args:
         bucket: Name of the bucket.
         gcp_credentials: Credentials to use for authentication with GCP.
+        project: Name of the project to use; overrides the
+            gcp_credentials project if provided.
+        location: Location for jobs / datasets / tables; overrides the
+            gcp_credentials location if provided.
 
     Returns:
         The Bucket object.
@@ -98,7 +121,9 @@ async def cloud_storage_get_bucket(
     logger = get_run_logger()
     logger.info("Getting %s bucket", bucket)
 
-    bucket_obj = await _get_bucket(bucket, gcp_credentials)
+    bucket_obj = await _get_bucket(
+        bucket, gcp_credentials, project=project, location=location
+    )
     return bucket_obj
 
 
@@ -108,6 +133,8 @@ async def cloud_storage_download_blob(
     blob: str,
     gcp_credentials: "GcpCredentials",
     path: Optional[Union[str, "Path"]] = None,
+    project: Optional[str] = None,
+    location: Optional[str] = None,
 ) -> Union[str, "Path", bytes]:
     """
     Downloads a blob.
@@ -118,6 +145,10 @@ async def cloud_storage_download_blob(
         gcp_credentials: Credentials to use for authentication with GCP.
         path: If provided, downloads the contents to the provided file path;
             if the path is a directory, automatically joins the blob name.
+        project: Name of the project to use; overrides the
+            gcp_credentials project if provided.
+        location: Location for jobs / datasets / tables; overrides the
+            gcp_credentials location if provided.
 
     Returns:
         The path to the blob object if a path is provided,
@@ -143,7 +174,9 @@ async def cloud_storage_download_blob(
     logger = get_run_logger()
     logger.info("Downloading blob named %s from the %s bucket", blob, bucket)
 
-    bucket_obj = await _get_bucket(bucket, gcp_credentials)
+    bucket_obj = await _get_bucket(
+        bucket, gcp_credentials, project=project, location=location
+    )
     partial_blob = partial(bucket_obj.blob, blob)
     blob_obj = await to_thread.run_sync(partial_blob)
 
@@ -165,6 +198,8 @@ async def cloud_storage_upload_blob(
     bucket: str,
     gcp_credentials: "GcpCredentials",
     blob: Optional[str] = None,
+    project: Optional[str] = None,
+    location: Optional[str] = None,
 ) -> str:
     """
     Uploads a blob.
@@ -176,6 +211,10 @@ async def cloud_storage_upload_blob(
         gcp_credentials: Credentials to use for authentication with GCP.
         blob: Name of the Cloud Storage blob; must be provided if data is
             not a path.
+        project: Name of the project to use; overrides the
+            gcp_credentials project if provided.
+        location: Location for jobs / datasets / tables; overrides the
+            gcp_credentials location if provided.
 
     Returns:
         The blob name.
@@ -200,7 +239,9 @@ async def cloud_storage_upload_blob(
     logger = get_run_logger()
     logger.info("Uploading blob named %s to the %s bucket", blob, bucket)
 
-    bucket_obj = await _get_bucket(bucket, gcp_credentials)
+    bucket_obj = await _get_bucket(
+        bucket, gcp_credentials, project=project, location=location
+    )
 
     is_file_path = os.path.exists(data) and os.path.isfile(data)
     if is_file_path and blob is None:
