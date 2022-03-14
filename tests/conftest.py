@@ -12,10 +12,9 @@ def oauth2_credentials(monkeypatch):
 
 
 class CloudStorageClient:
-    def __init__(self, credentials=None, project=None, location=None):
+    def __init__(self, credentials=None, project=None):
         self.credentials = credentials
         self.project = project
-        self.location = location
 
     def create_bucket(self, bucket, location=None):
         return {"bucket": bucket, "location": location}
@@ -31,12 +30,30 @@ class CloudStorageClient:
 @pytest.fixture
 def storage_client(monkeypatch):
     monkeypatch.setattr("prefect_gcp.credentials.StorageClient", CloudStorageClient)
-    monkeypatch.setattr("prefect_gcp.credentials.BigQueryClient", CloudStorageClient)
+
+
+class BigQueryClient:
+    def __init__(self, credentials=None, project=None):
+        self.credentials = credentials
+        self.project = project
+
+    def query(self, query, **kwargs):
+        response = MagicMock()
+        result = MagicMock()
+        result.__iter__.return_value = [query]
+        result.to_dataframe.return_value = f"dataframe_{query}"
+        result.kwargs = kwargs
+        response.result.return_value = result
+        response.total_bytes_processed = 10
+        return response
+
+    def dataset(self, dataset):
+        return MagicMock()
 
 
 @pytest.fixture
 def gcp_credentials():
     gcp_credentials_mock = MagicMock()
     gcp_credentials_mock.get_cloud_storage_client.return_value = CloudStorageClient()
-    gcp_credentials_mock.get_bigquery_client.return_value = CloudStorageClient()
+    gcp_credentials_mock.get_bigquery_client.return_value = BigQueryClient()
     return gcp_credentials_mock
