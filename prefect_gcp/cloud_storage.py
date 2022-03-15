@@ -253,7 +253,7 @@ async def cloud_storage_copy_blob(
         dest_bucket: Destination bucket name.
         source_blob: Source blob name.
         gcp_credentials: Credentials to use for authentication with GCP.
-        dest_blob: Destination blob name.
+        dest_blob: Destination blob name; if not provided, defaults to source_blob.
         timeout: The number of seconds the transport should wait
             for the server response. Can also be passed as a tuple
             (connect_timeout, read_timeout).
