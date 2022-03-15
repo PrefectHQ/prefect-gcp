@@ -177,5 +177,5 @@ class GcpCredentials:
 
         # override class project if method project is provided
         project = project or self.project
-        storage_client = BigQueryClient(credentials=credentials, project=project)
-        return storage_client
+        big_query_client = BigQueryClient(credentials=credentials, project=project)
+        return big_query_client
