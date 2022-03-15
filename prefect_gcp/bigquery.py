@@ -54,7 +54,7 @@ async def bigquery_query(
         gcp_credentials: Credentials to use for authentication with GCP.
         query_params: List of 3-tuples specifying BigQuery query parameters; currently
             only scalar query parameters are supported.  See the
-            [Google documentation](https://cloud.google.com/bigquery/docs/parameterized-queries#bigquery-query-params-python)  # noqa
+            [Google documentation](https://cloud.google.com/bigquery/docs/parameterized-queries#bigquery-query-params-python)
             for more details on how both the query and the query parameters should be formatted.
         dry_run_max_bytes: If provided, the maximum number of bytes the query
             is allowed to process; this will be determined by executing a dry run
@@ -109,7 +109,7 @@ async def bigquery_query(
 
         example_bigquery_query_flow()
         ```
-    """
+    """  # noqa
     logger = get_run_logger()
     logger.info("Running query")
 
