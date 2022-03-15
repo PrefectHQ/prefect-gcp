@@ -111,7 +111,7 @@ async def bigquery_query(
         ```
     """  # noqa
     logger = get_run_logger()
-    logger.info("Running query")
+    logger.info("Running BigQuery query")
 
     client = gcp_credentials.get_bigquery_client(project=project)
 
@@ -157,6 +157,70 @@ async def bigquery_query(
     return result
 
 
+@task
+async def bigquery_create_table(
+    dataset: str,
+    table: str,
+    schema: List[SchemaField],
+    gcp_credentials: "GcpCredentials",
+    clustering_fields: List[str] = None,
+    time_partitioning: TimePartitioning = None,
+    project: Optional[str] = None,
+    location: str = "US",
+):
+    """
+    Creates table in BigQuery.
+
+    Args:
+        dataset: Name of a dataset in that the table will be created.
+        table: Name of a table to create.
+        schema: Schema to use when creating the table.
+        gcp_credentials: Credentials to use for authentication with GCP.
+        clustering_fields: List of fields to cluster the table by.
+        time_partitioning: `bigquery.TimePartitioning` object specifying a partitioning
+            of the newly created table
+        project: Project to initialize the BigQuery Client with; if
+            not provided, will default to the one inferred from your credentials.
+        location: location of the dataset that will be written to.
+
+    Returns:
+        Table name.
+
+    Raises:
+        SUCCESS: a `SUCCESS` signal if the table already exists
+    """
+    logger = get_run_logger()
+    logger.info("Creating %s.%s", dataset, table)
+
+    client = gcp_credentials.get_bigquery_client(project=project)
+    try:
+        dataset_ref = client.get_dataset(dataset)
+    except NotFound:
+        logger.debug("Dataset %s not found, creating", dataset)
+        dataset_ref = client.create_dataset(dataset)
+
+    table_ref = dataset_ref.table(table)
+    try:
+        client.get_table(table_ref)
+        logger.info("%s.%s already exists", dataset, table)
+    except NotFound:
+        logger.debug("Table %s not found, creating...", table)
+        table = Table(table_ref, schema=schema)
+
+        # partitioning
+        if time_partitioning:
+            table.time_partitioning = time_partitioning
+
+        # cluster for optimal data sorting/access
+        if clustering_fields:
+            table.clustering_fields = clustering_fields
+
+        client.create_table(table)
+
+    return table
+
+
+@task
 async def bigquery_streaming_insert(
     records: List[dict],
     dataset_id: str,
@@ -183,13 +247,15 @@ async def bigquery_streaming_insert(
         location: Location of the dataset that will be written to.
 
     Raises:
-        ValueError: if all required arguments haven't been provided.
         ValueError: if any of the records result in errors.
 
     Returns:
         The response from `insert_rows_json`.
+
+    Example:
+
     """
-    client = gcp_credentials.get_bigquery_client(project=project)
+    client = gcp_credentials.get_bigquery_client(project=project, location=location)
     table_ref = client.dataset(dataset_id).table(table)
     partial_insert = partial(
         client.insert_rows_json, table=table_ref, json_rows=records
@@ -379,67 +445,3 @@ def bigquery_load_file(
     load_job.result()  # block until job is finished
 
     return load_job
-
-
-@task
-def bigquery_create_table(
-    dataset: str,
-    table: str,
-    schema: List[SchemaField],
-    gcp_credentials: "GcpCredentials",
-    clustering_fields: List[str] = None,
-    time_partitioning: TimePartitioning = None,
-    project: Optional[str] = None,
-    location: str = "US",
-):
-    """
-    Creates table in BigQuery.
-
-    Args:
-        dataset: Name of a dataset in that the table will be created.
-        table: Name of a table to create.
-        schema: Schema to use when creating the table.
-        clustering_fields: List of fields to cluster the table by.
-        gcp_credentials: Credentials to use for authentication with GCP.
-        time_partitioning: `bigquery.TimePartitioning` object specifying a partitioning
-            of the newly created table
-        project: Project to initialize the BigQuery Client with; if
-            not provided, will default to the one inferred from your credentials.
-        location: location of the dataset that will be written to.
-
-    Returns:
-        Table name.
-
-    Raises:
-        SUCCESS: a `SUCCESS` signal if the table already exists
-    """
-    logger = get_run_logger()
-
-    client = gcp_credentials.get_bigquery_client(project=project)
-
-    try:
-        dataset_ref = client.get_dataset(dataset)
-    except NotFound:
-        logger.debug("Dataset {} not found, creating...".format(dataset))
-        dataset_ref = client.create_dataset(dataset)
-
-    table_ref = dataset_ref.table(table)
-    try:
-        client.get_table(table_ref)
-        logger.info(
-            "{dataset}.{table} already exists.".format(dataset=dataset, table=table)
-        )
-    except NotFound:
-        logger.debug("Table {} not found, creating...".format(table))
-        table = Table(table_ref, schema=schema)
-
-        # partitioning
-        if time_partitioning:
-            table.time_partitioning = time_partitioning
-
-        # cluster for optimal data sorting/access
-        if clustering_fields:
-            table.clustering_fields = clustering_fields
-        client.create_table(table, location=location)
-
-    return table
