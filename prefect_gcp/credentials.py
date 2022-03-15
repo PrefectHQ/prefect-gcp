@@ -122,11 +122,14 @@ class GcpCredentials:
         storage_client = StorageClient(credentials=credentials, project=project)
         return storage_client
 
-    def get_bigquery_client(self, project: str = None) -> BigQueryClient:
+    def get_bigquery_client(
+        self, project: str = None, location: str = None
+    ) -> BigQueryClient:
         """
         Args:
             project: Name of the project to use; overrides the base
                 class's project if provided.
+            location: Location to use.
 
         Examples:
             Gets a GCP BigQuery client from a path.
@@ -177,5 +180,7 @@ class GcpCredentials:
 
         # override class project if method project is provided
         project = project or self.project
-        big_query_client = BigQueryClient(credentials=credentials, project=project)
+        big_query_client = BigQueryClient(
+            credentials=credentials, project=project, location=location
+        )
         return big_query_client

@@ -1,11 +1,13 @@
 """Tasks for interacting with GCP BigQuery"""
 
+import os
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from anyio import to_thread
 from google.cloud.bigquery import (
+    LoadJob,
     LoadJobConfig,
     QueryJobConfig,
     ScalarQueryParameter,
@@ -22,15 +24,12 @@ if TYPE_CHECKING:
     from .credentials import GcpCredentials
 
 
-def _query_sync(client, query, to_dataframe, **kwargs):
+def _result_sync(func, *args, **kwargs):
     """
-    Helper function to ensure query + result are run on a single thread.
+    Helper function to ensure result is run on a single thread.
     """
-    result = client.query(query, **kwargs).result()
-    if to_dataframe:
-        return result.to_dataframe()
-    else:
-        return list(result)
+    result = func(*args, **kwargs).result()
+    return result
 
 
 @task
@@ -39,8 +38,8 @@ async def bigquery_query(
     gcp_credentials: "GcpCredentials",
     query_params: Optional[List[tuple]] = None,  # 3-tuples
     dry_run_max_bytes: Optional[int] = None,
-    dataset_dest: Optional[str] = None,
-    table_dest: Optional[str] = None,
+    dataset: Optional[str] = None,
+    table: Optional[str] = None,
     to_dataframe: bool = False,
     job_config: Optional[dict] = None,
     project: Optional[str] = None,
@@ -59,15 +58,13 @@ async def bigquery_query(
         dry_run_max_bytes: If provided, the maximum number of bytes the query
             is allowed to process; this will be determined by executing a dry run
             and raising a `ValueError` if the maximum is exceeded.
-        dataset_dest: the optional name of a destination dataset to write the
-            query results to, if you don't want them returned; if provided,
-            `table_dest` must also be provided.
-        table_dest: the optional name of a destination table to write the
-            query results to, if you don't want them returned; if provided,
-            `dataset_dest` must also be provided.
-        to_dataframe: if provided, returns the results of the query as a pandas
+        dataset: Name of a destination dataset to write the query results to,
+            if you don't want them returned; if provided, `table` must also be provided.
+        table: Name of a destination table to write the query results to,
+            if you don't want them returned; if provided, `dataset` must also be provided.
+        to_dataframe: If provided, returns the results of the query as a pandas
             dataframe instead of a list of `bigquery.table.Row` objects.
-        job_config: an optional dictionary of job configuration parameters;
+        job_config: Dictionary of job configuration parameters;
             note that the parameters provided here must be pickleable
             (e.g., dataset references will be rejected).
         project: The project to initialize the BigQuery Client with; if not
@@ -85,7 +82,7 @@ async def bigquery_query(
         from prefect_gcp import GcpCredentials
         from prefect_gcp.bigquery import bigquery_query
 
-        @flow()
+        @flow
         def example_bigquery_query_flow():
             gcp_credentials = GcpCredentials(
                 service_account_file="/path/to/service/account/keyfile.json",
@@ -113,7 +110,7 @@ async def bigquery_query(
     logger = get_run_logger()
     logger.info("Running BigQuery query")
 
-    client = gcp_credentials.get_bigquery_client(project=project)
+    client = gcp_credentials.get_bigquery_client(project=project, location=location)
 
     # setup job config
     job_config = QueryJobConfig(**job_config or {})
@@ -127,9 +124,7 @@ async def bigquery_query(
         )
         job_config.dry_run = True
         job_config.use_query_cache = False
-        partial_query = partial(
-            client.query, query, location=location, job_config=job_config
-        )
+        partial_query = partial(client.query, query, job_config=job_config)
         response = await to_thread.run_sync(partial_query)
         total_bytes_processed = response.total_bytes_processed
         if total_bytes_processed > dry_run_max_bytes:
@@ -141,20 +136,21 @@ async def bigquery_query(
         job_config.use_query_cache = saved_info["use_query_cache"]
 
     # if writing to a destination table
-    if dataset_dest is not None:
-        table_ref = client.dataset(dataset_dest).table(table_dest)
+    if dataset is not None:
+        table_ref = client.dataset(dataset).table(table)
         job_config.destination = table_ref
 
     partial_query = partial(
-        _query_sync,
-        client,
+        _result_sync,
+        client.query,
         query,
-        to_dataframe,
-        location=location,
         job_config=job_config,
     )
     result = await to_thread.run_sync(partial_query)
-    return result
+    if to_dataframe:
+        return result.to_dataframe()
+    else:
+        return list(result)
 
 
 @task
@@ -167,7 +163,7 @@ async def bigquery_create_table(
     time_partitioning: TimePartitioning = None,
     project: Optional[str] = None,
     location: str = "US",
-):
+) -> str:
     """
     Creates table in BigQuery.
 
@@ -186,77 +182,124 @@ async def bigquery_create_table(
     Returns:
         Table name.
 
-    Raises:
-        SUCCESS: a `SUCCESS` signal if the table already exists
+    Example:
+        ```python
+        from prefect import flow
+        from prefect_gcp import GcpCredentials
+        from prefect_gcp.bigquery import bigquery_create_table
+        from google.cloud.bigquery import SchemaField
+
+        @flow
+        def example_bigquery_create_table_flow():
+            gcp_credentials = GcpCredentials(project="project")
+            schema = [
+                SchemaField("number", field_type="INTEGER", mode="REQUIRED"),
+                SchemaField("text", field_type="STRING", mode="REQUIRED"),
+                SchemaField("bool", field_type="BOOLEAN")
+            ]
+            result = bigquery_create_table(
+                dataset="dataset",
+                table="test_table",
+                schema=schema,
+                gcp_credentials=gcp_credentials
+            )
+            return result
+
+        example_bigquery_create_table_flow()
+        ```
     """
     logger = get_run_logger()
     logger.info("Creating %s.%s", dataset, table)
 
-    client = gcp_credentials.get_bigquery_client(project=project)
+    client = gcp_credentials.get_bigquery_client(project=project, location=location)
     try:
-        dataset_ref = client.get_dataset(dataset)
+        partial_get_dataset = partial(client.get_dataset, dataset)
+        dataset_ref = await to_thread.run_sync(partial_get_dataset)
     except NotFound:
         logger.debug("Dataset %s not found, creating", dataset)
-        dataset_ref = client.create_dataset(dataset)
+        partial_create_dataset = partial(client.create_dataset, dataset)
+        dataset_ref = await to_thread.run_sync(partial_create_dataset)
 
     table_ref = dataset_ref.table(table)
     try:
-        client.get_table(table_ref)
+        partial_get_table = partial(client.get_table, table_ref)
+        await to_thread.run_sync(partial_get_table)
         logger.info("%s.%s already exists", dataset, table)
     except NotFound:
-        logger.debug("Table %s not found, creating...", table)
-        table = Table(table_ref, schema=schema)
-
-        # partitioning
-        if time_partitioning:
-            table.time_partitioning = time_partitioning
+        logger.debug("Table %s not found, creating", table)
+        table_obj = Table(table_ref, schema=schema)
 
         # cluster for optimal data sorting/access
         if clustering_fields:
-            table.clustering_fields = clustering_fields
+            table_obj.clustering_fields = clustering_fields
 
-        client.create_table(table)
+        # partitioning
+        if time_partitioning:
+            table_obj.time_partitioning = time_partitioning
+
+        partial_create_table = partial(client.create_table, table_obj)
+        await to_thread.run_sync(partial_create_table)
 
     return table
 
 
 @task
-async def bigquery_streaming_insert(
-    records: List[dict],
-    dataset_id: str,
+async def bigquery_insert_stream(
+    dataset: str,
     table: str,
+    records: List[dict],
     gcp_credentials: "GcpCredentials",
     project: Optional[str] = None,
     location: str = "US",
-):
+) -> List:
     """
     Insert records in a Google BigQuery table via the [streaming
     API](https://cloud.google.com/bigquery/streaming-data-into-bigquery).
 
     Args:
+        dataset: Name of a dataset where the records will be written to.
+        table: Name of a table to write to.
         records: The list of records to insert as rows into the BigQuery table;
             each item in the list should be a dictionary whose keys correspond to
             columns in the table.
-        dataset_id: The id of a destination dataset to write the records to;
-            if not provided here, will default to the one provided at initialization.
-        table: The name of a destination table to write the records to;
-            if not provided here, will default to the one provided at initialization.
         gcp_credentials: Credentials to use for authentication with GCP.
         project: The project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
         location: Location of the dataset that will be written to.
 
-    Raises:
-        ValueError: if any of the records result in errors.
-
     Returns:
-        The response from `insert_rows_json`.
+        List of inserted rows.
 
     Example:
+        ```python
+        from prefect import flow
+        from prefect_gcp import GcpCredentials
+        from prefect_gcp.bigquery import bigquery_insert_stream
+        from google.cloud.bigquery import SchemaField
 
+        @flow
+        def example_bigquery_insert_stream_flow():
+            gcp_credentials = GcpCredentials(project="project")
+            records = [
+                {"number": 1, "text": "abc", "bool": True},
+                {"number": 2, "text": "def", "bool": False},
+            ]
+            result = bigquery_insert_stream(
+                dataset="integrations",
+                table="test_table",
+                records=records,
+                gcp_credentials=gcp_credentials
+            )
+            return result
+
+        example_bigquery_insert_stream_flow()
+        ```
     """
+    logger = get_run_logger()
+    logger.info("Inserting into %s.%s as a stream", dataset, table)
+
     client = gcp_credentials.get_bigquery_client(project=project, location=location)
-    table_ref = client.dataset(dataset_id).table(table)
+    table_ref = client.dataset(dataset).table(table)
     partial_insert = partial(
         client.insert_rows_json, table=table_ref, json_rows=records
     )
@@ -276,104 +319,117 @@ async def bigquery_streaming_insert(
 
 
 @task
-def bigquery_load_cloud_storage(
-    uri: str,
-    dataset_id: str,
+async def bigquery_load_cloud_storage(
+    dataset: str,
     table: str,
-    schema: List[SchemaField],
+    uri: str,
     gcp_credentials: "GcpCredentials",
+    schema: Optional[List[SchemaField]] = None,
     job_config: Optional[dict] = None,
     project: Optional[str] = None,
     location: str = "US",
-):
+) -> LoadJob:
     """
     Run method for this Task.  Invoked by _calling_ this
     Task within a Flow context, after initialization.
     Args:
         uri: GCS path to load data from.
-        dataset_id: The id of a destination dataset to write the records to.
+        dataset: The id of a destination dataset to write the records to.
         table: The name of a destination table to write the records to.
-        schema: The schema to use when creating the table.
         gcp_credentials: Credentials to use for authentication with GCP.
-        job_config: an optional dictionary of job configuration parameters;
+        schema: The schema to use when creating the table.
+        job_config: Dictionary of job configuration parameters;
             note that the parameters provided here must be pickleable
             (e.g., dataset references will be rejected).
         project: The project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
         location: Location of the dataset that will be written to.
 
-    Raises:
-        ValueError: if all required arguments haven't been provided.
-        ValueError: if the load job results in an error.
-
     Returns:
         The response from `load_table_from_uri`.
+
+    Example:
+        ```python
+        from prefect import flow
+        from prefect_gcp import GcpCredentials
+        from prefect_gcp.bigquery import bigquery_load_cloud_storage
+
+        @flow
+        def example_bigquery_load_cloud_storage_flow():
+            gcp_credentials = GcpCredentials(project="project")
+            result = bigquery_load_cloud_storage(
+                dataset="dataset",
+                table="test_table",
+                uri="uri",
+                gcp_credentials=gcp_credentials
+            )
+            return result
+
+        example_bigquery_load_cloud_storage_flow()
+        ```
     """
     logger = get_run_logger()
+    logger.info("Loading into %s.%s from cloud storage", dataset, table)
 
-    # create client
-    client = gcp_credentials.get_bigquery_client(project=project)
+    client = gcp_credentials.get_bigquery_client(project=project, location=location)
+    table_ref = client.dataset(dataset).table(table)
 
-    # get table reference
-    table_ref = client.dataset(dataset_id).table(table)
-
-    # load data
     job_config = job_config or {}
     if "autodetect" not in job_config:
         job_config["autodetect"] = True
-
     job_config = LoadJobConfig(**job_config)
     if schema:
         job_config.schema = schema
 
-    load_job = None
+    result = None
     try:
-        load_job = client.load_table_from_uri(
+        partial_load = partial(
+            _result_sync,
+            client.load_table_from_uri,
             uri,
             table_ref,
-            location=location,
             job_config=job_config,
         )
-        load_job.result()
-        # remove unpickleable attributes
-        load_job._client = None
-        load_job._completion_lock = None
-
+        result = await to_thread.run_sync(partial_load)
     except Exception as exception:
         logger.exception(exception)
-        if load_job is not None and load_job.errors is not None:
-            for error in load_job.errors:
+        if result is not None and result.errors is not None:
+            for error in result.errors:
                 logger.exception(error)
         raise
 
-    return load_job
+    if result is not None:
+        # remove unpickleable attributes
+        result._client = None
+        result._completion_lock = None
+
+    return result
 
 
 @task
-def bigquery_load_file(
-    file: Union[str, Path],
-    dataset_id: str,
+async def bigquery_load_file(
+    dataset: str,
     table: str,
-    schema: List[SchemaField],
+    path: Union[str, Path],
     gcp_credentials: "GcpCredentials",
+    schema: Optional[List[SchemaField]] = None,
     job_config: Optional[dict] = None,
     rewind: bool = False,
-    size: int = None,
-    num_retries: int = 6,
+    size: Optional[int] = None,
     project: Optional[str] = None,
     location: str = "US",
-):
+) -> LoadJob:
     """
     Loads file into BigQuery.
 
     Args:
-        file: A string or path-like object of the file to be loaded.
         dataset_id: ID of a destination dataset to write the records to;
             if not provided here, will default to the one provided at initialization.
         table: Name of a destination table to write the records to;
             if not provided here, will default to the one provided at initialization.
-        schema: Schema to use when creating the table.
+        path: A string or path-like object of the file to be loaded.
         gcp_credentials: Credentials to use for authentication with GCP.
+        schema: Schema to use when creating the table.
         job_config: An optional dictionary of job configuration parameters;
             note that the parameters provided here must be pickleable
             (e.g., dataset references will be rejected).
@@ -381,67 +437,74 @@ def bigquery_load_file(
             before reading the file.
         size: Number of bytes to read from the file handle. If size is None or large,
             resumable upload will be used. Otherwise, multipart upload will be used.
-        num_retries: the number of max retries for loading the bigquery table from file.
         project: Project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
         location: location of the dataset that will be written to.
 
-    Raises:
-        ValueError: if all required arguments haven't been provided
-            or file does not exist
-        IOError: if file can't be opened and read
-        ValueError: if the load job results in an error
-
     Returns:
-        The response from `load_table_from_file`
+        The response from `load_table_from_file`.
+
+    Example:
+        ```python
+        from prefect import flow
+        from prefect_gcp import GcpCredentials
+        from prefect_gcp.bigquery import bigquery_load_file
+        from google.cloud.bigquery import SchemaField
+
+        @flow
+        def example_bigquery_load_file_flow():
+            gcp_credentials = GcpCredentials(project="project")
+            result = bigquery_load_file(
+                dataset="dataset",
+                table="test_table",
+                path="path",
+                gcp_credentials=gcp_credentials
+            )
+            return result
+
+        example_bigquery_load_file_flow()
+        ```
     """
     logger = get_run_logger()
+    logger.info("Loading into %s.%s from file", dataset, table)
 
-    # check for any argument inconsistencies
-    if dataset_id is None or table is None:
-        raise ValueError("Both dataset_id and table must be provided.")
-    try:
-        path = Path(file)
-    except Exception as value_error:
-        raise ValueError(
-            "A string or path-like object must be provided."
-        ) from value_error
-    if not path.is_file():
-        raise ValueError(f"File {path.as_posix()} does not exist.")
+    if not os.path.exists(path):
+        raise ValueError(f"{path} does not exist")
+    elif not os.path.isfile(path):
+        raise ValueError(f"{path} is not a file")
 
-    # create client
     client = gcp_credentials.get_bigquery_client(project=project)
+    table_ref = client.dataset(dataset).table(table)
 
-    # get table reference
-    table_ref = client.dataset(dataset_id).table(table)
-
-    # configure job
     job_config = job_config or {}
     if "autodetect" not in job_config:
         job_config["autodetect"] = True
+        # TODO: test if autodetect is needed when schema is passed
     job_config = LoadJobConfig(**job_config)
     if schema:
+        # TODO: test if schema can be passed directly in job_config
         job_config.schema = schema
 
-    # load data
     try:
-        with open(file, "rb") as file_obj:
-            load_job = client.load_table_from_file(
+        with open(path, "rb") as file_obj:
+            partial_load = partial(
+                _result_sync,
+                client.load_table_from_file,
                 file_obj,
                 table_ref,
-                rewind,
-                size,
-                num_retries,
+                rewind=rewind,
+                size=size,
                 location=location,
                 job_config=job_config,
             )
-            # remove unpickleable attributes
-            load_job._client = None
-            load_job._completion_lock = None
+            result = await to_thread.run_sync(partial_load)
     except IOError:
-        logger.exception(f"Can't open and read from {path.as_posix()}.")
+        logger.exception(f"Could not open and read from {path}")
         raise
 
-    load_job.result()  # block until job is finished
+    if result is not None:
+        # remove unpickleable attributes
+        result._client = None
+        result._completion_lock = None
 
-    return load_job
+    return result
