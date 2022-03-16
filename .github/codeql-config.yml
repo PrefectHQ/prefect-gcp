@@ -1,0 +1,5 @@
+paths-ignore:
+  - tests/**/test_*.py
+  - versioneer.py
+  - prefect_gcp/_version.py
+
