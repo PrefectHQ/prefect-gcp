@@ -40,16 +40,12 @@ class GcpCredentials:
         Helper method to serialize credentials by using either
         service_account_file or service_account_info.
         """
-        file_is_none = service_account_file is None
-        info_is_none = service_account_info is None
-        if file_is_none and info_is_none:
-            return None
-        elif not file_is_none and not info_is_none:
+        if service_account_info and service_account_file:
             raise ValueError(
                 "Only one of service_account_info or service_account_file "
                 "can be specified at once"
             )
-        elif service_account_file is not None:
+        elif service_account_file:
             if not os.path.exists(service_account_file):
                 raise ValueError("The provided path to the service account is invalid")
             elif isinstance(service_account_file, Path):
@@ -57,10 +53,12 @@ class GcpCredentials:
             else:
                 service_account_file = os.path.expanduser(service_account_file)
             credentials = Credentials.from_service_account_file(service_account_file)
-        else:
+        elif service_account_info:
             if isinstance(service_account_info, str):
                 service_account_info = json.loads(service_account_info)
             credentials = Credentials.from_service_account_info(service_account_info)
+        else:
+            return None
         return credentials
 
     def get_cloud_storage_client(self, project: Optional[str] = None) -> Client:
