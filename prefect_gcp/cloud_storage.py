@@ -75,18 +75,17 @@ async def _get_bucket(
 
 
 @task
-async def cloud_storage_download_blob(
+async def cloud_storage_download_blob_as_bytes(
     bucket: str,
     blob: str,
     gcp_credentials: "GcpCredentials",
-    path: Optional[Union[str, "Path"]] = None,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
     project: Optional[str] = None,
-) -> Union[str, "Path", bytes]:
+) -> bytes:
     """
-    Downloads a blob.
+    Downloads a blob as bytes.
 
     Args:
         bucket: Name of the bucket.
@@ -105,8 +104,7 @@ async def cloud_storage_download_blob(
             gcp_credentials project if provided.
 
     Returns:
-        The path to the blob object if a path is provided,
-        else a `bytes` representation of the blob object.
+        A bytes or string representation of the blob object.
 
     Example:
         Downloads blob from bucket.
@@ -129,33 +127,94 @@ async def cloud_storage_download_blob(
     logger.info("Downloading blob named %s from the %s bucket", blob, bucket)
 
     bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
-    partial_blob = partial(
-        bucket_obj.blob, blob, chunk_size=chunk_size, encryption_key=encryption_key
+    blob_obj = bucket_obj.blob(
+        blob, chunk_size=chunk_size, encryption_key=encryption_key
     )
-    blob_obj = await to_thread.run_sync(partial_blob)
 
-    if path is not None:
-        if os.path.isdir(path):
-            path = os.path.join(path, blob)
-        partial_download = partial(blob_obj.download_to_filename, path, timeout=timeout)
-        await to_thread.run_sync(partial_download)
-        return path
-    else:
-        if hasattr(blob_obj, "download_as_bytes"):
-            download_method = blob_obj.download_as_bytes
-        else:
-            download_method = blob_obj.download_as_string
-        partial_download = partial(download_method, timeout=timeout)
-        contents = await to_thread.run_sync(partial_download)
-        return contents
+    partial_download = partial(blob_obj.download_as_bytes, timeout=timeout)
+    contents = await to_thread.run_sync(partial_download)
+    return contents
 
 
 @task
-async def cloud_storage_upload_blob(
-    data: Union[bytes, str, "Path"],
+async def cloud_storage_download_blob_to_file(
     bucket: str,
+    blob: str,
+    path: Union[str, Path],
     gcp_credentials: "GcpCredentials",
-    blob: Optional[str] = None,
+    chunk_size: Optional[int] = None,
+    encryption_key: Optional[str] = None,
+    timeout: Union[float, Tuple[float, float]] = 60,
+    project: Optional[str] = None,
+) -> Union[str, Path]:
+    """
+    Downloads a blob.
+
+    Args:
+        bucket: Name of the bucket.
+        blob: Name of the Cloud Storage blob.
+        path: Downloads the contents to the provided file path;
+            if the path is a directory, automatically joins the blob name.
+        gcp_credentials: Credentials to use for authentication with GCP.
+        chunk_size (int, optional): The size of a chunk of data whenever
+            iterating (in bytes). This must be a multiple of 256 KB
+            per the API specification.
+        encryption_key: An encryption key.
+        timeout: The number of seconds the transport should wait
+            for the server response. Can also be passed as a tuple
+            (connect_timeout, read_timeout).
+        project: Name of the project to use; overrides the
+            gcp_credentials project if provided.
+
+    Returns:
+        The path to the blob object.
+
+    Example:
+        Downloads blob from bucket.
+        ```python
+        from prefect import flow
+        from prefect_gcp import GcpCredentials
+        from prefect_gcp.cloud_storage import cloud_storage_download_blob
+
+        @flow()
+        def example_cloud_storage_download_blob_flow():
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
+            path = cloud_storage_download_blob(
+                "bucket", "blob", "data_path", gcp_credentials)
+            return path
+
+        example_cloud_storage_download_blob_flow()
+        ```
+    """
+    logger = get_run_logger()
+    logger.info(
+        "Downloading blob named %s from the %s bucket to %s", blob, bucket, path
+    )
+
+    bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
+    blob_obj = bucket_obj.blob(
+        blob, chunk_size=chunk_size, encryption_key=encryption_key
+    )
+
+    if os.path.isdir(path):
+        if isinstance(path, Path):
+            path = path.joinpath(blob)  # keep as Path if Path is passed
+        else:
+            path = os.path.join(path, blob)  # keep as str if a str is passed
+
+    partial_download = partial(blob_obj.download_to_filename, path, timeout=timeout)
+    await to_thread.run_sync(partial_download)
+    return path
+
+
+@task
+async def cloud_storage_upload_blob_from_string(
+    data: Union[str, bytes],
+    bucket: str,
+    blob: str,
+    gcp_credentials: "GcpCredentials",
+    content_type: Optional[str] = None,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
@@ -165,12 +224,11 @@ async def cloud_storage_upload_blob(
     Uploads a blob.
 
     Args:
-        data: String or bytes representation of data to upload, or if
-            uploading from file, must provide the file path as a Path object.
+        data: String or bytes representation of data to upload.
         bucket: Name of the bucket.
+        blob: Name of the Cloud Storage blob.
         gcp_credentials: Credentials to use for authentication with GCP.
-        blob: Name of the Cloud Storage blob; must be provided if data is
-            not a path.
+        content_type: Type of content being uploaded.
         chunk_size (int, optional): The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
             per the API specification.
@@ -189,48 +247,99 @@ async def cloud_storage_upload_blob(
         ```
         from prefect import flow
         from prefect_gcp import GcpCredentials
-        from prefect_gcp.cloud_storage import cloud_storage_upload_blob
+        from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_string
 
         @flow()
-        def example_cloud_storage_upload_blob_flow():
+        def example_cloud_storage_upload_blob_from_string_flow():
             gcp_credentials = GcpCredentials(
                 service_account_file="/path/to/service/account/keyfile.json")
-            blob = cloud_storage_upload_blob("data", "bucket", "blob", gcp_credentials)
+            blob = cloud_storage_upload_blob_from_string(
+                "data", "bucket", "blob", gcp_credentials)
             return blob
 
-        example_cloud_storage_upload_blob_flow()
+        example_cloud_storage_upload_blob_from_string_flow()
         ```
     """
     logger = get_run_logger()
     logger.info("Uploading blob named %s to the %s bucket", blob, bucket)
 
     bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
-
-    if isinstance(data, Path):
-        is_file_path = data.exists() and data.is_file()
-    else:
-        is_file_path = False
-
-    if is_file_path and blob is None:
-        blob = data.name
-    elif blob is None:
-        raise ValueError("Since data is not a path, blob must be provided")
-
-    partial_blob = partial(
-        bucket_obj.blob, blob, chunk_size=chunk_size, encryption_key=encryption_key
+    blob_obj = bucket_obj.blob(
+        blob, chunk_size=chunk_size, encryption_key=encryption_key
     )
-    blob_obj = await to_thread.run_sync(partial_blob)
 
-    if is_file_path:
-        partial_upload = partial(blob_obj.upload_from_filename, data, timeout=timeout)
-    elif isinstance(data, BytesIO):
-        partial_upload = partial(blob_obj.upload_from_file, data, timeout=timeout)
-    elif isinstance(data, bytes):
-        partial_upload = partial(blob_obj.upload_from_bytes, data, timeout=timeout)
-    else:
-        partial_upload = partial(blob_obj.upload_from_string, data, timeout=timeout)
+    partial_upload = partial(
+        blob_obj.upload_from_string, data, content_type=content_type, timeout=timeout
+    )
     await to_thread.run_sync(partial_upload)
+    return blob
 
+
+@task
+async def cloud_storage_upload_blob_from_file(
+    file: Union[str, Path, BytesIO],
+    bucket: str,
+    blob: str,
+    gcp_credentials: "GcpCredentials",
+    chunk_size: Optional[int] = None,
+    encryption_key: Optional[str] = None,
+    timeout: Union[float, Tuple[float, float]] = 60,
+    project: Optional[str] = None,
+) -> str:
+    """
+    Uploads a blob from file path or file-like object. Usage for passing in
+    file-like object is if the data was downloaded from the web;
+    can bypass writing to disk and directly upload to Cloud Storage.
+
+    Args:
+        file: Path to data or file like object to upload.
+        bucket: Name of the bucket.
+        blob: Name of the Cloud Storage blob.
+        gcp_credentials: Credentials to use for authentication with GCP.
+        chunk_size (int, optional): The size of a chunk of data whenever
+            iterating (in bytes). This must be a multiple of 256 KB
+            per the API specification.
+        encryption_key: An encryption key.
+        timeout: The number of seconds the transport should wait
+            for the server response. Can also be passed as a tuple
+            (connect_timeout, read_timeout).
+        project: Name of the project to use; overrides the
+            gcp_credentials project if provided.
+
+    Returns:
+        The blob name.
+
+    Example:
+        Uploads blob to bucket.
+        ```
+        from prefect import flow
+        from prefect_gcp import GcpCredentials
+        from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_file
+
+        @flow()
+        def example_cloud_storage_upload_blob_from_file_flow():
+            gcp_credentials = GcpCredentials(
+                service_account_file="/path/to/service/account/keyfile.json")
+            blob = cloud_storage_upload_blob_from_file(
+                "/path/somewhere", "bucket", "blob", gcp_credentials)
+            return blob
+
+        example_cloud_storage_upload_blob_from_file_flow()
+        ```
+    """
+    logger = get_run_logger()
+    logger.info("Uploading blob named %s to the %s bucket", blob, bucket)
+
+    bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
+    blob_obj = bucket_obj.blob(
+        blob, chunk_size=chunk_size, encryption_key=encryption_key
+    )
+
+    if isinstance(file, BytesIO):
+        partial_upload = partial(blob_obj.upload_from_file, file, timeout=timeout)
+    else:
+        partial_upload = partial(blob_obj.upload_from_filename, file, timeout=timeout)
+    await to_thread.run_sync(partial_upload)
     return blob
 
 

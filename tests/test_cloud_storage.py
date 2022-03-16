@@ -1,4 +1,3 @@
-import os
 from io import BytesIO
 from pathlib import Path
 
@@ -8,8 +7,10 @@ from prefect import flow
 from prefect_gcp.cloud_storage import (
     cloud_storage_copy_blob,
     cloud_storage_create_bucket,
-    cloud_storage_download_blob,
-    cloud_storage_upload_blob,
+    cloud_storage_download_blob_as_bytes,
+    cloud_storage_download_blob_to_file,
+    cloud_storage_upload_blob_from_file,
+    cloud_storage_upload_blob_from_string,
 )
 
 
@@ -24,16 +25,42 @@ def test_cloud_storage_create_bucket(gcp_credentials):
     assert test_flow().result().result() == "expected"
 
 
-@pytest.mark.parametrize("path", [None, "/path/somewhere/", Path("/path/somewhere/")])
-def test_cloud_storage_download_blob(path, gcp_credentials):
+@pytest.mark.parametrize("path", ["/path/somewhere/", Path("/path/somewhere/")])
+def test_cloud_storage_download_blob_to_file(path, gcp_credentials):
     @flow
     def test_flow():
-        return cloud_storage_download_blob("bucket", "blob", gcp_credentials, path=path)
+        return cloud_storage_download_blob_to_file(
+            "bucket", "blob", path, gcp_credentials
+        )
 
-    if path is None:
-        assert test_flow().result().result() == b"bytes"
-    else:
-        assert test_flow().result().result() == path
+    assert test_flow().result().result() == path
+
+
+def test_cloud_storage_download_blob_as_bytes(gcp_credentials):
+    @flow
+    def test_flow():
+        return cloud_storage_download_blob_as_bytes("bucket", "blob", gcp_credentials)
+
+    assert test_flow().result().result() == b"bytes"
+
+
+@pytest.mark.parametrize(
+    "file",
+    [
+        "./file_path",
+        BytesIO(b"bytes_data"),
+    ],
+)
+def test_cloud_storage_upload_blob_from_file(file, gcp_credentials):
+    blob = "blob"
+
+    @flow
+    def test_flow():
+        return cloud_storage_upload_blob_from_file(
+            file, "bucket", blob, gcp_credentials
+        )
+
+    assert test_flow().result().result() == blob
 
 
 @pytest.mark.parametrize(
@@ -41,29 +68,19 @@ def test_cloud_storage_download_blob(path, gcp_credentials):
     [
         "str_data",
         b"bytes_data",
-        "/path/somewhere/",
-        Path("/path/somewhere/"),
-        BytesIO(b"data"),
     ],
 )
 @pytest.mark.parametrize("blob", [None, "blob"])
-def test_cloud_storage_upload_blob(data, blob, gcp_credentials):
+def test_cloud_storage_upload_blob_from_string(data, blob, gcp_credentials):
+    blob = "blob"
+
     @flow
     def test_flow():
-        return cloud_storage_upload_blob(data, "bucket", gcp_credentials, blob=blob)
+        return cloud_storage_upload_blob_from_string(
+            data, "bucket", "blob", gcp_credentials
+        )
 
-    if isinstance(data, Path):
-        is_file_path = data.exists() and data.is_file()
-    else:
-        is_file_path = False
-
-    if blob is None and not is_file_path:
-        with pytest.raises(ValueError):
-            test_flow().result(raise_on_failure=True)
-    else:
-        if blob is None:
-            blob = os.path.basename(data)
-        assert test_flow().result().result() == blob
+    assert test_flow().result().result() == blob
 
 
 @pytest.mark.parametrize("dest_blob", [None, "dest_blob"])
