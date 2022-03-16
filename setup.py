@@ -11,6 +11,15 @@ with open("requirements_dev.txt") as dev_requires_file:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
+extras_require = {
+    "cloud_storage": ["google-cloud-storage"],
+    "bigquery": ["google-cloud-bigquery"],
+}
+extras_require["all_extras"] = sorted(
+    {lib for key in extras_require.values() for lib in key}
+)
+extras_require["dev"] = dev_requires + extras_require["all_extras"]
+
 setup(
     name="prefect-gcp",
     description="Prefect tasks and subflows for interacting with Google Cloud Platform.",
@@ -26,7 +35,7 @@ setup(
     packages=find_packages(exclude=("tests", "docs")),
     python_requires=">=3.7",
     install_requires=install_requires,
-    extras_require={"dev": dev_requires},
+    extras_require=extras_require,
     classifiers=[
         "Natural Language :: English",
         "Intended Audience :: Developers",
