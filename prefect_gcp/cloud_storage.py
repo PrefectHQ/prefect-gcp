@@ -165,8 +165,8 @@ async def cloud_storage_upload_blob(
     Uploads a blob.
 
     Args:
-        data: String or bytes representation of data to upload, or the
-            path to the data.
+        data: String or bytes representation of data to upload, or if
+            uploading from file, must provide the file path as a Path object.
         bucket: Name of the bucket.
         gcp_credentials: Credentials to use for authentication with GCP.
         blob: Name of the Cloud Storage blob; must be provided if data is
@@ -206,13 +206,13 @@ async def cloud_storage_upload_blob(
 
     bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
 
-    if isinstance(data, (str, Path)):
-        is_file_path = os.path.exists(data) and os.path.isfile(data)
+    if isinstance(data, Path):
+        is_file_path = data.exists() and data.is_file()
     else:
         is_file_path = False
 
     if is_file_path and blob is None:
-        blob = os.path.basename(data)
+        blob = data.name
     elif blob is None:
         raise ValueError("Since data is not a path, blob must be provided")
 

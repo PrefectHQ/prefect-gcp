@@ -52,8 +52,8 @@ def test_cloud_storage_upload_blob(data, blob, gcp_credentials):
     def test_flow():
         return cloud_storage_upload_blob(data, "bucket", gcp_credentials, blob=blob)
 
-    if isinstance(data, (str, Path)):
-        is_file_path = os.path.exists(data) and os.path.isfile(data)
+    if isinstance(data, Path):
+        is_file_path = data.exists() and data.is_file()
     else:
         is_file_path = False
 
