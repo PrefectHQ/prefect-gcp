@@ -148,7 +148,7 @@ async def cloud_storage_download_blob_to_file(
     project: Optional[str] = None,
 ) -> Union[str, Path]:
     """
-    Downloads a blob.
+    Downloads a blob to a file path.
 
     Args:
         bucket: Name of the bucket.
@@ -221,7 +221,7 @@ async def cloud_storage_upload_blob_from_string(
     project: Optional[str] = None,
 ) -> str:
     """
-    Uploads a blob.
+    Uploads a blob from a string or bytes representation of data.
 
     Args:
         data: String or bytes representation of data to upload.
