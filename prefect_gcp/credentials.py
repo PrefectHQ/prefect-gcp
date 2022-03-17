@@ -1,14 +1,61 @@
 """Module handling GCP credentials"""
 
+import functools
 import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from google.cloud.bigquery import Client as BigQueryClient
-from google.cloud.storage import Client as StorageClient
 from google.oauth2.service_account import Credentials
+from prefect import get_run_logger
+
+try:
+    from google.cloud.bigquery import Client as BigQueryClient
+except ModuleNotFoundError:
+    pass  # will be raised in get_client
+
+try:
+    from google.cloud.secretmanager import SecretManagerServiceClient
+except ModuleNotFoundError:
+    pass
+
+try:
+    from google.cloud.storage import Client as StorageClient
+except ModuleNotFoundError:
+    pass
+
+
+def _raise_help_msg(key: str):
+    """
+    Raises a helpful error message.
+    Args:
+        key: the key to access HELP_URLS
+    """
+
+    def outer(func):
+        """
+        Used for decorator.
+        """
+
+        @functools.wraps(func)
+        def inner(*args, **kwargs):
+            """
+            Used for decorator.
+            """
+            logger = get_run_logger()
+            try:
+                return func(*args, **kwargs)
+            except NameError:
+                logger.exception(
+                    f"Using `prefect_gcp.{key}` requires "
+                    f"`pip install prefect_gcp[{key}]`"
+                )
+                raise
+
+        return inner
+
+    return outer
 
 
 @dataclass
@@ -62,6 +109,7 @@ class GcpCredentials:
             return None
         return credentials
 
+    @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(self, project: Optional[str] = None) -> StorageClient:
         """
         Args:
@@ -120,6 +168,7 @@ class GcpCredentials:
         storage_client = StorageClient(credentials=credentials, project=project)
         return storage_client
 
+    @_raise_help_msg("bigquery")
     def get_bigquery_client(
         self, project: str = None, location: str = None
     ) -> BigQueryClient:
@@ -182,3 +231,61 @@ class GcpCredentials:
             credentials=credentials, project=project, location=location
         )
         return big_query_client
+
+    @_raise_help_msg("secret_manager")
+    def get_secret_manager_client(self) -> SecretManagerServiceClient:
+        """
+        Args:
+            project: Name of the project to use; overrides the base
+                class's project if provided.
+
+        Examples:
+            Gets a GCP Secret Manager client from a path.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_file = "~/.secrets/prefect-service-account.json"
+                client = GcpCredentials(
+                    service_account_file=service_account_file
+                ).get_secret_manager_client()
+
+            example_get_client_flow()
+            ```
+
+            Gets a GCP Cloud Storage client from a JSON dict.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_info = {
+                    "type": "service_account",
+                    "project_id": "project_id",
+                    "private_key_id": "private_key_id",
+                    "private_key": private_key",
+                    "client_email": "client_email",
+                    "client_id": "client_id",
+                    "auth_uri": "auth_uri",
+                    "token_uri": "token_uri",
+                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
+                    "client_x509_cert_url": "client_x509_cert_url"
+                }
+                client = GcpCredentials(
+                    service_account_info=service_account_info
+                ).get_secret_manager_client()
+
+            example_get_client_flow()
+            ```
+        """
+        credentials = self._get_credentials_from_service_account(
+            service_account_file=self.service_account_file,
+            service_account_info=self.service_account_info,
+        )
+
+        # doesn't accept project; must pass in project in tasks
+        secret_manager_client = SecretManagerServiceClient(credentials=credentials)
+        return secret_manager_client

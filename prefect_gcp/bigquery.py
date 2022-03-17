@@ -21,7 +21,7 @@ from prefect import get_run_logger, task
 if TYPE_CHECKING:
     from google.cloud.bigquery.table import Row
 
-    from .credentials import GcpCredentials
+    from prefect_gcp.credentials import GcpCredentials
 
 
 def _result_sync(func, *args, **kwargs):

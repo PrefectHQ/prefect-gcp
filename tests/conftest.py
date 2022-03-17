@@ -88,9 +88,39 @@ class BigQueryClient:
         return output
 
 
+class SecretManagerClient:
+    def __init__(self, credentials=None, project=None):
+        self.credentials = credentials
+        self.project = project
+
+    def create_secret(self, parent=None, secret_id=None, **kwds):
+        response = MagicMock()
+        response.name = secret_id
+        return response
+
+    def add_secret_version(self, parent, payload, **kwds):
+        response = MagicMock()
+        response.name = payload["data"]
+        return response
+
+    def access_secret_version(self, name, **kwds):
+        response = MagicMock()
+        payload = MagicMock()
+        payload.data = f"{name}".encode()
+        response.payload = payload
+        return response
+
+    def delete_secret(self, name, **kwds):
+        return name
+
+    def destroy_secret_version(self, name, **kwds):
+        return name
+
+
 @pytest.fixture
 def gcp_credentials():
-    gcp_credentials_mock = MagicMock()
+    gcp_credentials_mock = MagicMock(project="gcp_credentials_project")
     gcp_credentials_mock.get_cloud_storage_client.return_value = CloudStorageClient()
     gcp_credentials_mock.get_bigquery_client.return_value = BigQueryClient()
+    gcp_credentials_mock.get_secret_manager_client.return_value = SecretManagerClient()
     return gcp_credentials_mock
