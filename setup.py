@@ -14,6 +14,7 @@ with open("README.md") as readme_file:
 extras_require = {
     "cloud_storage": ["google-cloud-storage"],
     "bigquery": ["google-cloud-bigquery"],
+    "secrets_manager": ["google-cloud-secret-manager"],
 }
 extras_require["all_extras"] = sorted(
     {lib for key in extras_require.values() for lib in key}
