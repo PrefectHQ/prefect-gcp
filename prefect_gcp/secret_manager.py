@@ -34,7 +34,7 @@ async def create_secret(
         ```python
         from prefect import flow
         from prefect_gcp import GcpCredentials
-        from prefect_gcp.secrets_manager import create_secret
+        from prefect_gcp.secret_manager import create_secret
 
         @flow()
         def example_cloud_storage_create_secret_flow():
@@ -48,7 +48,7 @@ async def create_secret(
     logger = get_run_logger()
     logger.info("Creating the %s secret", secret_name)
 
-    client = gcp_credentials.get_secrets_manager_client()
+    client = gcp_credentials.get_secret_manager_client()
     project = project or gcp_credentials.project
 
     parent = f"projects/{project}"
@@ -92,7 +92,7 @@ async def update_secret(
         ```python
         from prefect import flow
         from prefect_gcp import GcpCredentials
-        from prefect_gcp.secrets_manager import update_secret
+        from prefect_gcp.secret_manager import update_secret
 
         @flow()
         def example_cloud_storage_update_secret_flow():
@@ -106,7 +106,7 @@ async def update_secret(
     logger = get_run_logger()
     logger.info("Updating the %s secret", secret_name)
 
-    client = gcp_credentials.get_secrets_manager_client()
+    client = gcp_credentials.get_secret_manager_client()
     project = project or gcp_credentials.project
 
     parent = f"projects/{project}/secrets/{secret_name}"
@@ -148,7 +148,7 @@ async def read_secret(
         ```python
         from prefect import flow
         from prefect_gcp import GcpCredentials
-        from prefect_gcp.secrets_manager import read_secret
+        from prefect_gcp.secret_manager import read_secret
 
         @flow()
         def example_cloud_storage_read_secret_flow():
@@ -162,7 +162,7 @@ async def read_secret(
     logger = get_run_logger()
     logger.info("Reading %s version of %s secret", version_id, secret_name)
 
-    client = gcp_credentials.get_secrets_manager_client()
+    client = gcp_credentials.get_secret_manager_client()
     project = project or gcp_credentials.project
 
     name = f"projects/{project}/secrets/{secret_name}/versions/{version_id}"
@@ -197,7 +197,7 @@ async def delete_secret(
         ```python
         from prefect import flow
         from prefect_gcp import GcpCredentials
-        from prefect_gcp.secrets_manager import delete_secret
+        from prefect_gcp.secret_manager import delete_secret
 
         @flow()
         def example_cloud_storage_delete_secret_flow():
@@ -211,7 +211,7 @@ async def delete_secret(
     logger = get_run_logger()
     logger.info("Deleting %s secret", secret_name)
 
-    client = gcp_credentials.get_secrets_manager_client()
+    client = gcp_credentials.get_secret_manager_client()
     project = project or gcp_credentials.project
 
     name = f"projects/{project}/secrets/{secret_name}/"
@@ -247,7 +247,7 @@ async def delete_secret_version(
         ```python
         from prefect import flow
         from prefect_gcp import GcpCredentials
-        from prefect_gcp.secrets_manager import delete_secret_version
+        from prefect_gcp.secret_manager import delete_secret_version
 
         @flow()
         def example_cloud_storage_delete_secret_version_flow():
@@ -261,7 +261,7 @@ async def delete_secret_version(
     logger = get_run_logger()
     logger.info("Reading %s version of %s secret", version_id, secret_name)
 
-    client = gcp_credentials.get_secrets_manager_client()
+    client = gcp_credentials.get_secret_manager_client()
     project = project or gcp_credentials.project
 
     if version_id == "latest":
