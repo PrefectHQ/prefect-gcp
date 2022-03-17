@@ -1,15 +1,61 @@
 """Module handling GCP credentials"""
 
+import functools
 import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from google.cloud.bigquery import Client as BigQueryClient
-from google.cloud.secretmanager import SecretManagerServiceClient
-from google.cloud.storage import Client as StorageClient
 from google.oauth2.service_account import Credentials
+from prefect import get_run_logger
+
+try:
+    from google.cloud.bigquery import Client as BigQueryClient
+except ModuleNotFoundError:
+    pass  # will be raised in get_client
+
+try:
+    from google.cloud.secretmanager import SecretManagerServiceClient
+except ModuleNotFoundError:
+    pass
+
+try:
+    from google.cloud.storage import Client as StorageClient
+except ModuleNotFoundError:
+    pass
+
+
+def _raise_help_msg(key: str):
+    """
+    Raises a helpful error message.
+    Args:
+        key: the key to access HELP_URLS
+    """
+
+    def outer(func):
+        """
+        Used for decorator.
+        """
+
+        @functools.wraps(func)
+        def inner(*args, **kwargs):
+            """
+            Used for decorator.
+            """
+            logger = get_run_logger()
+            try:
+                return func(*args, **kwargs)
+            except NameError:
+                logger.exception(
+                    f"Using `prefect_gcp.{key}` requires "
+                    f"`pip install prefect_gcp[{key}]`"
+                )
+                raise
+
+        return inner
+
+    return outer
 
 
 @dataclass
@@ -63,6 +109,7 @@ class GcpCredentials:
             return None
         return credentials
 
+    @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(self, project: Optional[str] = None) -> StorageClient:
         """
         Args:
@@ -121,6 +168,7 @@ class GcpCredentials:
         storage_client = StorageClient(credentials=credentials, project=project)
         return storage_client
 
+    @_raise_help_msg("bigquery")
     def get_bigquery_client(
         self, project: str = None, location: str = None
     ) -> BigQueryClient:
@@ -184,6 +232,7 @@ class GcpCredentials:
         )
         return big_query_client
 
+    @_raise_help_msg("secret_manager")
     def get_secret_manager_client(self) -> SecretManagerServiceClient:
         """
         Args:
