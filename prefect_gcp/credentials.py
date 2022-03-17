@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+from google.oauth2.service_account import Credentials
 from prefect import get_run_logger
 
 try:
@@ -21,11 +22,6 @@ except ModuleNotFoundError:
 
 try:
     from google.cloud.storage import Client as StorageClient
-except ModuleNotFoundError:
-    pass
-
-try:
-    from google.oauth2.service_account import Credentials
 except ModuleNotFoundError:
     pass
 
