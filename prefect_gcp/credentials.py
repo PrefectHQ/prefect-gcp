@@ -184,7 +184,7 @@ class GcpCredentials:
         )
         return big_query_client
 
-    def get_secrets_manager_client(self) -> SecretManagerServiceClient:
+    def get_secret_manager_client(self) -> SecretManagerServiceClient:
         """
         Args:
             project: Name of the project to use; overrides the base
@@ -201,7 +201,7 @@ class GcpCredentials:
                 service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
                     service_account_file=service_account_file
-                ).get_secrets_manager_client()
+                ).get_secret_manager_client()
 
             example_get_client_flow()
             ```
@@ -227,7 +227,7 @@ class GcpCredentials:
                 }
                 client = GcpCredentials(
                     service_account_info=service_account_info
-                ).get_secrets_manager_client()
+                ).get_secret_manager_client()
 
             example_get_client_flow()
             ```
@@ -238,5 +238,5 @@ class GcpCredentials:
         )
 
         # doesn't accept project; must pass in project in tasks
-        secrets_manager_client = SecretManagerServiceClient(credentials=credentials)
-        return secrets_manager_client
+        secret_manager_client = SecretManagerServiceClient(credentials=credentials)
+        return secret_manager_client

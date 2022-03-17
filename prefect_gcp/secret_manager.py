@@ -16,7 +16,7 @@ async def create_secret(
     project: Optional[str] = None,
 ) -> str:
     """
-    Creates a secret for the GCP Secret Manager.
+    Creates a secret in Google Cloud Platform's Secret Manager.
 
     Args:
         secret_name: Name of the secret to retrieve.
@@ -28,7 +28,7 @@ async def create_secret(
             gcp_credentials project if provided.
 
     Returns:
-        The path to the secret.
+        The path of the created secret.
 
     Example:
         ```python
@@ -74,7 +74,7 @@ async def update_secret(
     project: Optional[str] = None,
 ) -> str:
     """
-    Updates a secret for the GCP Secret Manager.
+    Updates a secret in Google Cloud Platform's Secret Manager.
 
     Args:
         secret_name: Name of the secret to retrieve.
@@ -86,7 +86,7 @@ async def update_secret(
             gcp_credentials project if provided.
 
     Returns:
-        The path to the secret.
+        The path of the updated secret.
 
     Example:
         ```python
@@ -131,19 +131,18 @@ async def read_secret(
     project: Optional[str] = None,
 ) -> str:
     """
-    Reads the value of a given secret from GCP Secret Manager.
+    Reads the value of a given secret from Google Cloud Platform's Secret Manager.
 
     Args:
         secret_name: Name of the secret to retrieve.
         gcp_credentials: Credentials to use for authentication with GCP.
-        version_id: Version number of the secret to use, or "latest".
         timeout: The number of seconds the transport should wait
             for the server response.
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
 
     Returns:
-        Contents of this secret.
+        Contents of the specified secret.
 
     Example:
         ```python
@@ -181,10 +180,10 @@ async def delete_secret(
     project: Optional[str] = None,
 ) -> str:
     """
-    Deletes the secret from GCP Secret Manager.
+    Deletes the specified secret from Google Cloud Platform's Secret Manager.
 
     Args:
-        secret_name: Name of the secret to retrieve.
+        secret_name: Name of the secret to delete.
         gcp_credentials: Credentials to use for authentication with GCP.
         timeout: The number of seconds the transport should wait
             for the server response.
@@ -192,7 +191,7 @@ async def delete_secret(
             gcp_credentials project if provided.
 
     Returns:
-        The path to this deleted secret.
+        The path of the deleted secret.
 
     Example:
         ```python
@@ -230,7 +229,7 @@ async def delete_secret_version(
     project: Optional[str] = None,
 ) -> str:
     """
-    Deletes a version of a given secret from GCP Secret Manager.
+    Deletes a version of a given secret from Google Cloud Platform's Secret Manager.
 
     Args:
         secret_name: Name of the secret to retrieve.
@@ -242,7 +241,7 @@ async def delete_secret_version(
             gcp_credentials project if provided.
 
     Returns:
-        The path to this secret.
+        The path of the deleted secret version.
 
     Example:
         ```python

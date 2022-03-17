@@ -122,7 +122,5 @@ def gcp_credentials():
     gcp_credentials_mock = MagicMock(project="gcp_credentials_project")
     gcp_credentials_mock.get_cloud_storage_client.return_value = CloudStorageClient()
     gcp_credentials_mock.get_bigquery_client.return_value = BigQueryClient()
-    gcp_credentials_mock.get_secrets_manager_client.return_value = (
-        SecretsManagerClient()
-    )
+    gcp_credentials_mock.get_secret_manager_client.return_value = SecretsManagerClient()
     return gcp_credentials_mock

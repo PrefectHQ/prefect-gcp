@@ -1,1 +1,1 @@
-::: prefect_gcp.secrets_manager
+::: prefect_gcp.secret_manager
