@@ -12,7 +12,7 @@ from prefect import get_run_logger, task
 if TYPE_CHECKING:
     from google.cloud.storage import Bucket
 
-    from .credentials import GcpCredentials
+    from prefect_gcp.credentials import GcpCredentials
 
 
 @task
