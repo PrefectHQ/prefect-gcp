@@ -265,7 +265,10 @@ async def delete_secret_version(
     client = gcp_credentials.get_secrets_manager_client()
     project = project or gcp_credentials.project
 
+    if version_id == "latest":
+        raise ValueError("The version_id cannot be 'latest'")
+
     name = f"projects/{project}/secrets/{secret_name}/versions/{version_id}"
     partial_destroy = partial(client.destroy_secret_version, name=name, timeout=timeout)
-    response = await to_thread.run_sync(partial_destroy)
-    return response.name
+    await to_thread.run_sync(partial_destroy)
+    return name
