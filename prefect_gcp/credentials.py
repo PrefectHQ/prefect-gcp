@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 from google.cloud.bigquery import Client as BigQueryClient
+from google.cloud.secretmanager import SecretManagerServiceClient
 from google.cloud.storage import Client as StorageClient
 from google.oauth2.service_account import Credentials
 
@@ -182,3 +183,60 @@ class GcpCredentials:
             credentials=credentials, project=project, location=location
         )
         return big_query_client
+
+    def get_secrets_manager_client(self) -> SecretManagerServiceClient:
+        """
+        Args:
+            project: Name of the project to use; overrides the base
+                class's project if provided.
+
+        Examples:
+            Gets a GCP Secret Manager client from a path.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_file = "~/.secrets/prefect-service-account.json"
+                client = GcpCredentials(
+                    service_account_file=service_account_file
+                ).get_secrets_manager_client()
+
+            example_get_client_flow()
+            ```
+
+            Gets a GCP Cloud Storage client from a JSON dict.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_info = {
+                    "type": "service_account",
+                    "project_id": "project_id",
+                    "private_key_id": "private_key_id",
+                    "private_key": private_key",
+                    "client_email": "client_email",
+                    "client_id": "client_id",
+                    "auth_uri": "auth_uri",
+                    "token_uri": "token_uri",
+                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
+                    "client_x509_cert_url": "client_x509_cert_url"
+                }
+                client = GcpCredentials(
+                    service_account_info=service_account_info
+                ).get_secrets_manager_client()
+
+            example_get_client_flow()
+            ```
+        """
+        credentials = self._get_credentials_from_service_account(
+            service_account_file=self.service_account_file,
+            service_account_info=self.service_account_info,
+        )
+
+        # doesn't accept project; must pass in project in tasks
+        secrets_manager_client = SecretManagerServiceClient(credentials=credentials)
+        return secrets_manager_client
