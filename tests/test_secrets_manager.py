@@ -1,7 +1,7 @@
 import pytest
 from prefect import flow
 
-from prefect_gcp.secrets_manager import (
+from prefect_gcp.secret_manager import (
     create_secret,
     delete_secret,
     delete_secret_version,
