@@ -25,4 +25,6 @@ Released on March 17th, 2022.
 
 ### Added
 
-- `cloud_storage` task - [#1](https://github.com/PrefectHQ/prefect-gcp/pull/1)
+- Cloud Storage tasks - [#1](https://github.com/PrefectHQ/prefect-gcp/pull/1)
+- BigQuery tasks - [#2](https://github.com/PrefectHQ/prefect-gcp/pull/2)
+- Secret Manager tasks - [#3](https://github.com/PrefectHQ/prefect-gcp/pull/5)
