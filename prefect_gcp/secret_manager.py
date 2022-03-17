@@ -21,7 +21,6 @@ async def create_secret(
     Args:
         secret_name: Name of the secret to retrieve.
         gcp_credentials: Credentials to use for authentication with GCP.
-        version_id: Version number of the secret to use, or "latest".
         timeout: The number of seconds the transport should wait
             for the server response.
         project: Name of the project to use; overrides the
