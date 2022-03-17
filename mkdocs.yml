@@ -38,3 +38,4 @@ nav:
     - Credentials: credentials.md
     - Cloud Storage: cloud_storage.md
     - BigQuery: bigquery.md
+    - Secrets Manager: secrets_manager.md
