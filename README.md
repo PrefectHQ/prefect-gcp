@@ -26,18 +26,17 @@ pip install prefect-gcp
 
 ```python
 from prefect import flow
-from prefect_gcp.tasks import (
-    goodbye_prefect_gcp,
-    hello_prefect_gcp,
-)
+from prefect_gcp import GcpCredentials
+from prefect_gcp.cloud_storage import cloud_storage_download_blob
 
+@flow()
+def example_cloud_storage_download_blob_flow():
+    gcp_credentials = GcpCredentials(
+        service_account_file="/path/to/service/account/keyfile.json")
+    contents = cloud_storage_download_blob("bucket", "blob", gcp_credentials)
+    return contents
 
-@flow
-def example_flow():
-    hello_prefect_gcp
-    goodbye_prefect_gcp
-
-example_flow()
+example_cloud_storage_download_blob_flow()
 ```
 
 ## Resources
