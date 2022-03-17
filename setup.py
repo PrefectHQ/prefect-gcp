@@ -5,11 +5,21 @@ import versioneer
 with open("requirements.txt") as install_requires_file:
     install_requires = install_requires_file.read().strip().split("\n")
 
-with open("requirements_dev.txt") as dev_requires_file:
+with open("requirements-dev.txt") as dev_requires_file:
     dev_requires = dev_requires_file.read().strip().split("\n")
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
+
+extras_require = {
+    "cloud_storage": ["google-cloud-storage"],
+    "bigquery": ["google-cloud-bigquery"],
+    "secret_manager": ["google-cloud-secret-manager"],
+}
+extras_require["all_extras"] = sorted(
+    {lib for key in extras_require.values() for lib in key}
+)
+extras_require["dev"] = dev_requires + extras_require["all_extras"]
 
 setup(
     name="prefect-gcp",
@@ -26,7 +36,7 @@ setup(
     packages=find_packages(exclude=("tests", "docs")),
     python_requires=">=3.7",
     install_requires=install_requires,
-    extras_require={"dev": dev_requires},
+    extras_require=extras_require,
     classifiers=[
         "Natural Language :: English",
         "Intended Audience :: Developers",
@@ -36,6 +46,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Software Development :: Libraries",
     ],
 )

@@ -1,94 +1,291 @@
 """Module handling GCP credentials"""
 
-import os
+import functools
 import json
-from pathlib import Path
+import os
 from dataclasses import dataclass
-from typing import Union, Dict
+from pathlib import Path
+from typing import Dict, Optional, Union
 
-from google.oauth2 import service_account
-from google.cloud.storage import Client
-
+from google.oauth2.service_account import Credentials
 from prefect import get_run_logger
 
+try:
+    from google.cloud.bigquery import Client as BigQueryClient
+except ModuleNotFoundError:
+    pass  # will be raised in get_client
+
+try:
+    from google.cloud.secretmanager import SecretManagerServiceClient
+except ModuleNotFoundError:
+    pass
+
+try:
+    from google.cloud.storage import Client as StorageClient
+except ModuleNotFoundError:
+    pass
+
+
+def _raise_help_msg(key: str):
+    """
+    Raises a helpful error message.
+    Args:
+        key: the key to access HELP_URLS
+    """
+
+    def outer(func):
+        """
+        Used for decorator.
+        """
+
+        @functools.wraps(func)
+        def inner(*args, **kwargs):
+            """
+            Used for decorator.
+            """
+            logger = get_run_logger()
+            try:
+                return func(*args, **kwargs)
+            except NameError:
+                logger.exception(
+                    f"Using `prefect_gcp.{key}` requires "
+                    f"`pip install prefect_gcp[{key}]`"
+                )
+                raise
+
+        return inner
+
+    return outer
+
+
 @dataclass
-class GCPCredentials:
+class GcpCredentials:
     """
     Dataclass used to manage authentication with GCP. GCP authentication is
-    handled via the `boto3` module. Refer to the
-    [boto3 docs](https://boto3.amazonGCP.com/v1/documentation/api/latest/guide/credentials.html)
+    handled via the `google.oauth2` module or through the CLI.
+    Specify either one of service account_file or service_account_info; if both
+    are not specified, the client will try to detect the service account info stored
+    in the env from the command, `gcloud auth application-default login`. Refer to the
+    [Authentication docs](https://cloud.google.com/docs/authentication/production)
     for more info about the possible credential configurations.
-    Args:
-        service_account_json: Path to the service account JSON keyfile or the JSON string / dictionary.
-    """
-    
-    service_account_json: Union[Dict[str, str], str, Path]
 
-    def get_client(self):
+    Args:
+        service_account_file: Path to the service account JSON keyfile.
+        service_account_info: The contents of the keyfile as a JSON string / dictionary.
+        project: Name of the project to use.
+    """
+
+    service_account_file: Optional[Union[str, Path]] = None
+    service_account_info: Optional[Union[str, Dict[str, str]]] = None
+    project: Optional[str] = None
+
+    @staticmethod
+    def _get_credentials_from_service_account(
+        service_account_file: Optional[str] = None,
+        service_account_info: Optional[str] = None,
+    ) -> Credentials:
         """
+        Helper method to serialize credentials by using either
+        service_account_file or service_account_info.
+        """
+        if service_account_info and service_account_file:
+            raise ValueError(
+                "Only one of service_account_info or service_account_file "
+                "can be specified at once"
+            )
+        elif service_account_file:
+            if not os.path.exists(service_account_file):
+                raise ValueError("The provided path to the service account is invalid")
+            elif isinstance(service_account_file, Path):
+                service_account_file = service_account_file.expanduser()
+            else:
+                service_account_file = os.path.expanduser(service_account_file)
+            credentials = Credentials.from_service_account_file(service_account_file)
+        elif service_account_info:
+            if isinstance(service_account_info, str):
+                service_account_info = json.loads(service_account_info)
+            credentials = Credentials.from_service_account_info(service_account_info)
+        else:
+            return None
+        return credentials
+
+    @_raise_help_msg("cloud_storage")
+    def get_cloud_storage_client(self, project: Optional[str] = None) -> StorageClient:
+        """
+        Args:
+            project: Name of the project to use; overrides the base
+                class's project if provided.
+
         Examples:
             Gets a GCP Cloud Storage client from a path.
             ```python
             from prefect import flow
-            from prefect_gcp.credentials import GCPCredentials
+            from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_json_path = "~/.secrets/prefect-service-account.json"
-                client = GCPCredentials(service_account_json_path).get_client()
+                service_account_file = "~/.secrets/prefect-service-account.json"
+                client = GcpCredentials(
+                    service_account_file=service_account_file
+                ).get_cloud_storage_client()
 
-            test_flow()
+            example_get_client_flow()
             ```
 
-            Gets a GCP Cloud Storage client from a dict.
+            Gets a GCP Cloud Storage client from a JSON dict.
             ```python
             from prefect import flow
-            from prefect_gcp.credentials import GCPCredentials
+            from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_json = {
+                service_account_info = {
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
                     "private_key": private_key",
                     "client_email": "client_email",
                     "client_id": "client_id",
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/integrations%40prefect-dev-807fd2.iam.gserviceaccount.com"
+                    "auth_uri": "auth_uri",
+                    "token_uri": "token_uri",
+                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
+                    "client_x509_cert_url": "client_x509_cert_url"
                 }
-                client = GCPCredentials(service_account_json).get_client(json)
+                client = GcpCredentials(
+                    service_account_info=service_account_info
+                ).get_cloud_storage_client()
 
-            test_flow()
+            example_get_client_flow()
             ```
         """
-        logger = get_run_logger()
+        credentials = self._get_credentials_from_service_account(
+            service_account_file=self.service_account_file,
+            service_account_info=self.service_account_info,
+        )
 
-        service_account_json = self.service_account_json
-        if isinstance(service_account_json, Path):
-            service_account_json = str(service_account_json)
-
-        is_str = isinstance(service_account_json, str)
-        if isinstance(service_account_json, dict):
-            # if is a JSON dict
-            credentials = service_account.Credentials.from_service_account_info(service_account_json)
-        elif is_str and "{" in service_account_json:
-            # if is a JSON string
-            service_account_json = json.loads(service_account_json)
-            credentials = service_account.Credentials.from_service_account_info(service_account_json)
-        elif is_str:
-            # if is a path string
-            if "~" in service_account_json:
-                service_account_json = os.path.expanduser(service_account_json)
-            elif "$HOME" in service_account_json:
-                service_account_json = os.path.expandvars(service_account_json)
-            if not os.path.exists(service_account_json):
-                raise ValueError(f"The provided path to the service account is invalid")
-            credentials = service_account.Credentials.from_service_account_file(service_account_json)
-        else:
-            raise ValueError("Unable to evaluate the service_account_json")
-
-        storage_client = Client(credentials=credentials)
+        # override class project if method project is provided
+        project = project or self.project
+        storage_client = StorageClient(credentials=credentials, project=project)
         return storage_client
+
+    @_raise_help_msg("bigquery")
+    def get_bigquery_client(
+        self, project: str = None, location: str = None
+    ) -> BigQueryClient:
+        """
+        Args:
+            project: Name of the project to use; overrides the base
+                class's project if provided.
+            location: Location to use.
+
+        Examples:
+            Gets a GCP BigQuery client from a path.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_file = "~/.secrets/prefect-service-account.json"
+                client = GcpCredentials(
+                    service_account_file=service_account_file
+                ).get_bigquery_client()
+
+            example_get_client_flow()
+            ```
+
+            Gets a GCP BigQuery client from a dict.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_info = {
+                    "type": "service_account",
+                    "project_id": "project_id",
+                    "private_key_id": "private_key_id",
+                    "private_key": private_key",
+                    "client_email": "client_email",
+                    "client_id": "client_id",
+                    "auth_uri": "auth_uri",
+                    "token_uri": "token_uri",
+                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
+                    "client_x509_cert_url": "client_x509_cert_url"
+                }
+                client = GcpCredentials(
+                    service_account_info=service_account_info
+                ).get_bigquery_client(json)
+
+            example_get_client_flow()
+            ```
+        """
+        credentials = self._get_credentials_from_service_account(
+            service_account_file=self.service_account_file,
+            service_account_info=self.service_account_info,
+        )
+
+        # override class project if method project is provided
+        project = project or self.project
+        big_query_client = BigQueryClient(
+            credentials=credentials, project=project, location=location
+        )
+        return big_query_client
+
+    @_raise_help_msg("secret_manager")
+    def get_secret_manager_client(self) -> SecretManagerServiceClient:
+        """
+        Args:
+            project: Name of the project to use; overrides the base
+                class's project if provided.
+
+        Examples:
+            Gets a GCP Secret Manager client from a path.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_file = "~/.secrets/prefect-service-account.json"
+                client = GcpCredentials(
+                    service_account_file=service_account_file
+                ).get_secret_manager_client()
+
+            example_get_client_flow()
+            ```
+
+            Gets a GCP Cloud Storage client from a JSON dict.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_info = {
+                    "type": "service_account",
+                    "project_id": "project_id",
+                    "private_key_id": "private_key_id",
+                    "private_key": private_key",
+                    "client_email": "client_email",
+                    "client_id": "client_id",
+                    "auth_uri": "auth_uri",
+                    "token_uri": "token_uri",
+                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
+                    "client_x509_cert_url": "client_x509_cert_url"
+                }
+                client = GcpCredentials(
+                    service_account_info=service_account_info
+                ).get_secret_manager_client()
+
+            example_get_client_flow()
+            ```
+        """
+        credentials = self._get_credentials_from_service_account(
+            service_account_file=self.service_account_file,
+            service_account_info=self.service_account_info,
+        )
+
+        # doesn't accept project; must pass in project in tasks
+        secret_manager_client = SecretManagerServiceClient(credentials=credentials)
+        return secret_manager_client

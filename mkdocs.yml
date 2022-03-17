@@ -37,4 +37,5 @@ nav:
     - Home: index.md
     - Credentials: credentials.md
     - Cloud Storage: cloud_storage.md
-
+    - BigQuery: bigquery.md
+    - Secret Manager: secret_manager.md
