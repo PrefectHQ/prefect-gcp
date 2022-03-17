@@ -1,0 +1,1626 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.5">
+    
+    
+      
+        <title>Cloud Storage - prefect-gcp</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2d9f7617.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.e6a45f82.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#2094f3">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prefect_gcp.cloud_storage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="prefect-gcp" class="md-header__button md-logo" aria-label="prefect-gcp" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            prefect-gcp
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Cloud Storage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="prefect-gcp" class="md-nav__button md-logo" aria-label="prefect-gcp" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    prefect-gcp
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../credentials/" class="md-nav__link">
+        Credentials
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Cloud Storage
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Cloud Storage
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_copy_blob" class="md-nav__link">
+    cloud_storage_copy_blob()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_create_bucket" class="md-nav__link">
+    cloud_storage_create_bucket()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_download_blob_as_bytes" class="md-nav__link">
+    cloud_storage_download_blob_as_bytes()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_download_blob_to_file" class="md-nav__link">
+    cloud_storage_download_blob_to_file()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_upload_blob_from_file" class="md-nav__link">
+    cloud_storage_upload_blob_from_file()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_upload_blob_from_string" class="md-nav__link">
+    cloud_storage_upload_blob_from_string()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bigquery/" class="md-nav__link">
+        BigQuery
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../secret_manager/" class="md-nav__link">
+        Secret Manager
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_copy_blob" class="md-nav__link">
+    cloud_storage_copy_blob()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_create_bucket" class="md-nav__link">
+    cloud_storage_create_bucket()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_download_blob_as_bytes" class="md-nav__link">
+    cloud_storage_download_blob_as_bytes()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_download_blob_to_file" class="md-nav__link">
+    cloud_storage_download_blob_to_file()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_upload_blob_from_file" class="md-nav__link">
+    cloud_storage_upload_blob_from_file()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.cloud_storage_upload_blob_from_string" class="md-nav__link">
+    cloud_storage_upload_blob_from_string()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h1 id="prefect_gcp.cloud_storage" class="doc doc-heading">
+        <code>prefect_gcp.cloud_storage</code>
+
+
+
+</h1>
+
+    <div class="doc doc-contents first">
+
+      <p>Tasks for interacting with GCP Cloud Storage</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h2 id="prefect_gcp.cloud_storage.cloud_storage_copy_blob" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cloud_storage_copy_blob</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Copies data from one Google Cloud Storage bucket to another,
+without downloading it locally.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>source_bucket</code></td>
+        <td><code>str</code></td>
+        <td><p>Source bucket name.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>dest_bucket</code></td>
+        <td><code>str</code></td>
+        <td><p>Destination bucket name.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>source_blob</code></td>
+        <td><code>str</code></td>
+        <td><p>Source blob name.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>gcp_credentials</code></td>
+        <td><code>GcpCredentials</code></td>
+        <td><p>Credentials to use for authentication with GCP.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>dest_blob</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Destination blob name; if not provided, defaults to source_blob.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>timeout</code></td>
+        <td><code>Union[float, Tuple[float, float]]</code></td>
+        <td><p>The number of seconds the transport should wait
+for the server response. Can also be passed as a tuple
+(connect_timeout, read_timeout).</p></td>
+        <td><code>60</code></td>
+      </tr>
+      <tr>
+        <td><code>project</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Name of the project to use; overrides the
+gcp_credentials project if provided.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>str</code></td>
+      <td><p>Destination blob name.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Copies blob from one bucket to another.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_copy_blob</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_cloud_storage_copy_blob_flow</span><span class="p">():</span>
+    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">cloud_storage_copy_blob</span><span class="p">(</span>
+        <span class="s2">&quot;source_bucket&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dest_bucket&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;source_blob&quot;</span><span class="p">,</span>
+        <span class="n">gcp_credentials</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">blob</span>
+
+<span class="n">example_cloud_storage_copy_blob_flow</span><span class="p">()</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@task</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">cloud_storage_copy_blob</span><span class="p">(</span>
+    <span class="n">source_bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">dest_bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">source_blob</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">gcp_credentials</span><span class="p">:</span> <span class="s2">&quot;GcpCredentials&quot;</span><span class="p">,</span>
+    <span class="n">dest_blob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copies data from one Google Cloud Storage bucket to another,</span>
+<span class="sd">    without downloading it locally.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        source_bucket: Source bucket name.</span>
+<span class="sd">        dest_bucket: Destination bucket name.</span>
+<span class="sd">        source_blob: Source blob name.</span>
+<span class="sd">        gcp_credentials: Credentials to use for authentication with GCP.</span>
+<span class="sd">        dest_blob: Destination blob name; if not provided, defaults to source_blob.</span>
+<span class="sd">        timeout: The number of seconds the transport should wait</span>
+<span class="sd">            for the server response. Can also be passed as a tuple</span>
+<span class="sd">            (connect_timeout, read_timeout).</span>
+<span class="sd">        project: Name of the project to use; overrides the</span>
+<span class="sd">            gcp_credentials project if provided.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Destination blob name.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Copies blob from one bucket to another.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect import flow</span>
+<span class="sd">        from prefect_gcp import GcpCredentials</span>
+<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_copy_blob</span>
+
+<span class="sd">        @flow()</span>
+<span class="sd">        def example_cloud_storage_copy_blob_flow():</span>
+<span class="sd">            gcp_credentials = GcpCredentials(</span>
+<span class="sd">                service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)</span>
+<span class="sd">            blob = cloud_storage_copy_blob(</span>
+<span class="sd">                &quot;source_bucket&quot;,</span>
+<span class="sd">                &quot;dest_bucket&quot;,</span>
+<span class="sd">                &quot;source_blob&quot;,</span>
+<span class="sd">                gcp_credentials</span>
+<span class="sd">            )</span>
+<span class="sd">            return blob</span>
+
+<span class="sd">        example_cloud_storage_copy_blob_flow()</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">get_run_logger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">&quot;Copying blob named </span><span class="si">%s</span><span class="s2"> from the </span><span class="si">%s</span><span class="s2"> bucket to the </span><span class="si">%s</span><span class="s2"> bucket&quot;</span><span class="p">,</span>
+        <span class="n">source_blob</span><span class="p">,</span>
+        <span class="n">source_bucket</span><span class="p">,</span>
+        <span class="n">dest_bucket</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">source_bucket_obj</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_get_bucket</span><span class="p">(</span>
+        <span class="n">source_bucket</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span>
+    <span class="p">)</span>
+
+    <span class="n">dest_bucket_obj</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_get_bucket</span><span class="p">(</span><span class="n">dest_bucket</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dest_blob</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dest_blob</span> <span class="o">=</span> <span class="n">source_blob</span>
+
+    <span class="n">source_blob_obj</span> <span class="o">=</span> <span class="n">source_bucket_obj</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">source_blob</span><span class="p">)</span>
+    <span class="n">partial_copy_blob</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">source_bucket_obj</span><span class="o">.</span><span class="n">copy_blob</span><span class="p">,</span>
+        <span class="n">blob</span><span class="o">=</span><span class="n">source_blob_obj</span><span class="p">,</span>
+        <span class="n">destination_bucket</span><span class="o">=</span><span class="n">dest_bucket_obj</span><span class="p">,</span>
+        <span class="n">new_name</span><span class="o">=</span><span class="n">dest_blob</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_copy_blob</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dest_blob</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h2 id="prefect_gcp.cloud_storage.cloud_storage_create_bucket" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cloud_storage_create_bucket</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Creates a bucket.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>bucket</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the bucket.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>gcp_credentials</code></td>
+        <td><code>GcpCredentials</code></td>
+        <td><p>Credentials to use for authentication with GCP.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>project</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Name of the project to use; overrides the
+gcp_credentials project if provided.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>location</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Location of the bucket.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>str</code></td>
+      <td><p>The bucket name.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Creates a bucket named "prefect".
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_create_bucket</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_cloud_storage_create_bucket_flow</span><span class="p">():</span>
+    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
+    <span class="n">bucket</span> <span class="o">=</span> <span class="n">cloud_storage_create_bucket</span><span class="p">(</span><span class="s2">&quot;prefect&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
+
+<span class="n">example_cloud_storage_create_bucket_flow</span><span class="p">()</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@task</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">cloud_storage_create_bucket</span><span class="p">(</span>
+    <span class="n">bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">gcp_credentials</span><span class="p">:</span> <span class="s2">&quot;GcpCredentials&quot;</span><span class="p">,</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">location</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a bucket.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bucket: Name of the bucket.</span>
+<span class="sd">        gcp_credentials: Credentials to use for authentication with GCP.</span>
+<span class="sd">        project: Name of the project to use; overrides the</span>
+<span class="sd">            gcp_credentials project if provided.</span>
+<span class="sd">        location: Location of the bucket.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The bucket name.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Creates a bucket named &quot;prefect&quot;.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect import flow</span>
+<span class="sd">        from prefect_gcp import GcpCredentials</span>
+<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_create_bucket</span>
+
+<span class="sd">        @flow()</span>
+<span class="sd">        def example_cloud_storage_create_bucket_flow():</span>
+<span class="sd">            gcp_credentials = GcpCredentials(</span>
+<span class="sd">                service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)</span>
+<span class="sd">            bucket = cloud_storage_create_bucket(&quot;prefect&quot;, gcp_credentials)</span>
+
+<span class="sd">        example_cloud_storage_create_bucket_flow()</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">get_run_logger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating </span><span class="si">%s</span><span class="s2"> bucket&quot;</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+
+    <span class="n">client</span> <span class="o">=</span> <span class="n">gcp_credentials</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">partial_create_bucket</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">create_bucket</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">location</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_create_bucket</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bucket</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h2 id="prefect_gcp.cloud_storage.cloud_storage_download_blob_as_bytes" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cloud_storage_download_blob_as_bytes</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Downloads a blob as bytes.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>bucket</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the bucket.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>blob</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the Cloud Storage blob.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>gcp_credentials</code></td>
+        <td><code>GcpCredentials</code></td>
+        <td><p>Credentials to use for authentication with GCP.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>path</code></td>
+        <td></td>
+        <td><p>If provided, downloads the contents to the provided file path;
+if the path is a directory, automatically joins the blob name.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>chunk_size</code></td>
+        <td><code>int</code></td>
+        <td><p>The size of a chunk of data whenever
+iterating (in bytes). This must be a multiple of 256 KB
+per the API specification.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>encryption_key</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>An encryption key.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>timeout</code></td>
+        <td><code>Union[float, Tuple[float, float]]</code></td>
+        <td><p>The number of seconds the transport should wait
+for the server response. Can also be passed as a tuple
+(connect_timeout, read_timeout).</p></td>
+        <td><code>60</code></td>
+      </tr>
+      <tr>
+        <td><code>project</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Name of the project to use; overrides the
+gcp_credentials project if provided.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bytes</code></td>
+      <td><p>A bytes or string representation of the blob object.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Downloads blob from bucket.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_download_blob</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_cloud_storage_download_blob_flow</span><span class="p">():</span>
+    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
+    <span class="n">contents</span> <span class="o">=</span> <span class="n">cloud_storage_download_blob</span><span class="p">(</span><span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">contents</span>
+
+<span class="n">example_cloud_storage_download_blob_flow</span><span class="p">()</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@task</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">cloud_storage_download_blob_as_bytes</span><span class="p">(</span>
+    <span class="n">bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">blob</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">gcp_credentials</span><span class="p">:</span> <span class="s2">&quot;GcpCredentials&quot;</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">encryption_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downloads a blob as bytes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bucket: Name of the bucket.</span>
+<span class="sd">        blob: Name of the Cloud Storage blob.</span>
+<span class="sd">        gcp_credentials: Credentials to use for authentication with GCP.</span>
+<span class="sd">        path: If provided, downloads the contents to the provided file path;</span>
+<span class="sd">            if the path is a directory, automatically joins the blob name.</span>
+<span class="sd">        chunk_size (int, optional): The size of a chunk of data whenever</span>
+<span class="sd">            iterating (in bytes). This must be a multiple of 256 KB</span>
+<span class="sd">            per the API specification.</span>
+<span class="sd">        encryption_key: An encryption key.</span>
+<span class="sd">        timeout: The number of seconds the transport should wait</span>
+<span class="sd">            for the server response. Can also be passed as a tuple</span>
+<span class="sd">            (connect_timeout, read_timeout).</span>
+<span class="sd">        project: Name of the project to use; overrides the</span>
+<span class="sd">            gcp_credentials project if provided.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A bytes or string representation of the blob object.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Downloads blob from bucket.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect import flow</span>
+<span class="sd">        from prefect_gcp import GcpCredentials</span>
+<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_download_blob</span>
+
+<span class="sd">        @flow()</span>
+<span class="sd">        def example_cloud_storage_download_blob_flow():</span>
+<span class="sd">            gcp_credentials = GcpCredentials(</span>
+<span class="sd">                service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)</span>
+<span class="sd">            contents = cloud_storage_download_blob(&quot;bucket&quot;, &quot;blob&quot;, gcp_credentials)</span>
+<span class="sd">            return contents</span>
+
+<span class="sd">        example_cloud_storage_download_blob_flow()</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">get_run_logger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Downloading blob named </span><span class="si">%s</span><span class="s2"> from the </span><span class="si">%s</span><span class="s2"> bucket&quot;</span><span class="p">,</span> <span class="n">blob</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+
+    <span class="n">bucket_obj</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_get_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">blob_obj</span> <span class="o">=</span> <span class="n">bucket_obj</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span>
+        <span class="n">blob</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">encryption_key</span><span class="o">=</span><span class="n">encryption_key</span>
+    <span class="p">)</span>
+
+    <span class="n">partial_download</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">blob_obj</span><span class="o">.</span><span class="n">download_as_bytes</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="n">contents</span> <span class="o">=</span> <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_download</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">contents</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h2 id="prefect_gcp.cloud_storage.cloud_storage_download_blob_to_file" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cloud_storage_download_blob_to_file</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Downloads a blob to a file path.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>bucket</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the bucket.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>blob</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the Cloud Storage blob.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>path</code></td>
+        <td><code>Union[str, pathlib.Path]</code></td>
+        <td><p>Downloads the contents to the provided file path;
+if the path is a directory, automatically joins the blob name.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>gcp_credentials</code></td>
+        <td><code>GcpCredentials</code></td>
+        <td><p>Credentials to use for authentication with GCP.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>chunk_size</code></td>
+        <td><code>int</code></td>
+        <td><p>The size of a chunk of data whenever
+iterating (in bytes). This must be a multiple of 256 KB
+per the API specification.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>encryption_key</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>An encryption key.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>timeout</code></td>
+        <td><code>Union[float, Tuple[float, float]]</code></td>
+        <td><p>The number of seconds the transport should wait
+for the server response. Can also be passed as a tuple
+(connect_timeout, read_timeout).</p></td>
+        <td><code>60</code></td>
+      </tr>
+      <tr>
+        <td><code>project</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Name of the project to use; overrides the
+gcp_credentials project if provided.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Union[str, pathlib.Path]</code></td>
+      <td><p>The path to the blob object.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Downloads blob from bucket.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_download_blob</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_cloud_storage_download_blob_flow</span><span class="p">():</span>
+    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">cloud_storage_download_blob</span><span class="p">(</span>
+        <span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="s2">&quot;data_path&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span>
+
+<span class="n">example_cloud_storage_download_blob_flow</span><span class="p">()</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@task</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">cloud_storage_download_blob_to_file</span><span class="p">(</span>
+    <span class="n">bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">blob</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">gcp_credentials</span><span class="p">:</span> <span class="s2">&quot;GcpCredentials&quot;</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">encryption_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downloads a blob to a file path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bucket: Name of the bucket.</span>
+<span class="sd">        blob: Name of the Cloud Storage blob.</span>
+<span class="sd">        path: Downloads the contents to the provided file path;</span>
+<span class="sd">            if the path is a directory, automatically joins the blob name.</span>
+<span class="sd">        gcp_credentials: Credentials to use for authentication with GCP.</span>
+<span class="sd">        chunk_size (int, optional): The size of a chunk of data whenever</span>
+<span class="sd">            iterating (in bytes). This must be a multiple of 256 KB</span>
+<span class="sd">            per the API specification.</span>
+<span class="sd">        encryption_key: An encryption key.</span>
+<span class="sd">        timeout: The number of seconds the transport should wait</span>
+<span class="sd">            for the server response. Can also be passed as a tuple</span>
+<span class="sd">            (connect_timeout, read_timeout).</span>
+<span class="sd">        project: Name of the project to use; overrides the</span>
+<span class="sd">            gcp_credentials project if provided.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The path to the blob object.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Downloads blob from bucket.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect import flow</span>
+<span class="sd">        from prefect_gcp import GcpCredentials</span>
+<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_download_blob</span>
+
+<span class="sd">        @flow()</span>
+<span class="sd">        def example_cloud_storage_download_blob_flow():</span>
+<span class="sd">            gcp_credentials = GcpCredentials(</span>
+<span class="sd">                service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)</span>
+<span class="sd">            path = cloud_storage_download_blob(</span>
+<span class="sd">                &quot;bucket&quot;, &quot;blob&quot;, &quot;data_path&quot;, gcp_credentials)</span>
+<span class="sd">            return path</span>
+
+<span class="sd">        example_cloud_storage_download_blob_flow()</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">get_run_logger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">&quot;Downloading blob named </span><span class="si">%s</span><span class="s2"> from the </span><span class="si">%s</span><span class="s2"> bucket to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">blob</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">path</span>
+    <span class="p">)</span>
+
+    <span class="n">bucket_obj</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_get_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">blob_obj</span> <span class="o">=</span> <span class="n">bucket_obj</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span>
+        <span class="n">blob</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">encryption_key</span><span class="o">=</span><span class="n">encryption_key</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>  <span class="c1"># keep as Path if Path is passed</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">blob</span><span class="p">)</span>  <span class="c1"># keep as str if a str is passed</span>
+
+    <span class="n">partial_download</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">blob_obj</span><span class="o">.</span><span class="n">download_to_filename</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_download</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h2 id="prefect_gcp.cloud_storage.cloud_storage_upload_blob_from_file" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cloud_storage_upload_blob_from_file</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Uploads a blob from file path or file-like object. Usage for passing in
+file-like object is if the data was downloaded from the web;
+can bypass writing to disk and directly upload to Cloud Storage.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>file</code></td>
+        <td><code>Union[str, pathlib.Path, _io.BytesIO]</code></td>
+        <td><p>Path to data or file like object to upload.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>bucket</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the bucket.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>blob</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the Cloud Storage blob.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>gcp_credentials</code></td>
+        <td><code>GcpCredentials</code></td>
+        <td><p>Credentials to use for authentication with GCP.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>chunk_size</code></td>
+        <td><code>int</code></td>
+        <td><p>The size of a chunk of data whenever
+iterating (in bytes). This must be a multiple of 256 KB
+per the API specification.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>encryption_key</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>An encryption key.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>timeout</code></td>
+        <td><code>Union[float, Tuple[float, float]]</code></td>
+        <td><p>The number of seconds the transport should wait
+for the server response. Can also be passed as a tuple
+(connect_timeout, read_timeout).</p></td>
+        <td><code>60</code></td>
+      </tr>
+      <tr>
+        <td><code>project</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Name of the project to use; overrides the
+gcp_credentials project if provided.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>str</code></td>
+      <td><p>The blob name.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Uploads blob to bucket.
+<div class="highlight"><pre><span></span><code>from prefect import flow
+from prefect_gcp import GcpCredentials
+from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_file
+
+@flow()
+def example_cloud_storage_upload_blob_from_file_flow():
+    gcp_credentials = GcpCredentials(
+        service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)
+    blob = cloud_storage_upload_blob_from_file(
+        &quot;/path/somewhere&quot;, &quot;bucket&quot;, &quot;blob&quot;, gcp_credentials)
+    return blob
+
+example_cloud_storage_upload_blob_from_file_flow()
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@task</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">cloud_storage_upload_blob_from_file</span><span class="p">(</span>
+    <span class="n">file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">BytesIO</span><span class="p">],</span>
+    <span class="n">bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">blob</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">gcp_credentials</span><span class="p">:</span> <span class="s2">&quot;GcpCredentials&quot;</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">encryption_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uploads a blob from file path or file-like object. Usage for passing in</span>
+<span class="sd">    file-like object is if the data was downloaded from the web;</span>
+<span class="sd">    can bypass writing to disk and directly upload to Cloud Storage.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file: Path to data or file like object to upload.</span>
+<span class="sd">        bucket: Name of the bucket.</span>
+<span class="sd">        blob: Name of the Cloud Storage blob.</span>
+<span class="sd">        gcp_credentials: Credentials to use for authentication with GCP.</span>
+<span class="sd">        chunk_size (int, optional): The size of a chunk of data whenever</span>
+<span class="sd">            iterating (in bytes). This must be a multiple of 256 KB</span>
+<span class="sd">            per the API specification.</span>
+<span class="sd">        encryption_key: An encryption key.</span>
+<span class="sd">        timeout: The number of seconds the transport should wait</span>
+<span class="sd">            for the server response. Can also be passed as a tuple</span>
+<span class="sd">            (connect_timeout, read_timeout).</span>
+<span class="sd">        project: Name of the project to use; overrides the</span>
+<span class="sd">            gcp_credentials project if provided.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The blob name.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Uploads blob to bucket.</span>
+<span class="sd">        ```</span>
+<span class="sd">        from prefect import flow</span>
+<span class="sd">        from prefect_gcp import GcpCredentials</span>
+<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_file</span>
+
+<span class="sd">        @flow()</span>
+<span class="sd">        def example_cloud_storage_upload_blob_from_file_flow():</span>
+<span class="sd">            gcp_credentials = GcpCredentials(</span>
+<span class="sd">                service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)</span>
+<span class="sd">            blob = cloud_storage_upload_blob_from_file(</span>
+<span class="sd">                &quot;/path/somewhere&quot;, &quot;bucket&quot;, &quot;blob&quot;, gcp_credentials)</span>
+<span class="sd">            return blob</span>
+
+<span class="sd">        example_cloud_storage_upload_blob_from_file_flow()</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">get_run_logger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Uploading blob named </span><span class="si">%s</span><span class="s2"> to the </span><span class="si">%s</span><span class="s2"> bucket&quot;</span><span class="p">,</span> <span class="n">blob</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+
+    <span class="n">bucket_obj</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_get_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">blob_obj</span> <span class="o">=</span> <span class="n">bucket_obj</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span>
+        <span class="n">blob</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">encryption_key</span><span class="o">=</span><span class="n">encryption_key</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">BytesIO</span><span class="p">):</span>
+        <span class="n">partial_upload</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">blob_obj</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">partial_upload</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">blob_obj</span><span class="o">.</span><span class="n">upload_from_filename</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_upload</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">blob</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-function">
+
+
+
+<h2 id="prefect_gcp.cloud_storage.cloud_storage_upload_blob_from_string" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cloud_storage_upload_blob_from_string</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Uploads a blob from a string or bytes representation of data.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>data</code></td>
+        <td><code>Union[str, bytes]</code></td>
+        <td><p>String or bytes representation of data to upload.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>bucket</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the bucket.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>blob</code></td>
+        <td><code>str</code></td>
+        <td><p>Name of the Cloud Storage blob.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>gcp_credentials</code></td>
+        <td><code>GcpCredentials</code></td>
+        <td><p>Credentials to use for authentication with GCP.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>content_type</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Type of content being uploaded.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>chunk_size</code></td>
+        <td><code>int</code></td>
+        <td><p>The size of a chunk of data whenever
+iterating (in bytes). This must be a multiple of 256 KB
+per the API specification.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>encryption_key</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>An encryption key.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>timeout</code></td>
+        <td><code>Union[float, Tuple[float, float]]</code></td>
+        <td><p>The number of seconds the transport should wait
+for the server response. Can also be passed as a tuple
+(connect_timeout, read_timeout).</p></td>
+        <td><code>60</code></td>
+      </tr>
+      <tr>
+        <td><code>project</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Name of the project to use; overrides the
+gcp_credentials project if provided.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>str</code></td>
+      <td><p>The blob name.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Uploads blob to bucket.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_upload_blob_from_string</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_cloud_storage_upload_blob_from_string_flow</span><span class="p">():</span>
+    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">cloud_storage_upload_blob_from_string</span><span class="p">(</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">blob</span>
+
+<span class="n">example_cloud_storage_upload_blob_from_string_flow</span><span class="p">()</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@task</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">cloud_storage_upload_blob_from_string</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">],</span>
+    <span class="n">bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">blob</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">gcp_credentials</span><span class="p">:</span> <span class="s2">&quot;GcpCredentials&quot;</span><span class="p">,</span>
+    <span class="n">content_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">encryption_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uploads a blob from a string or bytes representation of data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: String or bytes representation of data to upload.</span>
+<span class="sd">        bucket: Name of the bucket.</span>
+<span class="sd">        blob: Name of the Cloud Storage blob.</span>
+<span class="sd">        gcp_credentials: Credentials to use for authentication with GCP.</span>
+<span class="sd">        content_type: Type of content being uploaded.</span>
+<span class="sd">        chunk_size (int, optional): The size of a chunk of data whenever</span>
+<span class="sd">            iterating (in bytes). This must be a multiple of 256 KB</span>
+<span class="sd">            per the API specification.</span>
+<span class="sd">        encryption_key: An encryption key.</span>
+<span class="sd">        timeout: The number of seconds the transport should wait</span>
+<span class="sd">            for the server response. Can also be passed as a tuple</span>
+<span class="sd">            (connect_timeout, read_timeout).</span>
+<span class="sd">        project: Name of the project to use; overrides the</span>
+<span class="sd">            gcp_credentials project if provided.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The blob name.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Uploads blob to bucket.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect import flow</span>
+<span class="sd">        from prefect_gcp import GcpCredentials</span>
+<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_string</span>
+
+<span class="sd">        @flow()</span>
+<span class="sd">        def example_cloud_storage_upload_blob_from_string_flow():</span>
+<span class="sd">            gcp_credentials = GcpCredentials(</span>
+<span class="sd">                service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)</span>
+<span class="sd">            blob = cloud_storage_upload_blob_from_string(</span>
+<span class="sd">                &quot;data&quot;, &quot;bucket&quot;, &quot;blob&quot;, gcp_credentials)</span>
+<span class="sd">            return blob</span>
+
+<span class="sd">        example_cloud_storage_upload_blob_from_string_flow()</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">get_run_logger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Uploading blob named </span><span class="si">%s</span><span class="s2"> to the </span><span class="si">%s</span><span class="s2"> bucket&quot;</span><span class="p">,</span> <span class="n">blob</span><span class="p">,</span> <span class="n">bucket</span><span class="p">)</span>
+
+    <span class="n">bucket_obj</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_get_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">blob_obj</span> <span class="o">=</span> <span class="n">bucket_obj</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span>
+        <span class="n">blob</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">encryption_key</span><span class="o">=</span><span class="n">encryption_key</span>
+    <span class="p">)</span>
+
+    <span class="n">partial_upload</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">blob_obj</span><span class="o">.</span><span class="n">upload_from_string</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+    <span class="p">)</span>
+    <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_upload</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">blob</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../credentials/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Credentials" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Credentials
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../bigquery/" class="md-footer__link md-footer__link--next" aria-label="Next: BigQuery" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              BigQuery
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.bd0b6b67.min.js"}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.467223ff.min.js"></script>
+      
+    
+  </body>
+</html>
