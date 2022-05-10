@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 from google.oauth2.service_account import Credentials
-from prefect import get_run_logger
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -43,15 +42,13 @@ def _raise_help_msg(key: str):
             """
             Used for decorator.
             """
-            logger = get_run_logger()
             try:
                 return func(*args, **kwargs)
             except NameError:
-                logger.exception(
+                raise ImportError(
                     f"Using `prefect_gcp.{key}` requires "
                     f"`pip install prefect_gcp[{key}]`"
                 )
-                raise
 
         return inner
 
