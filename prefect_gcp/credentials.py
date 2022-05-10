@@ -110,7 +110,9 @@ class GcpCredentials:
         return credentials
 
     @_raise_help_msg("cloud_storage")
-    def get_cloud_storage_client(self, project: Optional[str] = None) -> StorageClient:
+    def get_cloud_storage_client(
+        self, project: Optional[str] = None
+    ) -> "StorageClient":
         """
         Args:
             project: Name of the project to use; overrides the base
@@ -171,7 +173,7 @@ class GcpCredentials:
     @_raise_help_msg("bigquery")
     def get_bigquery_client(
         self, project: str = None, location: str = None
-    ) -> BigQueryClient:
+    ) -> "BigQueryClient":
         """
         Args:
             project: Name of the project to use; overrides the base
@@ -233,7 +235,7 @@ class GcpCredentials:
         return big_query_client
 
     @_raise_help_msg("secret_manager")
-    def get_secret_manager_client(self) -> SecretManagerServiceClient:
+    def get_secret_manager_client(self) -> "SecretManagerServiceClient":
         """
         Args:
             project: Name of the project to use; overrides the base
