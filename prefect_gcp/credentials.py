@@ -44,11 +44,11 @@ def _raise_help_msg(key: str):
             """
             try:
                 return func(*args, **kwargs)
-            except NameError:
+            except NameError as exc:
                 raise ImportError(
                     f"Using `prefect_gcp.{key}` requires "
                     f"`pip install prefect_gcp[{key}]`"
-                )
+                ) from exc
 
         return inner
 
