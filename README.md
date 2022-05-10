@@ -22,6 +22,22 @@ Install `prefect-gcp` with `pip`:
 pip install prefect-gcp
 ```
 
+To use Cloud Storage:
+```bash
+pip install "prefect-gcp[cloud_storage]"
+```
+
+To use BigQuery:
+
+```bash
+pip install "prefect-gcp[bigquery]"
+```
+
+To use Secret Manager:
+```bash
+pip install "prefect-gcp[secret_manager]"
+```
+
 ### Write and run a flow
 
 ```python
