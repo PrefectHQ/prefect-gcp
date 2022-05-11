@@ -47,7 +47,7 @@ def _raise_help_msg(key: str):
             except NameError as exc:
                 raise ImportError(
                     f"To use prefect_gcp.{key}, install prefect-gcp with the "
-                    f"'{key}' extra: `pip install prefect_gcp[{key}]`"
+                    f"'{key}' extra: `pip install 'prefect_gcp[{key}]'`"
                 ) from exc
 
         return inner
