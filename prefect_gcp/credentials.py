@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 from google.oauth2.service_account import Credentials
-from prefect import get_run_logger
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -43,15 +42,13 @@ def _raise_help_msg(key: str):
             """
             Used for decorator.
             """
-            logger = get_run_logger()
             try:
                 return func(*args, **kwargs)
-            except NameError:
-                logger.exception(
-                    f"Using `prefect_gcp.{key}` requires "
-                    f"`pip install prefect_gcp[{key}]`"
-                )
-                raise
+            except NameError as exc:
+                raise ImportError(
+                    f"To use prefect_gcp.{key}, install prefect-gcp with the "
+                    f"'{key}' extra: `pip install 'prefect_gcp[{key}]'`"
+                ) from exc
 
         return inner
 
@@ -110,7 +107,9 @@ class GcpCredentials:
         return credentials
 
     @_raise_help_msg("cloud_storage")
-    def get_cloud_storage_client(self, project: Optional[str] = None) -> StorageClient:
+    def get_cloud_storage_client(
+        self, project: Optional[str] = None
+    ) -> "StorageClient":
         """
         Args:
             project: Name of the project to use; overrides the base
@@ -171,7 +170,7 @@ class GcpCredentials:
     @_raise_help_msg("bigquery")
     def get_bigquery_client(
         self, project: str = None, location: str = None
-    ) -> BigQueryClient:
+    ) -> "BigQueryClient":
         """
         Args:
             project: Name of the project to use; overrides the base
@@ -233,7 +232,7 @@ class GcpCredentials:
         return big_query_client
 
     @_raise_help_msg("secret_manager")
-    def get_secret_manager_client(self) -> SecretManagerServiceClient:
+    def get_secret_manager_client(self) -> "SecretManagerServiceClient":
         """
         Args:
             project: Name of the project to use; overrides the base
