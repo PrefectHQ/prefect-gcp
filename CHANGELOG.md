@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.1.1
+
+Released on July 11th, 2022
+
+### Changed
+
+- Improved error handle and instruction for extras - [#18](https://github.com/PrefectHQ/prefect-gcp/pull/18)
+
 ## 0.1.0
 
 Released on March 17th, 2022.
