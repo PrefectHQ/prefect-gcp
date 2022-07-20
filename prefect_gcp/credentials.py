@@ -24,6 +24,8 @@ try:
 except ModuleNotFoundError:
     pass
 
+from prefect.blocks.core import Block
+
 
 def _raise_help_msg(key: str):
     """
@@ -56,7 +58,7 @@ def _raise_help_msg(key: str):
 
 
 @dataclass
-class GcpCredentials:
+class GcpCredentials(Block):
     """
     Dataclass used to manage authentication with GCP. GCP authentication is
     handled via the `google.oauth2` module or through the CLI.
@@ -71,6 +73,9 @@ class GcpCredentials:
         service_account_info: The contents of the keyfile as a JSON string / dictionary.
         project: Name of the project to use.
     """
+
+    _logo_url = "https://github.com/PrefectHQ/orion/blob/main/docs/img/collections/gcp.png?raw=true"  # noqa
+    _block_type_name = "Google Cloud Platform Credentials"
 
     service_account_file: Optional[Union[str, Path]] = None
     service_account_info: Optional[Union[str, Dict[str, str]]] = None
