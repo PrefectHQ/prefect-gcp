@@ -33,9 +33,9 @@ def test_bigquery_query(to_dataframe, dry_run_max_bytes, gcp_credentials):
 
     if dry_run_max_bytes is not None and dry_run_max_bytes < 10:
         with pytest.raises(RuntimeError):
-            test_flow().result().result()
+            test_flow()
     else:
-        result = test_flow().result().result()
+        result = test_flow()
         if to_dataframe:
             assert result == "dataframe_query"
         else:
@@ -59,7 +59,7 @@ def test_bigquery_create_table(gcp_credentials):
         )
         return table
 
-    assert test_flow().result().result() == "table"
+    assert test_flow() == "table"
 
 
 def test_bigquery_insert_stream(gcp_credentials):
@@ -79,7 +79,7 @@ def test_bigquery_insert_stream(gcp_credentials):
         )
         return output
 
-    assert test_flow().result().result() == records
+    assert test_flow() == records
 
 
 def test_bigquery_load_cloud_storage(gcp_credentials):
@@ -95,7 +95,7 @@ def test_bigquery_load_cloud_storage(gcp_credentials):
         )
         return output
 
-    result = test_flow().result().result()
+    result = test_flow()
     assert result.output == "uri"
     assert result._client is None
     assert result._completion_lock is None
@@ -117,7 +117,7 @@ def test_bigquery_load_file(gcp_credentials):
         )
         return output
 
-    result = test_flow().result().result()
+    result = test_flow()
     assert result.output == "file"
     assert result._client is None
     assert result._completion_lock is None

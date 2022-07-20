@@ -75,4 +75,4 @@ def test_get_cloud_storage_client(override_project, oauth2_credentials, storage_
             assert client.project == override_project
         return True
 
-    test_flow().result()
+    test_flow()
