@@ -24,6 +24,7 @@ Released on July 21st, 2022.
 
 ### Changed
 - Updated tests to be compatible with core Prefect library (v2.0b9) and bumped required version - [#30](https://github.com/PrefectHQ/prefect-gcp/pull/30)
+- Converted GcpCredentials into a Block - [#31](https://github.com/PrefectHQ/prefect-gcp/pull/31).
 
 ## 0.1.1
 
