@@ -63,10 +63,11 @@ def test_get_cloud_storage_client(override_project, oauth2_credentials, storage_
     @flow
     def test_flow():
         project = "test_project"
-        client = GcpCredentials(
+        credentials = GcpCredentials(
             service_account_info=SERVICE_ACCOUNT_INFOS[0],
             project=project,
-        ).get_cloud_storage_client(project=override_project)
+        )
+        client = credentials.get_cloud_storage_client(project=override_project)
         assert client.credentials == SERVICE_ACCOUNT_INFOS[0]
 
         if override_project is None:

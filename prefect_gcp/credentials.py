@@ -3,7 +3,6 @@
 import functools
 import json
 import os
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Union
 
@@ -57,7 +56,6 @@ def _raise_help_msg(key: str):
     return outer
 
 
-@dataclass
 class GcpCredentials(Block):
     """
     Dataclass used to manage authentication with GCP. GCP authentication is
@@ -74,7 +72,7 @@ class GcpCredentials(Block):
         project: Name of the project to use.
     """
 
-    _logo_url = "https://github.com/PrefectHQ/orion/blob/main/docs/img/collections/gcp.png?raw=true"  # noqa
+    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "Google Cloud Platform Credentials"
 
     service_account_file: Optional[Union[str, Path]] = None
