@@ -268,7 +268,7 @@ class GcpCredentials(Block):
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
-                    "private_key": private_key",
+                    "private_key": "private_key",
                     "client_email": "client_email",
                     "client_id": "client_id",
                     "auth_uri": "auth_uri",
