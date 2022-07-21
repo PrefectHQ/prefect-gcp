@@ -58,7 +58,7 @@ def _raise_help_msg(key: str):
 
 class GcpCredentials(Block):
     """
-    Dataclass used to manage authentication with GCP. GCP authentication is
+    Block used to manage authentication with GCP. GCP authentication is
     handled via the `google.oauth2` module or through the CLI.
     Specify either one of service account_file or service_account_info; if both
     are not specified, the client will try to detect the service account info stored
