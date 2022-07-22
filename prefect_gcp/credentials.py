@@ -74,7 +74,7 @@ class GcpCredentials(Block):
     """
 
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
-    _block_type_name = "Google Cloud Platform Credentials"
+    _block_type_name = "GCP Credentials"
 
     service_account_file: Optional[Path] = None
     service_account_info: Optional[Json] = None
