@@ -11,10 +11,10 @@ SERVICE_ACCOUNT_FILES = [
 ]
 SERVICE_ACCOUNT_FILES.append(str(SERVICE_ACCOUNT_FILES[0]))
 
-SERVICE_ACCOUNT_INFOS = [
-    {"key": "abc", "pass": "pass"},
-    '{"key": "abc", "pass": "pass"}',
-]
+
+@pytest.fixture()
+def service_account_info():
+    return '{"key": "abc", "pass": "pass"}'
 
 
 @pytest.mark.parametrize("service_account_file", SERVICE_ACCOUNT_FILES)
@@ -27,15 +27,12 @@ def test_get_credentials_from_service_account_file(
     assert credentials == service_account_file
 
 
-@pytest.mark.parametrize("service_account_info", SERVICE_ACCOUNT_INFOS)
 def test_get_credentials_from_service_account_info(
     service_account_info, oauth2_credentials
 ):
     credentials = GcpCredentials._get_credentials_from_service_account(
         service_account_info=service_account_info
     )
-    if isinstance(service_account_info, str):
-        service_account_info = json.loads(service_account_info)
     assert credentials == service_account_info
 
 
@@ -50,24 +47,29 @@ def test_get_credentials_from_service_account_file_error(oauth2_credentials):
         )
 
 
-def test_get_credentials_from_service_account_both_error(oauth2_credentials):
+def test_get_credentials_from_service_account_both_error(
+    service_account_info, oauth2_credentials
+):
     with pytest.raises(ValueError):
         GcpCredentials._get_credentials_from_service_account(
             service_account_file=SERVICE_ACCOUNT_FILES[0],
-            service_account_info=SERVICE_ACCOUNT_INFOS[0],
+            service_account_info=service_account_info,
         )
 
 
 @pytest.mark.parametrize("override_project", [None, "override_project"])
-def test_get_cloud_storage_client(override_project, oauth2_credentials, storage_client):
+def test_get_cloud_storage_client(
+    override_project, service_account_info, oauth2_credentials, storage_client
+):
     @flow
     def test_flow():
         project = "test_project"
-        client = GcpCredentials(
-            service_account_info=SERVICE_ACCOUNT_INFOS[0],
+        credentials = GcpCredentials(
+            service_account_info=service_account_info,
             project=project,
-        ).get_cloud_storage_client(project=override_project)
-        assert client.credentials == SERVICE_ACCOUNT_INFOS[0]
+        )
+        client = credentials.get_cloud_storage_client(project=override_project)
+        assert client.credentials == json.loads(service_account_info)
 
         if override_project is None:
             assert client.project == project
@@ -75,4 +77,4 @@ def test_get_cloud_storage_client(override_project, oauth2_credentials, storage_
             assert client.project == override_project
         return True
 
-    test_flow().result()
+    test_flow()
