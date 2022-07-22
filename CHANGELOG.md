@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.1.3
+Released on July 22nd, 2022.
+
+### Added
+- Added setup.py entry point - [#35](https://github.com/PrefectHQ/prefect-gcp/pull/35)
+
 ## 0.1.2
 Released on July 22nd, 2022.
 

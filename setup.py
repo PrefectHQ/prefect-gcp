@@ -37,6 +37,11 @@ setup(
     python_requires=">=3.7",
     install_requires=install_requires,
     extras_require=extras_require,
+    entry_points={
+        "prefect.collections": [
+            "GcpCredentials = prefect_gcp.credentials",
+        ]
+    },
     classifiers=[
         "Natural Language :: English",
         "Intended Audience :: Developers",
