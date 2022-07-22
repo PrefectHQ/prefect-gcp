@@ -4,9 +4,10 @@ import functools
 import json
 import os
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Optional
 
 from google.oauth2.service_account import Credentials
+from pydantic import Json
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -76,7 +77,7 @@ class GcpCredentials(Block):
     _block_type_name = "Google Cloud Platform Credentials"
 
     service_account_file: Optional[Path] = None
-    service_account_info: Optional[Union[str, Dict[str, str]]] = None
+    service_account_info: Optional[Json] = None
     project: Optional[str] = None
 
     @staticmethod
