@@ -22,7 +22,7 @@ def test_cloud_storage_create_bucket(gcp_credentials):
     def test_flow():
         return cloud_storage_create_bucket(bucket, gcp_credentials, location=location)
 
-    assert test_flow().result().result() == "expected"
+    assert test_flow() == "expected"
 
 
 @pytest.mark.parametrize("path", ["/path/somewhere/", Path("/path/somewhere/")])
@@ -33,7 +33,7 @@ def test_cloud_storage_download_blob_to_file(path, gcp_credentials):
             "bucket", "blob", path, gcp_credentials
         )
 
-    assert test_flow().result().result() == path
+    assert test_flow() == path
 
 
 def test_cloud_storage_download_blob_as_bytes(gcp_credentials):
@@ -41,7 +41,7 @@ def test_cloud_storage_download_blob_as_bytes(gcp_credentials):
     def test_flow():
         return cloud_storage_download_blob_as_bytes("bucket", "blob", gcp_credentials)
 
-    assert test_flow().result().result() == b"bytes"
+    assert test_flow() == b"bytes"
 
 
 @pytest.mark.parametrize(
@@ -60,7 +60,7 @@ def test_cloud_storage_upload_blob_from_file(file, gcp_credentials):
             file, "bucket", blob, gcp_credentials
         )
 
-    assert test_flow().result().result() == blob
+    assert test_flow() == blob
 
 
 @pytest.mark.parametrize(
@@ -80,7 +80,7 @@ def test_cloud_storage_upload_blob_from_string(data, blob, gcp_credentials):
             data, "bucket", "blob", gcp_credentials
         )
 
-    assert test_flow().result().result() == blob
+    assert test_flow() == blob
 
 
 @pytest.mark.parametrize("dest_blob", [None, "dest_blob"])
@@ -96,6 +96,6 @@ def test_cloud_storage_copy_blob(dest_blob, gcp_credentials):
         )
 
     if dest_blob is None:
-        assert test_flow().result().result() == "source_blob"
+        assert test_flow() == "source_blob"
     else:
-        assert test_flow().result().result() == "dest_blob"
+        assert test_flow() == "dest_blob"
