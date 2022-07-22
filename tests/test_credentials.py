@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -13,7 +14,7 @@ SERVICE_ACCOUNT_FILES.append(str(SERVICE_ACCOUNT_FILES[0]))
 
 @pytest.fixture()
 def service_account_info():
-    return {"key": "abc", "pass": "pass"}
+    return '{"key": "abc", "pass": "pass"}'
 
 
 @pytest.mark.parametrize("service_account_file", SERVICE_ACCOUNT_FILES)
@@ -68,7 +69,7 @@ def test_get_cloud_storage_client(
             project=project,
         )
         client = credentials.get_cloud_storage_client(project=override_project)
-        assert client.credentials == service_account_info
+        assert client.credentials == json.loads(service_account_info)
 
         if override_project is None:
             assert client.project == project

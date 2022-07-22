@@ -1,10 +1,9 @@
 """Module handling GCP credentials"""
 
 import functools
-import json
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 from google.oauth2.service_account import Credentials
 from pydantic import Json
@@ -83,7 +82,7 @@ class GcpCredentials(Block):
     @staticmethod
     def _get_credentials_from_service_account(
         service_account_file: Optional[str] = None,
-        service_account_info: Optional[str] = None,
+        service_account_info: Optional[Dict[str, str]] = None,
     ) -> Credentials:
         """
         Helper method to serialize credentials by using either
@@ -103,8 +102,6 @@ class GcpCredentials(Block):
                 service_account_file = os.path.expanduser(service_account_file)
             credentials = Credentials.from_service_account_file(service_account_file)
         elif service_account_info:
-            if isinstance(service_account_info, str):
-                service_account_info = json.loads(service_account_info)
             credentials = Credentials.from_service_account_info(service_account_info)
         else:
             return None
@@ -135,14 +132,15 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
 
-            Gets a GCP Cloud Storage client from a JSON dict.
+            Gets a GCP Cloud Storage client from a JSON str.
             ```python
+            import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_info = {
+                service_account_info = json.dumps({
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
@@ -153,7 +151,7 @@ class GcpCredentials(Block):
                     "token_uri": "token_uri",
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
-                }
+                })
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_cloud_storage_client()
@@ -197,14 +195,15 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
 
-            Gets a GCP BigQuery client from a dict.
+            Gets a GCP BigQuery client from a JSON str.
             ```python
+            import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_info = {
+                service_account_info = json.dumps({
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
@@ -215,7 +214,7 @@ class GcpCredentials(Block):
                     "token_uri": "token_uri",
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
-                }
+                })
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_bigquery_client(json)
@@ -258,14 +257,15 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
 
-            Gets a GCP Cloud Storage client from a JSON dict.
+            Gets a GCP Cloud Storage client from a JSON str.
             ```python
+            import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
 
             @flow()
             def example_get_client_flow():
-                service_account_info = {
+                service_account_info = json.dumps({
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
@@ -276,7 +276,7 @@ class GcpCredentials(Block):
                     "token_uri": "token_uri",
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
-                }
+                })
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_secret_manager_client()
