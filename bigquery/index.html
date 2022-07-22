@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://prefecthq.github.io/prefect-gcp/bigquery/">
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.9">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.3.9">
     
     
       
@@ -1450,8 +1450,9 @@ not provided, will default to the one inferred from your credentials.</p></td>
     </thead>
     <tbody>
         <tr>
-          <td><code>dataset_id</code></td>
+          <td><code>dataset</code></td>
           <td>
+                <code>str</code>
           </td>
           <td><p>ID of a destination dataset to write the records to;
 if not provided here, will default to the one provided at initialization.</p></td>
@@ -1717,7 +1718,7 @@ not provided, will default to the one inferred from your credentials.</p></td>
 <span class="sd">    Loads file into BigQuery.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        dataset_id: ID of a destination dataset to write the records to;</span>
+<span class="sd">        dataset: ID of a destination dataset to write the records to;</span>
 <span class="sd">            if not provided here, will default to the one provided at initialization.</span>
 <span class="sd">        table: Name of a destination table to write the records to;</span>
 <span class="sd">            if not provided here, will default to the one provided at initialization.</span>
