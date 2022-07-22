@@ -423,7 +423,7 @@ async def bigquery_load_file(
     Loads file into BigQuery.
 
     Args:
-        dataset_id: ID of a destination dataset to write the records to;
+        dataset: ID of a destination dataset to write the records to;
             if not provided here, will default to the one provided at initialization.
         table: Name of a destination table to write the records to;
             if not provided here, will default to the one provided at initialization.
