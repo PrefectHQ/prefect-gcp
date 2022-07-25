@@ -70,6 +70,13 @@ class GcpCredentials(Block):
         service_account_file: Path to the service account JSON keyfile.
         service_account_info: The contents of the keyfile as a JSON string / dictionary.
         project: Name of the project to use.
+    
+        Example:
+            Load stored GCP credentials:
+            ```python
+            from prefect_gcp import GcpCredentials
+            gcp_credentials_block = GcpCredentials.load("MY_BLOCK_NAME")
+            ```
     """
 
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
