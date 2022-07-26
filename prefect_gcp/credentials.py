@@ -75,7 +75,7 @@ class GcpCredentials(Block):
         Load stored GCP credentials:
         ```python
         from prefect_gcp import GcpCredentials
-        gcp_credentials_block = GcpCredentials.load("MY_BLOCK_NAME")
+        gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
         ```
     """
 
