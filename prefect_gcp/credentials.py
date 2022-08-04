@@ -101,7 +101,7 @@ class GcpCredentials(Block):
                 "can be specified at once"
             )
         elif service_account_file:
-            if not os.path.exists(service_account_file):
+            if not os.path.exists(os.path.expanduser(service_account_file)):
                 raise ValueError("The provided path to the service account is invalid")
             elif isinstance(service_account_file, Path):
                 service_account_file = service_account_file.expanduser()
