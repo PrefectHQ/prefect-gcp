@@ -3,7 +3,7 @@
 import functools
 import os
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from google.oauth2.service_account import Credentials
 from pydantic import Json
@@ -85,6 +85,30 @@ class GcpCredentials(Block):
     service_account_file: Optional[Path] = None
     service_account_info: Optional[Json] = None
     project: Optional[str] = None
+
+    def get_credentials_from_service_account(self) -> Union[Credentials, None]:
+        """
+        Helper method to serialize credentials by using either
+        service_account_file or service_account_info.
+        """
+        if self.service_account_info and self.service_account_file:
+            raise ValueError(
+                "Only one of service_account_info or service_account_file "
+                "can be specified at once"
+            )
+        elif self.service_account_file:
+            if not os.path.exists(self.service_account_file):
+                raise ValueError("The provided path to the service account is invalid")
+            elif isinstance(self.service_account_file, Path):
+                service_account_file = self.service_account_file.expanduser()
+            else:
+                service_account_file = os.path.expanduser(self.service_account_file)
+            credentials = Credentials.from_service_account_file(service_account_file)
+        elif self.service_account_info:
+            credentials = Credentials.from_service_account_info(self.service_account_info)
+        else:
+            return None
+        return credentials
 
     @staticmethod
     def _get_credentials_from_service_account(
