@@ -1,37 +1,20 @@
 import json
-from prefect.infrastructure.docker import DockerRegistry
 from typing import Any, Optional, Union
-from prefect.infrastructure.base import Infrastructure, InfrastructureResult
+
 from google.api_core.client_options import ClientOptions
-from googleapiclient import discovery
 from google.oauth2 import service_account
+from googleapiclient import discovery
 from prefect.blocks.core import Block
+from prefect.infrastructure.base import Infrastructure, InfrastructureResult
+
+from prefect_gcp.cloud_registry import GoogleCloudRegistry
 from prefect_gcp.credentials import GcpCredentials
 
-# scopes = ['https://www.googleapis.com/auth/cloud-platform']
-# sa_file = 'creds.json'
-# region = 'us-east1'
-# project_id = 'helical-bongo-360018' # Project ID, not Project Name
 
-# api_endpoint = f"https://{region}-run.googleapis.com"
-# options = ClientOptions(
-#     api_endpoint=api_endpoint
-# )
-
-# credentials = service_account.Credentials.from_service_account_file(sa_file, scopes=scopes)
-
-# # Create the Cloud Compute Engine service object
-# service = discovery.build('run', 'v1', client_options=options, credentials=credentials)
-# breakpoint()
-# request = service.namespaces().jobs().list(parent=f'namespaces/helical-bongo-360018')
-# response = request.execute()
-# breakpoint()
-# request = service.namespaces().jobs().run(name='namespaces/helical-bongo-360018/jobs/peyton-test')
-# response = request.execute()
-# print(response)
-# breakpoint()
 class CloudRunJobSetting(Block):
     pass
+
+
 class CloudRunJob(Infrastructure):
     job_name: str
     type: str = "Cloud Run Job"
@@ -44,7 +27,9 @@ class CloudRunJob(Infrastructure):
 
     def validate_something_or_another(self):
         if not self.image_name and not self.image_url:
-            raise ValueError("You must provide either an image URL or an image name for a cloud run job.")
+            raise ValueError(
+                "You must provide either an image URL or an image name for a cloud run job."
+            )
 
     def run(self):
         with self._get_client() as jobs_client:
@@ -52,40 +37,40 @@ class CloudRunJob(Infrastructure):
             res = self._submit_job_run(jobs_client=jobs_client)
             print(res)
 
-    def register(self):
+    def create(self):
         client = self._get_client()
-        self._register(client)
+        self._create(client)
 
-    def _register(self, jobs_client):
+    def _create(self, jobs_client):
         request = jobs_client.create(
-            parent=f"namespaces/{self.project_id}",
-            body=self._registration_body(jobs_client)
+            parent=f"namespaces/{self.project_id}", body=self._create_request_body()
         )
         response = request.execute()
         return response
-    
-    def _registration_body(self, client):
+
+    def _create_request_body(self):
         # https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs#Job
         body = {
-            "apiVersion": 'run.googleapis.com/v1',
+            "apiVersion": "run.googleapis.com/v1",
             "kind": "Job",
             "metadata": {
-                "name": self.job_name+"2",
+                "name": self.job_name,
                 "annotations": {
+                    # https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation
                     "run.googleapis.com/launch-stage": "BETA"
-                }
+                },
             },
-            "spec": { # JobSpec job.spec
-                "template": { # ExecutionTemplateSpec
-                    "spec": { # ExecutionSpec
-                        "template": { # TaskTemplateSpec
-                            "spec": { # TaskSpec
+            "spec": {  # JobSpec
+                "template": {  # ExecutionTemplateSpec
+                    "spec": {  # ExecutionSpec
+                        "template": {  # TaskTemplateSpec
+                            "spec": {  # TaskSpec
                                 "containers": [{"image": self.image_url}]
                             }
                         }
                     }
                 }
-            }
+            },
         }
         return body
 
@@ -105,44 +90,25 @@ class CloudRunJob(Infrastructure):
         credentials = self.credentials.get_credentials_from_service_account()
         options = ClientOptions(api_endpoint=api_endpoint)
 
-        return discovery.build(
-            'run', 
-            'v1',
-            client_options=options,
-            credentials=credentials
-            ).namespaces().jobs()
+        return (
+            discovery.build(
+                "run", "v1", client_options=options, credentials=credentials
+            )
+            .namespaces()
+            .jobs()
+        )
 
     def preview(self):
         pass
-    
-class GoogleCloudRegistry(DockerRegistry):
-    _block_type_name = "Google Cloud Registry" 
-    credentials: GcpCredentials
-
-    def login(self):
-        client = self._get_docker_client()
-        with open(self.credentials.service_account_file, 'r') as f:
-            password = json.load(f)
-        
-        return self._login(password=password, client=client)
-    
-    def _login(self, password, client):
-        return client.login(
-            username = self.username,
-            password = json.dumps(password),
-            registry = self.registry_url,
-            reauth = self.reauth
-        )
-
 
 
 if __name__ == "__main__":
     creds = GcpCredentials(service_account_file="creds.json")
     registry = GoogleCloudRegistry(
-        username='_json_key',
-        password='',
-        registry_url='gcr.io/helical-bongo-360018',
-        credentials=creds
+        username="_json_key",
+        password="",
+        registry_url="gcr.io/helical-bongo-360018",
+        credentials=creds,
     )
     registry.login()
 
@@ -153,10 +119,7 @@ if __name__ == "__main__":
         image_url="gcr.io/prefect-dev-cloud2/peytons-test-image:latest",
         # image_name = 'gcr.io/helical-bongo-360018/peytons-test-image',
         credentials=creds,
-        registry=registry
+        registry=registry,
     )
 
     job.register()
-    # job.run()
-
-
