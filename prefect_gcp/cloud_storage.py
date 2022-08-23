@@ -1,13 +1,16 @@
 """Tasks for interacting with GCP Cloud Storage"""
 
 import os
-from functools import partial
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Tuple, Union
+from uuid import uuid4
 
-from anyio import to_thread
 from prefect import get_run_logger, task
+from prefect.filesystems import ReadableFileSystem, WritableFileSystem
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
+from prefect.utilities.filesystem import filter_files
+from pydantic import validator
 
 if TYPE_CHECKING:
     from google.cloud.storage import Bucket
@@ -55,8 +58,7 @@ async def cloud_storage_create_bucket(
     logger.info("Creating %s bucket", bucket)
 
     client = gcp_credentials.get_cloud_storage_client(project=project)
-    partial_create_bucket = partial(client.create_bucket, bucket, location=location)
-    await to_thread.run_sync(partial_create_bucket)
+    await run_sync_in_worker_thread(client.create_bucket, bucket, location=location)
     return bucket
 
 
@@ -69,8 +71,7 @@ async def _get_bucket(
     Helper function to retrieve a bucket.
     """
     client = gcp_credentials.get_cloud_storage_client(project=project)
-    partial_get_bucket = partial(client.get_bucket, bucket)
-    bucket_obj = await to_thread.run_sync(partial_get_bucket)
+    bucket_obj = await run_sync_in_worker_thread(client.get_bucket, bucket)
     return bucket_obj
 
 
@@ -131,8 +132,9 @@ async def cloud_storage_download_blob_as_bytes(
         blob, chunk_size=chunk_size, encryption_key=encryption_key
     )
 
-    partial_download = partial(blob_obj.download_as_bytes, timeout=timeout)
-    contents = await to_thread.run_sync(partial_download)
+    contents = await run_sync_in_worker_thread(
+        blob_obj.download_as_bytes, timeout=timeout
+    )
     return contents
 
 
@@ -203,8 +205,9 @@ async def cloud_storage_download_blob_to_file(
         else:
             path = os.path.join(path, blob)  # keep as str if a str is passed
 
-    partial_download = partial(blob_obj.download_to_filename, path, timeout=timeout)
-    await to_thread.run_sync(partial_download)
+    await run_sync_in_worker_thread(
+        blob_obj.download_to_filename, path, timeout=timeout
+    )
     return path
 
 
@@ -268,10 +271,9 @@ async def cloud_storage_upload_blob_from_string(
         blob, chunk_size=chunk_size, encryption_key=encryption_key
     )
 
-    partial_upload = partial(
+    await run_sync_in_worker_thread(
         blob_obj.upload_from_string, data, content_type=content_type, timeout=timeout
     )
-    await to_thread.run_sync(partial_upload)
     return blob
 
 
@@ -336,10 +338,13 @@ async def cloud_storage_upload_blob_from_file(
     )
 
     if isinstance(file, BytesIO):
-        partial_upload = partial(blob_obj.upload_from_file, file, timeout=timeout)
+        await run_sync_in_worker_thread(
+            blob_obj.upload_from_file, file, timeout=timeout
+        )
     else:
-        partial_upload = partial(blob_obj.upload_from_filename, file, timeout=timeout)
-    await to_thread.run_sync(partial_upload)
+        await run_sync_in_worker_thread(
+            blob_obj.upload_from_filename, file, timeout=timeout
+        )
     return blob
 
 
@@ -411,13 +416,192 @@ async def cloud_storage_copy_blob(
         dest_blob = source_blob
 
     source_blob_obj = source_bucket_obj.blob(source_blob)
-    partial_copy_blob = partial(
+    await run_sync_in_worker_thread(
         source_bucket_obj.copy_blob,
         blob=source_blob_obj,
         destination_bucket=dest_bucket_obj,
         new_name=dest_blob,
         timeout=timeout,
     )
-    await to_thread.run_sync(partial_copy_blob)
 
     return dest_blob
+
+
+class GcsBucket(ReadableFileSystem, WritableFileSystem):
+    """
+    Block used to store data using GCP Cloud Storage Buckets.
+
+    Attributes:
+        bucket: Name of the bucket.
+        gcp_credentials: The credentials to authenticate with GCP.
+        basepath: Used when you don't want to read/write at base level.
+
+    Example:
+        Load stored GCP Cloud Storage Bucket:
+        ```python
+        from prefect_gcp import GcpCloudStorageBucket
+        gcp_cloud_storage_bucket_block = GcpCloudStorageBucket.load("BLOCK_NAME")
+        ```
+
+    """
+
+    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _block_type_name = "GCS Bucket"
+
+    bucket: str
+    gcp_credentials: GcpCredentials
+    basepath: Optional[Path]
+
+    @validator("basepath", pre=True)
+    def cast_pathlib(cls, value):
+
+        """
+        If basepath provided, it means we aren't writing to the root directory
+        of the bucket. We need to ensure that it is a valid path. This is called
+        when the S3Bucket block is instantiated.
+        """
+
+        if isinstance(value, Path):
+            return str(value)
+        return value
+
+    def _resolve_path(self, path: str) -> Path:
+        """
+        A helper function used in write_path to join `self.basepath` and `path`.
+
+        Args:
+            path: Name of the key, e.g. "file1". Each object in your
+                bucket has a unique key (or key name).
+        """
+        path = path or str(uuid4())
+
+        # If basepath provided, it means we won't write to the root dir of
+        # the bucket. So we need to add it on the front of the path.
+        path = str(Path(self.basepath) / path) if self.basepath else path
+
+    @sync_compatible
+    async def get_directory(
+        self, from_path: Optional[str] = None, local_path: Optional[str] = None
+    ) -> None:
+        """
+        Copies a folder from the configured GCS bucket to a local directory.
+        Defaults to copying the entire contents of the block's basepath to the current
+        working directory.
+
+        Args:
+            from_path: Path in GCS bucket to download from. Defaults to the block's
+                configured basepath.
+            local_path: Local path to download S3 contents to. Defaults to the current
+                working directory.
+        """
+        if from_path is None:
+            from_path = self._resolve_path(from_path)
+
+        if local_path is None:
+            local_path = str(Path(".").absolute())
+
+        bucket_obj = await _get_bucket(
+            self.bucket, self.gcp_credentials, project=self.gcp_credentials.project
+        )
+
+        for blob in bucket_obj.list_blobs():
+            if object.key[-1] == "/":
+                # object is a folder and will be created if it contains any objects
+                continue
+            target = os.path.join(local_path, from_path)
+            if not os.path.exists(os.path.dirname(target)):
+                os.makedirs(os.path.dirname(target))
+            cloud_storage_download_blob_to_file.fn(
+                bucket=self.bucket,
+                blob=blob,
+                path=target,
+                gcp_credentials=self.gcp_credentials,
+            )
+
+    @sync_compatible
+    async def put_directory(
+        self,
+        local_path: Optional[str] = None,
+        to_path: Optional[str] = None,
+        ignore_file: Optional[str] = None,
+    ) -> int:
+        """
+        Uploads a directory from a given local path to the configured GCS bucket in a
+        given folder.
+
+        Defaults to uploading the entire contents the current working directory to the
+        block's basepath.
+
+        Args:
+            local_path: Path to local directory to upload from.
+            to_path: Path in GCS bucket to upload to. Defaults to block's configured
+                basepath.
+            ignore_file: Path to file containing gitignore style expressions for
+                filepaths to ignore.
+        """
+        if to_path is None:
+            to_path = self._resolve_path(to_path)
+
+        if local_path is None:
+            local_path = "."
+
+        included_files = None
+        if ignore_file:
+            with open(ignore_file, "r") as f:
+                ignore_patterns = f.readlines()
+            included_files = filter_files(local_path, ignore_patterns)
+
+        uploaded_file_count = 0
+        for local_file_path in Path(local_path).rglob("*"):
+            if included_files is not None and local_file_path not in included_files:
+                continue
+            elif not local_file_path.is_dir():
+                remote_file_path = Path(to_path) / local_file_path.relative_to(
+                    local_path
+                )
+                with open(local_file_path, "rb") as local_file:
+                    local_file_content = local_file.read()
+
+                await self.write_path(str(remote_file_path), content=local_file_content)
+                uploaded_file_count += 1
+
+        return uploaded_file_count
+
+    @sync_compatible
+    async def read_path(self, path: str) -> bytes:
+        """
+        Read specified path from GCS and return contents. Provide the entire
+        path to the key in GCS.
+
+        Args:
+            path: Entire path to (and including) the key.
+
+        Example:
+            TODO
+        """
+        path = self._resolve_path(path)
+        return await cloud_storage_download_blob_as_bytes.fn(
+            bucket=self.bucket, blob=path, gcp_credentials=self.gcp_credentials
+        )
+
+    @sync_compatible
+    async def write_path(self, path: str, content: bytes) -> str:
+        """
+        Writes to an GCS bucket.
+
+        Args:
+            path: The key name. Each object in your bucket has a unique
+                key (or key name).
+            content: What you are uploading to S3.
+
+        Example:
+            TODO
+        """
+        path = self._resolve_path(path)
+        await cloud_storage_upload_blob_from_string.fn(
+            data=content,
+            bucket=self.bucket,
+            blob=path,
+            gcp_credentials=self.gcp_credentials,
+        )
+        return path
