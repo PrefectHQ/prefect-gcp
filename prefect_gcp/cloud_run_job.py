@@ -1,17 +1,19 @@
 from __future__ import annotations
+from ast import Delete
 import json
 from typing import Any, List, Optional, Union
 from pydantic import BaseModel
 from google.api_core.client_options import ClientOptions
 from google.oauth2 import service_account
 from googleapiclient import discovery
+import googleapiclient
 from prefect.blocks.core import Block
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 
 from prefect_gcp.credentials import GcpCredentials
 
 
-class CloudRunJobSetting(Block):
+class CloudRunJobSettings(Block):
     """
     Block that contains optional settings for CloudRunJob infrastructure. It 
     does not include mandatory settings, which are found on the CloudRunJob
@@ -29,8 +31,11 @@ class CloudRunJobSetting(Block):
     vpc_egress: Optional[Any] = None #TODO how does this work? # done
 
     def add_container_settings(self, d: dict) -> dict:
-        """Add settings related to containers for Cloud Run Jobs to a dictionary.
+        """
+        Add settings related to containers for Cloud Run Jobs to a dictionary.
 
+        Includes environment variables, entrypoint command, entrypoint arguments,
+        and cpu and memory limits.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         """
@@ -42,16 +47,19 @@ class CloudRunJobSetting(Block):
         return d
 
     def add_jobs_metadata_settings(self, d: dict) -> dict:
-        """Add top-level Jobs metadata settings for Cloud Run Jobs to a dictionary.
+        """
+        Add top-level Jobs metadata settings for Cloud Run Jobs to a dictionary.
 
+        Includes labels.
         See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs
         """
         return self._add_labels(d)
 
     def add_execution_template_spec_metadata(self, d: dict) -> dict:
         """Add settings related to the ExecutionTemplateSpec for Cloud Run Jobs
-        to a dictionary.
+        to a dictionary. 
 
+        Includes Cloud SQL Instances, VPC Access connector, and VPC egress.
         See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
         """
         d = self._add_cloud_sql_instances(d)
@@ -123,7 +131,7 @@ class CloudRunJobSetting(Block):
         See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
         """
         if self.set_cloud_sql_instances is not None:
-            d["run.googleapis.com/cloudsql-instances"] = self.set_cloud_sql_instances
+            d["annotations"]["run.googleapis.com/cloudsql-instances"] = self.set_cloud_sql_instances
 
         return d
 
@@ -133,7 +141,7 @@ class CloudRunJobSetting(Block):
         See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
         """
         if self.vpc_connector is not None:
-            d["run.googleapis.com/vpc-access-connector"] = self.vpc_connector
+            d["annotations"]["run.googleapis.com/vpc-access-connector"] = self.vpc_connector
         
         return d
 
@@ -143,18 +151,23 @@ class CloudRunJobSetting(Block):
         See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
         """
         if self.vpc_egress is not None:
-            d["run.googleapis.com/vpc-access-egress"] = self.vpc_egress
+            d["annotations"]["run.googleapis.com/vpc-access-egress"] = self.vpc_egress
         
         return d
 
 class CloudRunJob(Infrastructure):
+    """Infrastructure block used to run GCP Cloud Run Jobs.
+
+    Optional settings are available through the CloudRunJobSettings block.
+    """
     type: str = "Cloud Run Job"
     job_name: str
     project_id: str
     image_url: str
     region: str
     credentials: GcpCredentials
-    settings: Optional[CloudRunJobSetting]
+    always_recreate: Optional[bool] = False
+    settings: Optional[CloudRunJobSettings]
 
     def validate_something_or_another(self):
         if not self.image_name and not self.image_url:
@@ -164,24 +177,41 @@ class CloudRunJob(Infrastructure):
 
     def run(self):
         with self._get_client() as jobs_client:
-            # self._register(jobs_client=jobs_client)
-            res = self._submit_job_run(jobs_client=jobs_client)
+            job_exists = self._job_already_exists(jobs_client=jobs_client)
+
+            if job_exists and self.always_recreate:
+                self.delete_job(jobs_client=jobs_client)
+                job_exists = False
+            
+            if not job_exists:
+                self.create_job()
+
+            try:
+                res = self._submit_job_run(jobs_client=jobs_client)
+            except googleapiclient.errors.HttpError as exc:
+                self.logger.exception(f"Cloud run job received an unexpected exception when running Cloud Run Job '{self.job_name}':\n{exc!r}")
             print(res)
 
-    def create(self):
+    def create_job(self):
         client = self._get_client()
-        self._create(client)
+        try:
+            self._create(client)
+        except googleapiclient.errors.HttpError as exc:
+            # exc.status_code == 409: 
+            self.logger.exception(f"Cloud run job received an unexpected exception when creating Cloud Run Job '{self.job_name}':\n{exc!r}")
 
     def _create(self, jobs_client):
         request = jobs_client.create(
-            parent=f"namespaces/{self.project_id}", body=self._create_request_body()
+            parent=f"namespaces/{self.project_id}", body=self._body_for_create()
         )
         response = request.execute()
         return response
 
-    def _create_request_body(self):
-        # See: https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs#Job
+    def _body_for_create(self):
+        """Return the data used in the body for a Job CREATE request.
 
+        See: https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs
+        """
         jobs_metadata = {
             "name": self.job_name,
             "annotations": {
@@ -192,7 +222,7 @@ class CloudRunJob(Infrastructure):
         }
         self.settings.add_jobs_metadata_settings(jobs_metadata)
 
-        execution_template_spec_metadata = {}
+        execution_template_spec_metadata = {"annotations": {}}
         self.settings.add_execution_template_spec_metadata(execution_template_spec_metadata)
 
         containers = [
@@ -218,8 +248,12 @@ class CloudRunJob(Infrastructure):
         }
         return body
 
-    def _check_registry(self):
-        pass
+    def _job_already_exists(self, jobs_client) -> List[str]:
+        request = jobs_client.list(parent=f"namespaces/{self.project_id}")
+        jobs = request.execute()
+        job_names = {job['metadata']['name'] for job in jobs['items']}
+
+        return self.job_name in job_names
 
     def _submit_job_run(self, jobs_client):
         request = jobs_client.run(
@@ -246,26 +280,32 @@ class CloudRunJob(Infrastructure):
         pass
 
 
+    def delete_job(self, jobs_client):
+        """Called when overwrite=True
+        """
+        try:
+            self._delete(jobs_client)
+        except googleapiclient.errors.HttpError as exc:
+            self.logger.exception(f"Cloud run job received an unexpected exception when deleting existing Cloud Run Job '{self.job_name}':\n{exc!r}")
+
+    def _delete(self, jobs_client):
+        request = jobs_client.delete(f"namespaces/{self.project_id}/{self.job_name}")
+        response = request.execute()
+        return response
+
 if __name__ == "__main__":
     creds = GcpCredentials(service_account_file="creds.json")
-    # registry = GoogleCloudRegistry(
-    #     username="_json_key",
-    #     password="",
-    #     registry_url="gcr.io/helical-bongo-360018",
-    #     credentials=creds,
-    # )
-    # registry.login()
 
     job = CloudRunJob(
-        job_name="peyton-test1",
+        job_name="peyton-test",
         project_id="helical-bongo-360018",
         region="us-east1",
         image_url="gcr.io/prefect-dev-cloud2/peytons-test-image:latest",
         credentials=creds,
-        settings=CloudRunJobSetting(
+        settings=CloudRunJobSettings(
             set_env_vars = {"a": "b"},
             command=["my", "dog", "skip"]
         )
     )
 
-    job.create()
+    job.run()
