@@ -12,6 +12,11 @@ from prefect_gcp.credentials import GcpCredentials
 
 
 class CloudRunJobSetting(Block):
+    """
+    Block that contains optional settings for CloudRunJob infrastructure. It 
+    does not include mandatory settings, which are found on the CloudRunJob
+    itself.
+    """
     args: Optional[List[str]] = None # done
     command: Optional[List[str]] = None # done
     cpu: Optional[Any] = None # done
@@ -24,6 +29,11 @@ class CloudRunJobSetting(Block):
     vpc_egress: Optional[Any] = None #TODO how does this work? # done
 
     def add_container_settings(self, d: dict) -> dict:
+        """Add settings related to containers for Cloud Run Jobs to a dictionary.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
+        and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
+        """
         d = self._add_env_vars(d)
         d = self._add_resources(d)
         d = self._add_command(d)
@@ -31,15 +41,41 @@ class CloudRunJobSetting(Block):
 
         return d
 
+    def add_jobs_metadata_settings(self, d: dict) -> dict:
+        """Add top-level Jobs metadata settings for Cloud Run Jobs to a dictionary.
+
+        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs
+        """
+        return self._add_labels(d)
+
+    def add_execution_template_spec_metadata(self, d: dict) -> dict:
+        """Add settings related to the ExecutionTemplateSpec for Cloud Run Jobs
+        to a dictionary.
+
+        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
+        """
+        d = self._add_cloud_sql_instances(d)
+        d = self._add_vpc_connector(d)
+        d = self._add_vpc_egress(d)
+
+        return d
+
     def _add_env_vars(self, d: dict):
+        """Add environment variables for a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar 
+        """
         if self.set_env_vars is not None:
             env = [{"name": k, "value": v} for k,v in self.set_env_vars.items()]
             d["env"] = env
         
         return d
 
-
     def _add_resources(self, d: dict):
+        """Set specified resources limits for a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
+        """
         resources = {"limits": {}}
         if self.cpu is not None:
             resources["limits"]["cpu"] = self.cpu
@@ -52,16 +88,65 @@ class CloudRunJobSetting(Block):
         return d
 
     def _add_command(self, d: dict):
+        """Set the command that a container will run for a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
+        """
         if self.command:
             d["command"] = self.command
         
         return d
 
     def _add_args(self, d: dict):
+        """Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
+        """
         if self.args:
             d["args"] = self.args
         
         return d
+
+    def _add_labels(self, d: dict) -> dict:
+        """Provide labels to a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/ObjectMeta
+        """
+        if self.labels:
+            d["labels"] = self.labels
+        
+        return d
+    
+    def _add_cloud_sql_instances(self, d:dict) -> dict:
+        """Set Cloud SQL connections for a Cloud Run Job.
+
+        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
+        """
+        if self.set_cloud_sql_instances is not None:
+            d["run.googleapis.com/cloudsql-instances"] = self.set_cloud_sql_instances
+
+        return d
+
+    def _add_vpc_connector(self, d:dict) -> dict:
+        """Set a Serverless VPC Access connector for a Cloud Run Job.
+
+        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
+        """
+        if self.vpc_connector is not None:
+            d["run.googleapis.com/vpc-access-connector"] = self.vpc_connector
+        
+        return d
+
+    def _add_vpc_egress(self, d:dict) -> dict:
+        """Set VPC egrees for a Cloud Run Job.
+
+        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
+        """
+        if self.vpc_egress is not None:
+            d["run.googleapis.com/vpc-access-egress"] = self.vpc_egress
+        
+        return d
+
 class CloudRunJob(Infrastructure):
     type: str = "Cloud Run Job"
     job_name: str
@@ -97,8 +182,7 @@ class CloudRunJob(Infrastructure):
     def _create_request_body(self):
         # See: https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs#Job
 
-
-        metadata_1 = {
+        jobs_metadata = {
             "name": self.job_name,
             "annotations": {
                 # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation
@@ -106,31 +190,22 @@ class CloudRunJob(Infrastructure):
             },
             "labels": self.settings.labels
         }
+        self.settings.add_jobs_metadata_settings(jobs_metadata)
 
-        # metadata_2 = {
-        #     "run.googleapis.com/cloudsql-instances": self.settings.set_cloud_sql_instances,
-        #     "run.googleapis.com/vpc-access-connector": self.settings.vpc_connector,
-        #     "run.googleapis.com/vpc-access-egress": self.settings.vpc_egress
-        # }
-        metadata_2 = {}
+        execution_template_spec_metadata = {}
+        self.settings.add_execution_template_spec_metadata(execution_template_spec_metadata)
 
-        # resources = {
-        #     "limits": {
-        #         "cpu": self.settings.cpu,
-        #         "memory": self.settings.memory
-        #     }
-        # }
         containers = [
             self.settings.add_container_settings({"image": self.image_url})
         ]
 
-        job = {
+        body = {
             "apiVersion": "run.googleapis.com/v1",
             "kind": "Job",
-            "metadata": metadata_1,
+            "metadata": jobs_metadata,
             "spec": {  # JobSpec
                 "template": {  # ExecutionTemplateSpec
-                    "metadata": metadata_2,
+                    "metadata": execution_template_spec_metadata,
                     "spec": {  # ExecutionSpec
                         "template": {  # TaskTemplateSpec
                             "spec": {  # TaskSpec
@@ -141,7 +216,7 @@ class CloudRunJob(Infrastructure):
                 }
             },
         }
-        return job
+        return body
 
     def _check_registry(self):
         pass
