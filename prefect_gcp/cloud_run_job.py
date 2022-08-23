@@ -1,7 +1,9 @@
 from __future__ import annotations
 from ast import Delete
 import json
+import time
 from typing import Any, List, Optional, Union
+from unicodedata import name
 from pydantic import BaseModel
 from google.api_core.client_options import ClientOptions
 from google.oauth2 import service_account
@@ -12,6 +14,33 @@ from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 
 from prefect_gcp.credentials import GcpCredentials
 
+class Job(BaseModel):
+    metadata: dict
+    spec: dict
+    status: dict
+    name: str
+    ready_condition: dict
+
+    def is_ready(self):
+        """See if job is ready to be executed"""
+        return self.ready_condition["status"] == "True"
+
+    @classmethod
+    def from_json(cls, job):
+        """Construct a Job instance from a Jobs JSON response."""
+        ready_condition = {}
+
+        for condition in job["status"]["conditions"]:
+            if condition["type"] == 'Ready':
+                ready_condition = condition
+
+        return cls(
+            metadata = job["metadata"],
+            spec = job["spec"],
+            status = job["status"],
+            name = job["metadata"]["name"],
+            ready_condition = condition
+        )
 
 class CloudRunJobSettings(Block):
     """
@@ -166,14 +195,8 @@ class CloudRunJob(Infrastructure):
     image_url: str
     region: str
     credentials: GcpCredentials
-    always_recreate: Optional[bool] = False
+    always_recreate: bool
     settings: Optional[CloudRunJobSettings]
-
-    def validate_something_or_another(self):
-        if not self.image_name and not self.image_url:
-            raise ValueError(
-                "You must provide either an image URL or an image name for a cloud run job."
-            )
 
     def run(self):
         with self._get_client() as jobs_client:
@@ -182,14 +205,28 @@ class CloudRunJob(Infrastructure):
             if job_exists and self.always_recreate:
                 self.delete_job(jobs_client=jobs_client)
                 job_exists = False
-            
+                # wait until job is finished deleting 
+            breakpoint()
             if not job_exists:
+                # googleapiclient.errors.HttpError: <HttpError 409 when requesting 
+                # https://us-east1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/helical-bongo-360018/jobs?alt=json 
+                # returned "Resource 'peyton-test' already exists but was marked for deletion. Please try again once 
+                # the resource is completely deleted.". Details: "Resource 'peyton-test' already exists but was 
+                # marked for deletion. Please try again once the resource is completely deleted.">
                 self.create_job()
+            breakpoint()
+            job = self._get_job(jobs_client=jobs_client)
+            breakpoint()
+            while not job.is_ready():
+                self.logger.info(f"Job is not yet ready. Current condition: {job.ready_condition}")
+                time.sleep(3)
+                job = self._get_job(jobs_client=jobs_client) 
 
             try:
                 res = self._submit_job_run(jobs_client=jobs_client)
             except googleapiclient.errors.HttpError as exc:
                 self.logger.exception(f"Cloud run job received an unexpected exception when running Cloud Run Job '{self.job_name}':\n{exc!r}")
+                raise
             print(res)
 
     def create_job(self):
@@ -199,6 +236,7 @@ class CloudRunJob(Infrastructure):
         except googleapiclient.errors.HttpError as exc:
             # exc.status_code == 409: 
             self.logger.exception(f"Cloud run job received an unexpected exception when creating Cloud Run Job '{self.job_name}':\n{exc!r}")
+            raise
 
     def _create(self, jobs_client):
         request = jobs_client.create(
@@ -248,12 +286,32 @@ class CloudRunJob(Infrastructure):
         }
         return body
 
-    def _job_already_exists(self, jobs_client) -> List[str]:
+    def _list_jobs(self, jobs_client):
         request = jobs_client.list(parent=f"namespaces/{self.project_id}")
-        jobs = request.execute()
-        job_names = {job['metadata']['name'] for job in jobs['items']}
+        try:
+            jobs = request.execute()
+        except googleapiclient.errors.HttpError as exc:
+            self.logger.exception(f"Cloud run job received an unexpected exception when listing Cloud Run Jobs in project '{self.project_id}':\n{exc!r}")
+            raise
 
-        return self.job_name in job_names
+        return [Job.from_json(job) for job in jobs]
+
+    def _get_job(self, jobs_client) -> Job:
+        request = jobs_client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
+        try:
+            res = request.execute()
+        except googleapiclient.errors.HttpError as exc:
+            self.logger.exception(f"Cloud run job received an unexpected exception when getting Job '{self.job_name}':\n{exc!r}")
+            raise
+        return Job.from_json(res)
+
+    def _job_already_exists(self, jobs_client) -> List[str]:
+        try:
+            self._get_job(jobs_client)
+        except googleapiclient.errors.HttpError as exc:
+            return False
+        
+        return True
 
     def _submit_job_run(self, jobs_client):
         request = jobs_client.run(
@@ -279,7 +337,6 @@ class CloudRunJob(Infrastructure):
     def preview(self):
         pass
 
-
     def delete_job(self, jobs_client):
         """Called when overwrite=True
         """
@@ -289,7 +346,7 @@ class CloudRunJob(Infrastructure):
             self.logger.exception(f"Cloud run job received an unexpected exception when deleting existing Cloud Run Job '{self.job_name}':\n{exc!r}")
 
     def _delete(self, jobs_client):
-        request = jobs_client.delete(f"namespaces/{self.project_id}/{self.job_name}")
+        request = jobs_client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
         response = request.execute()
         return response
 
@@ -302,9 +359,11 @@ if __name__ == "__main__":
         region="us-east1",
         image_url="gcr.io/prefect-dev-cloud2/peytons-test-image:latest",
         credentials=creds,
+        always_recreate=True,
         settings=CloudRunJobSettings(
             set_env_vars = {"a": "b"},
-            command=["my", "dog", "skip"]
+            command=["my", "dog", "skip"],
+
         )
     )
 
