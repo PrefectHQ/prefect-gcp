@@ -449,7 +449,7 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
     _block_type_name = "GCS Bucket"
 
     bucket: str
-    gcp_credentials: GcpCredentials
+    gcp_credentials: "GcpCredentials"
     basepath: Optional[Path]
 
     @validator("basepath", pre=True)
@@ -458,7 +458,7 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         """
         If basepath provided, it means we aren't writing to the root directory
         of the bucket. We need to ensure that it is a valid path. This is called
-        when the S3Bucket block is instantiated.
+        when the GCS bucket block is instantiated.
         """
 
         if isinstance(value, Path):
@@ -491,8 +491,8 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         Args:
             from_path: Path in GCS bucket to download from. Defaults to the block's
                 configured basepath.
-            local_path: Local path to download S3 contents to. Defaults to the current
-                working directory.
+            local_path: Local path to download GCS bucket contents to.
+                Defaults to the current working directory.
         """
         if from_path is None:
             from_path = self._resolve_path(from_path)
@@ -592,7 +592,7 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         Args:
             path: The key name. Each object in your bucket has a unique
                 key (or key name).
-            content: What you are uploading to S3.
+            content: What you are uploading to GCS Bucket.
 
         Example:
             TODO
