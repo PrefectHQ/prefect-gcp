@@ -66,7 +66,7 @@ class GcpCredentials(Block):
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
     for more info about the possible credential configurations.
 
-    Args:
+    Attributes:
         service_account_file: Path to the service account JSON keyfile.
         service_account_info: The contents of the keyfile as a JSON string / dictionary.
         project: Name of the project to use.
