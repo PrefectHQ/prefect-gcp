@@ -18,11 +18,6 @@ try:
 except ModuleNotFoundError:
     pass
 
-try:
-    from google.cloud.storage import Client as StorageClient
-except ModuleNotFoundError:
-    pass
-
 from prefect.blocks.core import Block
 
 
@@ -66,7 +61,7 @@ class GcpCredentials(Block):
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
     for more info about the possible credential configurations.
 
-    Args:
+    Attributes:
         service_account_file: Path to the service account JSON keyfile.
         service_account_info: The contents of the keyfile as a JSON string / dictionary.
         project: Name of the project to use.
@@ -113,68 +108,6 @@ class GcpCredentials(Block):
         else:
             return None
         return credentials
-
-    @_raise_help_msg("cloud_storage")
-    def get_cloud_storage_client(
-        self, project: Optional[str] = None
-    ) -> "StorageClient":
-        """
-        Args:
-            project: Name of the project to use; overrides the base
-                class's project if provided.
-
-        Examples:
-            Gets a GCP Cloud Storage client from a path.
-            ```python
-            from prefect import flow
-            from prefect_gcp.credentials import GcpCredentials
-
-            @flow()
-            def example_get_client_flow():
-                service_account_file = "~/.secrets/prefect-service-account.json"
-                client = GcpCredentials(
-                    service_account_file=service_account_file
-                ).get_cloud_storage_client()
-
-            example_get_client_flow()
-            ```
-
-            Gets a GCP Cloud Storage client from a JSON str.
-            ```python
-            import json
-            from prefect import flow
-            from prefect_gcp.credentials import GcpCredentials
-
-            @flow()
-            def example_get_client_flow():
-                service_account_info = json.dumps({
-                    "type": "service_account",
-                    "project_id": "project_id",
-                    "private_key_id": "private_key_id",
-                    "private_key": private_key",
-                    "client_email": "client_email",
-                    "client_id": "client_id",
-                    "auth_uri": "auth_uri",
-                    "token_uri": "token_uri",
-                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
-                    "client_x509_cert_url": "client_x509_cert_url"
-                })
-                client = GcpCredentials(
-                    service_account_info=service_account_info
-                ).get_cloud_storage_client()
-
-            example_get_client_flow()
-            ```
-        """
-        credentials = self._get_credentials_from_service_account(
-            service_account_file=self.service_account_file,
-            service_account_info=self.service_account_info,
-        )
-
-        # override class project if method project is provided
-        project = project or self.project
-        storage_client = StorageClient(credentials=credentials, project=project)
-        return storage_client
 
     @_raise_help_msg("bigquery")
     def get_bigquery_client(

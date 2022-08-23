@@ -4,22 +4,55 @@ import os
 from functools import partial
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 from anyio import to_thread
+from google.cloud.storage import Bucket
+from google.cloud.storage import Client as StorageClient
 from prefect import get_run_logger, task
+from prefect.filesystems import ReadableFileSystem, WritableFileSystem
 
-if TYPE_CHECKING:
-    from google.cloud.storage import Bucket
+from prefect_gcp.credentials import GcpCredentials
 
-    from prefect_gcp.credentials import GcpCredentials
+
+class GcpCloudStorageBucket(ReadableFileSystem, WritableFileSystem):
+    """
+    Block used to store data using GCP Cloud Storage Buckets.
+
+    Attributes:
+        bucket: Name of the bucket.
+        project: Name of the project to use.
+        credentials: The credentials to authenticate with GCP.
+
+    Example:
+        Load stored GCP Cloud Storage Bucket:
+        ```python
+        from prefect_gcp import GcpCloudStorageBucket
+        gcp_cloud_storage_bucket_block = GcpCloudStorageBucket.load("BLOCK_NAME")
+        ```
+    """
+
+    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _block_type_name = "GCP Credentials"
+
+    bucket: str
+    project: str
+    credentials: GcpCredentials
+
+    def get_cloud_storage_client(self) -> StorageClient:
+        """
+        Gets the Google Cloud Storage Client
+        """
+        storage_client = StorageClient(
+            credentials=self.credentials, project=self.project
+        )
+        return storage_client
 
 
 @task
 async def cloud_storage_create_bucket(
     bucket: str,
-    gcp_credentials: "GcpCredentials",
-    project: Optional[str] = None,
+    gcp_cloud_storage_bucket: GcpCloudStorageBucket,
     location: Optional[str] = None,
 ) -> str:
     """
@@ -27,9 +60,9 @@ async def cloud_storage_create_bucket(
 
     Args:
         bucket: Name of the bucket.
-        gcp_credentials: Credentials to use for authentication with GCP.
+        gcp_cloud_storage_bucket: Credentials to use for authentication with GCP.
         project: Name of the project to use; overrides the
-            gcp_credentials project if provided.
+            gcp_cloud_storage_bucket project if provided.
         location: Location of the bucket.
 
     Returns:
@@ -39,14 +72,14 @@ async def cloud_storage_create_bucket(
         Creates a bucket named "prefect".
         ```python
         from prefect import flow
-        from prefect_gcp import GcpCredentials
+        from prefect_gcp import GcpCloudStorageBucket
         from prefect_gcp.cloud_storage import cloud_storage_create_bucket
 
         @flow()
         def example_cloud_storage_create_bucket_flow():
-            gcp_credentials = GcpCredentials(
+            gcp_cloud_storage_bucket = GcpCloudStorageBucket(
                 service_account_file="/path/to/service/account/keyfile.json")
-            bucket = cloud_storage_create_bucket("prefect", gcp_credentials)
+            bucket = cloud_storage_create_bucket("prefect", gcp_cloud_storage_bucket)
 
         example_cloud_storage_create_bucket_flow()
         ```
@@ -54,7 +87,7 @@ async def cloud_storage_create_bucket(
     logger = get_run_logger()
     logger.info("Creating %s bucket", bucket)
 
-    client = gcp_credentials.get_cloud_storage_client(project=project)
+    client = gcp_cloud_storage_bucket.get_cloud_storage_client()
     partial_create_bucket = partial(client.create_bucket, bucket, location=location)
     await to_thread.run_sync(partial_create_bucket)
     return bucket
@@ -62,13 +95,12 @@ async def cloud_storage_create_bucket(
 
 async def _get_bucket(
     bucket: str,
-    gcp_credentials: "GcpCredentials",
-    project: Optional[str] = None,
+    gcp_cloud_storage_bucket: GcpCloudStorageBucket,
 ) -> "Bucket":
     """
     Helper function to retrieve a bucket.
     """
-    client = gcp_credentials.get_cloud_storage_client(project=project)
+    client = gcp_cloud_storage_bucket.get_cloud_storage_client()
     partial_get_bucket = partial(client.get_bucket, bucket)
     bucket_obj = await to_thread.run_sync(partial_get_bucket)
     return bucket_obj
@@ -78,11 +110,10 @@ async def _get_bucket(
 async def cloud_storage_download_blob_as_bytes(
     bucket: str,
     blob: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_cloud_storage_bucket: GcpCloudStorageBucket,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
-    project: Optional[str] = None,
 ) -> bytes:
     """
     Downloads a blob as bytes.
@@ -90,7 +121,7 @@ async def cloud_storage_download_blob_as_bytes(
     Args:
         bucket: Name of the bucket.
         blob: Name of the Cloud Storage blob.
-        gcp_credentials: Credentials to use for authentication with GCP.
+        gcp_cloud_storage_bucket: Credentials to use for authentication with GCP.
         path: If provided, downloads the contents to the provided file path;
             if the path is a directory, automatically joins the blob name.
         chunk_size (int, optional): The size of a chunk of data whenever
@@ -100,8 +131,6 @@ async def cloud_storage_download_blob_as_bytes(
         timeout: The number of seconds the transport should wait
             for the server response. Can also be passed as a tuple
             (connect_timeout, read_timeout).
-        project: Name of the project to use; overrides the
-            gcp_credentials project if provided.
 
     Returns:
         A bytes or string representation of the blob object.
@@ -110,14 +139,15 @@ async def cloud_storage_download_blob_as_bytes(
         Downloads blob from bucket.
         ```python
         from prefect import flow
-        from prefect_gcp import GcpCredentials
+        from prefect_gcp import GcpCloudStorageBucket
         from prefect_gcp.cloud_storage import cloud_storage_download_blob
 
         @flow()
         def example_cloud_storage_download_blob_flow():
-            gcp_credentials = GcpCredentials(
+            gcp_cloud_storage_bucket = GcpCloudStorageBucket(
                 service_account_file="/path/to/service/account/keyfile.json")
-            contents = cloud_storage_download_blob("bucket", "blob", gcp_credentials)
+            contents = cloud_storage_download_blob(
+                "bucket", "blob", gcp_cloud_storage_bucket)
             return contents
 
         example_cloud_storage_download_blob_flow()
@@ -126,7 +156,7 @@ async def cloud_storage_download_blob_as_bytes(
     logger = get_run_logger()
     logger.info("Downloading blob named %s from the %s bucket", blob, bucket)
 
-    bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
+    bucket_obj = await _get_bucket(bucket, gcp_cloud_storage_bucket)
     blob_obj = bucket_obj.blob(
         blob, chunk_size=chunk_size, encryption_key=encryption_key
     )
@@ -141,11 +171,10 @@ async def cloud_storage_download_blob_to_file(
     bucket: str,
     blob: str,
     path: Union[str, Path],
-    gcp_credentials: "GcpCredentials",
+    gcp_cloud_storage_bucket: GcpCloudStorageBucket,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
-    project: Optional[str] = None,
 ) -> Union[str, Path]:
     """
     Downloads a blob to a file path.
@@ -155,7 +184,7 @@ async def cloud_storage_download_blob_to_file(
         blob: Name of the Cloud Storage blob.
         path: Downloads the contents to the provided file path;
             if the path is a directory, automatically joins the blob name.
-        gcp_credentials: Credentials to use for authentication with GCP.
+        gcp_cloud_storage_bucket: Credentials to use for authentication with GCP.
         chunk_size (int, optional): The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
             per the API specification.
@@ -163,8 +192,6 @@ async def cloud_storage_download_blob_to_file(
         timeout: The number of seconds the transport should wait
             for the server response. Can also be passed as a tuple
             (connect_timeout, read_timeout).
-        project: Name of the project to use; overrides the
-            gcp_credentials project if provided.
 
     Returns:
         The path to the blob object.
@@ -173,15 +200,15 @@ async def cloud_storage_download_blob_to_file(
         Downloads blob from bucket.
         ```python
         from prefect import flow
-        from prefect_gcp import GcpCredentials
+        from prefect_gcp import GcpCloudStorageBucket
         from prefect_gcp.cloud_storage import cloud_storage_download_blob
 
         @flow()
         def example_cloud_storage_download_blob_flow():
-            gcp_credentials = GcpCredentials(
+            gcp_cloud_storage_bucket = GcpCloudStorageBucket(
                 service_account_file="/path/to/service/account/keyfile.json")
             path = cloud_storage_download_blob(
-                "bucket", "blob", "data_path", gcp_credentials)
+                "bucket", "blob", "data_path", gcp_cloud_storage_bucket)
             return path
 
         example_cloud_storage_download_blob_flow()
@@ -192,7 +219,7 @@ async def cloud_storage_download_blob_to_file(
         "Downloading blob named %s from the %s bucket to %s", blob, bucket, path
     )
 
-    bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
+    bucket_obj = await _get_bucket(bucket, gcp_cloud_storage_bucket)
     blob_obj = bucket_obj.blob(
         blob, chunk_size=chunk_size, encryption_key=encryption_key
     )
@@ -213,12 +240,11 @@ async def cloud_storage_upload_blob_from_string(
     data: Union[str, bytes],
     bucket: str,
     blob: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_cloud_storage_bucket: GcpCloudStorageBucket,
     content_type: Optional[str] = None,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
-    project: Optional[str] = None,
 ) -> str:
     """
     Uploads a blob from a string or bytes representation of data.
@@ -227,7 +253,7 @@ async def cloud_storage_upload_blob_from_string(
         data: String or bytes representation of data to upload.
         bucket: Name of the bucket.
         blob: Name of the Cloud Storage blob.
-        gcp_credentials: Credentials to use for authentication with GCP.
+        gcp_cloud_storage_bucket: Credentials to use for authentication with GCP.
         content_type: Type of content being uploaded.
         chunk_size (int, optional): The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
@@ -236,8 +262,6 @@ async def cloud_storage_upload_blob_from_string(
         timeout: The number of seconds the transport should wait
             for the server response. Can also be passed as a tuple
             (connect_timeout, read_timeout).
-        project: Name of the project to use; overrides the
-            gcp_credentials project if provided.
 
     Returns:
         The blob name.
@@ -246,15 +270,15 @@ async def cloud_storage_upload_blob_from_string(
         Uploads blob to bucket.
         ```python
         from prefect import flow
-        from prefect_gcp import GcpCredentials
+        from prefect_gcp import GcpCloudStorageBucket
         from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_string
 
         @flow()
         def example_cloud_storage_upload_blob_from_string_flow():
-            gcp_credentials = GcpCredentials(
+            gcp_cloud_storage_bucket = GcpCloudStorageBucket(
                 service_account_file="/path/to/service/account/keyfile.json")
             blob = cloud_storage_upload_blob_from_string(
-                "data", "bucket", "blob", gcp_credentials)
+                "data", "bucket", "blob", gcp_cloud_storage_bucket)
             return blob
 
         example_cloud_storage_upload_blob_from_string_flow()
@@ -263,7 +287,7 @@ async def cloud_storage_upload_blob_from_string(
     logger = get_run_logger()
     logger.info("Uploading blob named %s to the %s bucket", blob, bucket)
 
-    bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
+    bucket_obj = await _get_bucket(bucket, gcp_cloud_storage_bucket)
     blob_obj = bucket_obj.blob(
         blob, chunk_size=chunk_size, encryption_key=encryption_key
     )
@@ -280,11 +304,10 @@ async def cloud_storage_upload_blob_from_file(
     file: Union[str, Path, BytesIO],
     bucket: str,
     blob: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_cloud_storage_bucket: GcpCloudStorageBucket,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
-    project: Optional[str] = None,
 ) -> str:
     """
     Uploads a blob from file path or file-like object. Usage for passing in
@@ -295,7 +318,7 @@ async def cloud_storage_upload_blob_from_file(
         file: Path to data or file like object to upload.
         bucket: Name of the bucket.
         blob: Name of the Cloud Storage blob.
-        gcp_credentials: Credentials to use for authentication with GCP.
+        gcp_cloud_storage_bucket: Credentials to use for authentication with GCP.
         chunk_size (int, optional): The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
             per the API specification.
@@ -303,8 +326,6 @@ async def cloud_storage_upload_blob_from_file(
         timeout: The number of seconds the transport should wait
             for the server response. Can also be passed as a tuple
             (connect_timeout, read_timeout).
-        project: Name of the project to use; overrides the
-            gcp_credentials project if provided.
 
     Returns:
         The blob name.
@@ -313,15 +334,15 @@ async def cloud_storage_upload_blob_from_file(
         Uploads blob to bucket.
         ```
         from prefect import flow
-        from prefect_gcp import GcpCredentials
+        from prefect_gcp import GcpCloudStorageBucket
         from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_file
 
         @flow()
         def example_cloud_storage_upload_blob_from_file_flow():
-            gcp_credentials = GcpCredentials(
+            gcp_cloud_storage_bucket = GcpCloudStorageBucket(
                 service_account_file="/path/to/service/account/keyfile.json")
             blob = cloud_storage_upload_blob_from_file(
-                "/path/somewhere", "bucket", "blob", gcp_credentials)
+                "/path/somewhere", "bucket", "blob", gcp_cloud_storage_bucket)
             return blob
 
         example_cloud_storage_upload_blob_from_file_flow()
@@ -330,7 +351,7 @@ async def cloud_storage_upload_blob_from_file(
     logger = get_run_logger()
     logger.info("Uploading blob named %s to the %s bucket", blob, bucket)
 
-    bucket_obj = await _get_bucket(bucket, gcp_credentials, project=project)
+    bucket_obj = await _get_bucket(bucket, gcp_cloud_storage_bucket)
     blob_obj = bucket_obj.blob(
         blob, chunk_size=chunk_size, encryption_key=encryption_key
     )
@@ -348,10 +369,9 @@ async def cloud_storage_copy_blob(
     source_bucket: str,
     dest_bucket: str,
     source_blob: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_cloud_storage_bucket: GcpCloudStorageBucket,
     dest_blob: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
-    project: Optional[str] = None,
 ) -> str:
     """
     Copies data from one Google Cloud Storage bucket to another,
@@ -361,13 +381,11 @@ async def cloud_storage_copy_blob(
         source_bucket: Source bucket name.
         dest_bucket: Destination bucket name.
         source_blob: Source blob name.
-        gcp_credentials: Credentials to use for authentication with GCP.
+        gcp_cloud_storage_bucket: Credentials to use for authentication with GCP.
         dest_blob: Destination blob name; if not provided, defaults to source_blob.
         timeout: The number of seconds the transport should wait
             for the server response. Can also be passed as a tuple
             (connect_timeout, read_timeout).
-        project: Name of the project to use; overrides the
-            gcp_credentials project if provided.
 
     Returns:
         Destination blob name.
@@ -376,18 +394,18 @@ async def cloud_storage_copy_blob(
         Copies blob from one bucket to another.
         ```python
         from prefect import flow
-        from prefect_gcp import GcpCredentials
+        from prefect_gcp import GcpCloudStorageBucket
         from prefect_gcp.cloud_storage import cloud_storage_copy_blob
 
         @flow()
         def example_cloud_storage_copy_blob_flow():
-            gcp_credentials = GcpCredentials(
+            gcp_cloud_storage_bucket = GcpCloudStorageBucket(
                 service_account_file="/path/to/service/account/keyfile.json")
             blob = cloud_storage_copy_blob(
                 "source_bucket",
                 "dest_bucket",
                 "source_blob",
-                gcp_credentials
+                gcp_cloud_storage_bucket
             )
             return blob
 
@@ -402,11 +420,9 @@ async def cloud_storage_copy_blob(
         dest_bucket,
     )
 
-    source_bucket_obj = await _get_bucket(
-        source_bucket, gcp_credentials, project=project
-    )
+    source_bucket_obj = await _get_bucket(source_bucket, gcp_cloud_storage_bucket)
 
-    dest_bucket_obj = await _get_bucket(dest_bucket, gcp_credentials, project=project)
+    dest_bucket_obj = await _get_bucket(dest_bucket, gcp_cloud_storage_bucket)
     if dest_blob is None:
         dest_blob = source_blob
 
