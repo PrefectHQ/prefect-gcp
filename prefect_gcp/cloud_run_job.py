@@ -1,6 +1,5 @@
 from __future__ import annotations
 from ast import Delete
-import json
 import time
 from typing import Any, List, Optional, Union
 from unicodedata import name
@@ -210,7 +209,7 @@ class CloudRunJob(Infrastructure):
         with self._get_client() as jobs_client:
             # get job if it exists, otherwise set to None if not found
             try:
-                job = self._get_job(jobs_client=jobs_client)
+                job = self._get_job(client=jobs_client)
             except googleapiclient.errors.HttpError as exc:
                 if exc.status_code == 404:
                     self.logger.info(f"No existing job named '{self.job_name}' found. Creating new job.")
@@ -226,14 +225,14 @@ class CloudRunJob(Infrastructure):
                     self.logger.info(f"Job '{self.job_name}'is currently running and cannot be deleted.")
                     print(f"Job is currently running and cannot be deleted.")
                     time.sleep(5)
-                    job = self._get_job(jobs_client=jobs_client) 
-                self.delete_job(jobs_client=jobs_client)
+                    job = self._get_job(client=jobs_client) 
+                self.delete_job(client=jobs_client)
                 self.logger.info(f"Previous version of job '{self.job_name}' was successfully deleted.")
                 print(f"Previous version of job '{self.job_name}' was successfully submitted for deletion.")
                 # Loop until deletion is finished
                 while job is not None:
                     try:
-                        job = self._get_job(jobs_client=jobs_client)
+                        job = self._get_job(client=jobs_client)
                         self.logger.info(f"Waiting for deletion of '{self.job_name}' to finish processing.")
                         print(f"Waiting for deletion of '{self.job_name}' to finish processing.")
                         time.sleep(5)
@@ -248,23 +247,22 @@ class CloudRunJob(Infrastructure):
                 self.create_job()
 
             # Run the job (either already exists or newly created)
-            job = self._get_job(jobs_client=jobs_client) 
+            job = self._get_job(client=jobs_client) 
             # job needs a moment to register
             while not job.is_ready():
                 self.logger.info(f"Job is not yet ready. Current condition: {job.ready_condition}")
                 print(f"Job is not yet ready. Current condition: {job.ready_condition}")
                 time.sleep(5)
-                job = self._get_job(jobs_client=jobs_client) 
+                job = self._get_job(client=jobs_client) 
 
             try:
-                res = self._submit_job_run(jobs_client=jobs_client)
+                res = self._submit_job_run(client=jobs_client)
             except googleapiclient.errors.HttpError as exc:
                 self.logger.exception(f"Cloud run job received an unexpected exception when running Cloud Run Job '{self.job_name}':\n{exc!r}")
                 raise
             print(res)
 
-    def create_job(self):
-        client = self._get_client()
+    def create_job(self, client):
         try:
             self._create(client)
         except googleapiclient.errors.HttpError as exc:
@@ -272,8 +270,8 @@ class CloudRunJob(Infrastructure):
             self.logger.exception(f"Cloud run job received an unexpected exception when creating Cloud Run Job '{self.job_name}':\n{exc!r}")
             raise
 
-    def _create(self, jobs_client):
-        request = jobs_client.create(
+    def _create(self, client):
+        request = client.create(
             parent=f"namespaces/{self.project_id}", body=self._body_for_create()
         )
         response = request.execute()
@@ -320,8 +318,8 @@ class CloudRunJob(Infrastructure):
         }
         return body
 
-    def _list_jobs(self, jobs_client):
-        request = jobs_client.list(parent=f"namespaces/{self.project_id}")
+    def _list_jobs(self, client):
+        request = client.list(parent=f"namespaces/{self.project_id}")
         try:
             jobs = request.execute()
         except googleapiclient.errors.HttpError as exc:
@@ -330,13 +328,13 @@ class CloudRunJob(Infrastructure):
 
         return [Job.from_json(job) for job in jobs]
 
-    def _get_job(self, jobs_client) -> Job:
-        request = jobs_client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
+    def _get_job(self, client) -> Job:
+        request = client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
         res = request.execute()
         return Job.from_json(res)
 
-    def _submit_job_run(self, jobs_client):
-        request = jobs_client.run(
+    def _submit_job_run(self, client):
+        request = client.run(
             name=f"namespaces/{self.project_id}/jobs/{self.job_name}"
         )
         response = request.execute()
@@ -359,17 +357,15 @@ class CloudRunJob(Infrastructure):
     def preview(self):
         pass
 
-    def delete_job(self, jobs_client):
-        """Called when overwrite=True
-        """
+    def delete_job(self, client):
         try:
-            self._delete(jobs_client)
+            self._delete(client)
         except googleapiclient.errors.HttpError as exc:
             self.logger.exception(f"Cloud run job received an unexpected exception when deleting existing Cloud Run Job '{self.job_name}':\n{exc!r}")
             raise
 
-    def _delete(self, jobs_client):
-        request = jobs_client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
+    def _delete(self, client):
+        request = client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
         response = request.execute()
         return response
 
@@ -377,7 +373,7 @@ if __name__ == "__main__":
     creds = GcpCredentials(service_account_file="creds.json")
 
     job = CloudRunJob(
-        job_name="peyton-test",
+        job_name="peyton-test5",
         project_id="helical-bongo-360018",
         region="us-east1",
         image_url="gcr.io/helical-bongo-360018/peytons-test-image",
