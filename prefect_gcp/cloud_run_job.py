@@ -25,6 +25,14 @@ class Job(BaseModel):
         """See if job is ready to be executed"""
         return self.ready_condition["status"] == "True"
 
+    def has_outstanding_runs(self):
+        """See if job has a run in progress."""
+        last_created_execution = self.ready_condition.get("latestCreatedExecution")
+        return (
+            last_created_execution is not None and
+            last_created_execution.get("completionTimestamp") is None
+        )
+
     @classmethod
     def from_json(cls, job):
         """Construct a Job instance from a Jobs JSON response."""
@@ -39,7 +47,7 @@ class Job(BaseModel):
             spec = job["spec"],
             status = job["status"],
             name = job["metadata"]["name"],
-            ready_condition = condition
+            ready_condition = ready_condition
         )
 
 class CloudRunJobSettings(Block):
@@ -200,26 +208,52 @@ class CloudRunJob(Infrastructure):
 
     def run(self):
         with self._get_client() as jobs_client:
-            job_exists = self._job_already_exists(jobs_client=jobs_client)
+            # get job if it exists, otherwise set to None if not found
+            try:
+                job = self._get_job(jobs_client=jobs_client)
+            except googleapiclient.errors.HttpError as exc:
+                if exc.status_code == 404:
+                    self.logger.info(f"No existing job named '{self.job_name}' found. Creating new job.")
+                    print(f"Job '{self.job_name}' not found. Creating new job.")
+                    job = None
+                else:
+                    raise
 
-            if job_exists and self.always_recreate:
+            # Delete a job if it already exists and always_recreate
+            if job is not None and self.always_recreate:
+                # job needs to be done running to be deleted
+                while job.has_outstanding_runs():
+                    self.logger.info(f"Job '{self.job_name}'is currently running and cannot be deleted.")
+                    print(f"Job is currently running and cannot be deleted.")
+                    time.sleep(5)
+                    job = self._get_job(jobs_client=jobs_client) 
                 self.delete_job(jobs_client=jobs_client)
-                job_exists = False
-                # wait until job is finished deleting 
-            breakpoint()
-            if not job_exists:
-                # googleapiclient.errors.HttpError: <HttpError 409 when requesting 
-                # https://us-east1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/helical-bongo-360018/jobs?alt=json 
-                # returned "Resource 'peyton-test' already exists but was marked for deletion. Please try again once 
-                # the resource is completely deleted.". Details: "Resource 'peyton-test' already exists but was 
-                # marked for deletion. Please try again once the resource is completely deleted.">
+                self.logger.info(f"Previous version of job '{self.job_name}' was successfully deleted.")
+                print(f"Previous version of job '{self.job_name}' was successfully submitted for deletion.")
+                # Loop until deletion is finished
+                while job is not None:
+                    try:
+                        job = self._get_job(jobs_client=jobs_client)
+                        self.logger.info(f"Waiting for deletion of '{self.job_name}' to finish processing.")
+                        print(f"Waiting for deletion of '{self.job_name}' to finish processing.")
+                        time.sleep(5)
+                    except googleapiclient.errors.HttpError as exc:
+                        if exc.status_code == 404:
+                            job = None
+                        else:
+                            raise
+
+            # Create a job if the job doesn't exist (new or was deleted)
+            if job is None:
                 self.create_job()
-            breakpoint()
-            job = self._get_job(jobs_client=jobs_client)
-            breakpoint()
+
+            # Run the job (either already exists or newly created)
+            job = self._get_job(jobs_client=jobs_client) 
+            # job needs a moment to register
             while not job.is_ready():
                 self.logger.info(f"Job is not yet ready. Current condition: {job.ready_condition}")
-                time.sleep(3)
+                print(f"Job is not yet ready. Current condition: {job.ready_condition}")
+                time.sleep(5)
                 job = self._get_job(jobs_client=jobs_client) 
 
             try:
@@ -298,20 +332,8 @@ class CloudRunJob(Infrastructure):
 
     def _get_job(self, jobs_client) -> Job:
         request = jobs_client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
-        try:
-            res = request.execute()
-        except googleapiclient.errors.HttpError as exc:
-            self.logger.exception(f"Cloud run job received an unexpected exception when getting Job '{self.job_name}':\n{exc!r}")
-            raise
+        res = request.execute()
         return Job.from_json(res)
-
-    def _job_already_exists(self, jobs_client) -> List[str]:
-        try:
-            self._get_job(jobs_client)
-        except googleapiclient.errors.HttpError as exc:
-            return False
-        
-        return True
 
     def _submit_job_run(self, jobs_client):
         request = jobs_client.run(
@@ -344,6 +366,7 @@ class CloudRunJob(Infrastructure):
             self._delete(jobs_client)
         except googleapiclient.errors.HttpError as exc:
             self.logger.exception(f"Cloud run job received an unexpected exception when deleting existing Cloud Run Job '{self.job_name}':\n{exc!r}")
+            raise
 
     def _delete(self, jobs_client):
         request = jobs_client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
@@ -357,7 +380,7 @@ if __name__ == "__main__":
         job_name="peyton-test",
         project_id="helical-bongo-360018",
         region="us-east1",
-        image_url="gcr.io/prefect-dev-cloud2/peytons-test-image:latest",
+        image_url="gcr.io/helical-bongo-360018/peytons-test-image",
         credentials=creds,
         always_recreate=True,
         settings=CloudRunJobSettings(
