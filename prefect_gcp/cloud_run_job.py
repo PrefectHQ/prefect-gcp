@@ -3,6 +3,7 @@ from ast import Delete
 import time
 from typing import Any, List, Optional, Union
 from unicodedata import name
+from uuid import uuid4
 from pydantic import BaseModel
 from google.api_core.client_options import ClientOptions
 from google.oauth2 import service_account
@@ -13,40 +14,56 @@ from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 
 from prefect_gcp.credentials import GcpCredentials
 
+class CloudRunJobResult(InfrastructureResult):
+    pass
+
 class Job(BaseModel):
     metadata: dict
     spec: dict
     status: dict
     name: str
     ready_condition: dict
+    execution_status: dict
 
     def is_ready(self):
         """See if job is ready to be executed"""
         return self.ready_condition["status"] == "True"
 
-    def has_outstanding_runs(self):
+    def is_finished(self):
         """See if job has a run in progress."""
-        last_created_execution = self.ready_condition.get("latestCreatedExecution")
         return (
-            last_created_execution is not None and
-            last_created_execution.get("completionTimestamp") is None
+            self.execution_status and
+            self.execution_status.get("completionTimestamp") is not None
         )
 
-    @classmethod
-    def from_json(cls, job):
-        """Construct a Job instance from a Jobs JSON response."""
+    @staticmethod
+    def _get_ready_condition(job):
         ready_condition = {}
 
         for condition in job["status"]["conditions"]:
             if condition["type"] == 'Ready':
                 ready_condition = condition
+        
+        return ready_condition
+
+    @staticmethod 
+    def _get_execution_status(job):
+        if job["status"].get("latestCreatedExecution"):
+            return job["status"]["latestCreatedExecution"]
+        
+        return {}
+    
+    @classmethod
+    def from_json(cls, job):
+        """Construct a Job instance from a Jobs JSON response."""
 
         return cls(
             metadata = job["metadata"],
             spec = job["spec"],
             status = job["status"],
             name = job["metadata"]["name"],
-            ready_condition = ready_condition
+            ready_condition = cls._get_ready_condition(job),
+            execution_status = cls._get_execution_status(job)
         )
 
 class CloudRunJobSettings(Block):
@@ -202,65 +219,38 @@ class CloudRunJob(Infrastructure):
     image_url: str
     region: str
     credentials: GcpCredentials
-    always_recreate: bool
-    settings: Optional[CloudRunJobSettings]
+    args: Optional[List[str]] = None # done
+    command: Optional[List[str]] = None # done
+    cpu: Optional[Any] = None # done
+    memory: Optional[Any] = None # done
+    _job_name: str = None
+    set_env_vars: Optional[dict] = None # done
 
     def run(self):
         with self._get_client() as jobs_client:
-            # get job if it exists, otherwise set to None if not found
             try:
-                job = self._get_job(client=jobs_client)
+                self.create_job(client=jobs_client)
             except googleapiclient.errors.HttpError as exc:
-                if exc.status_code == 404:
-                    self.logger.info(f"No existing job named '{self.job_name}' found. Creating new job.")
-                    print(f"Job '{self.job_name}' not found. Creating new job.")
-                    job = None
-                else:
-                    raise
+                breakpoint()
+                print(exc)
 
-            # Delete a job if it already exists and always_recreate
-            if job is not None and self.always_recreate:
-                # job needs to be done running to be deleted
-                while job.has_outstanding_runs():
-                    self.logger.info(f"Job '{self.job_name}'is currently running and cannot be deleted.")
-                    print(f"Job is currently running and cannot be deleted.")
-                    time.sleep(5)
-                    job = self._get_job(client=jobs_client) 
-                self.delete_job(client=jobs_client)
-                self.logger.info(f"Previous version of job '{self.job_name}' was successfully deleted.")
-                print(f"Previous version of job '{self.job_name}' was successfully submitted for deletion.")
-                # Loop until deletion is finished
-                while job is not None:
-                    try:
-                        job = self._get_job(client=jobs_client)
-                        self.logger.info(f"Waiting for deletion of '{self.job_name}' to finish processing.")
-                        print(f"Waiting for deletion of '{self.job_name}' to finish processing.")
-                        time.sleep(5)
-                    except googleapiclient.errors.HttpError as exc:
-                        if exc.status_code == 404:
-                            job = None
-                        else:
-                            raise
-
-            # Create a job if the job doesn't exist (new or was deleted)
-            if job is None:
-                self.create_job()
-
-            # Run the job (either already exists or newly created)
-            job = self._get_job(client=jobs_client) 
-            # job needs a moment to register
-            while not job.is_ready():
-                self.logger.info(f"Job is not yet ready. Current condition: {job.ready_condition}")
-                print(f"Job is not yet ready. Current condition: {job.ready_condition}")
-                time.sleep(5)
-                job = self._get_job(client=jobs_client) 
+            self._wait_for_job_creation(client=jobs_client)
 
             try:
-                res = self._submit_job_run(client=jobs_client)
+                self._submit_job_run(client=jobs_client)
             except googleapiclient.errors.HttpError as exc:
                 self.logger.exception(f"Cloud run job received an unexpected exception when running Cloud Run Job '{self.job_name}':\n{exc!r}")
                 raise
-            print(res)
+
+            try:
+                self._watch_job_run(client=jobs_client)
+            except googleapiclient.errors.HttpError as exc:
+                self.logger.exception(f"Cloud run job received an unexpected exception while monitoring Cloud Run Job '{self.job_name}':\n{exc!r}")
+                raise
+
+            job = self._get_job(client=jobs_client)
+            breakpoint()
+            print(job)
 
     def create_job(self, client):
         try:
@@ -288,17 +278,14 @@ class CloudRunJob(Infrastructure):
                 # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation
                 "run.googleapis.com/launch-stage": "BETA"
             },
-            "labels": self.settings.labels
         }
-        self.settings.add_jobs_metadata_settings(jobs_metadata)
 
         execution_template_spec_metadata = {"annotations": {}}
-        self.settings.add_execution_template_spec_metadata(execution_template_spec_metadata)
+        # self.settings.add_execution_template_spec_metadata(execution_template_spec_metadata)
 
         containers = [
-            self.settings.add_container_settings({"image": self.image_url})
+            self.add_container_settings({"image": self.image_url})
         ]
-
         body = {
             "apiVersion": "run.googleapis.com/v1",
             "kind": "Job",
@@ -357,7 +344,13 @@ class CloudRunJob(Infrastructure):
     def preview(self):
         pass
 
-    def delete_job(self, client):
+    def delete_job(self, job, client):
+        self.logger.info(f"Deleting job '{self.job_name}'.")
+        while job.is_finished():
+            self.logger.info(f"Job '{self.job_name}'is currently running and cannot be deleted.")
+            print(f"Job is currently running and cannot be deleted.")
+            time.sleep(5)
+            job = self._get_job(client=client) 
         try:
             self._delete(client)
         except googleapiclient.errors.HttpError as exc:
@@ -369,21 +362,110 @@ class CloudRunJob(Infrastructure):
         response = request.execute()
         return response
 
+    def _wait_for_job_finish(self, client):
+        pass
+
+    def _watch_job_run(self, client, poll_interval=5):
+        job = self._get_job(client=client) 
+
+        while not job.is_finished():
+            self.logger.info(f"Job status: {job.status}")
+            print(f"Job status: {job.status}")
+            time.sleep(poll_interval)
+            job = self._get_job(client=client) 
+
+
+    def _wait_for_job_creation(self, client, poll_interval=5):
+        """Give created job time to register"""
+        job = self._get_job(client=client) 
+
+        while not job.is_ready():
+            self.logger.info(f"Job is not yet ready... Current condition: {job.ready_condition}")
+            print(f"Job is not yet ready... Current condition: {job.ready_condition}")
+            time.sleep(poll_interval)
+            job = self._get_job(client=client) 
+
+    def _add_args(self, d: dict):
+        """Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
+        """
+        if self.args:
+            d["args"] = self.args
+        
+        return d
+
+    def _add_command(self, d: dict):
+        """Set the command that a container will run for a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
+        """
+        if self.command:
+            d["command"] = self.command
+        
+        return d
+
+    def _add_resources(self, d: dict):
+        """Set specified resources limits for a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
+        """
+        resources = {"limits": {}}
+        if self.cpu is not None:
+            resources["limits"]["cpu"] = self.cpu
+        if self.memory is not None:
+            resources["limits"]["memory"] = self.memory
+        
+        if resources["limits"]:
+            d["resources"] = resources
+        
+        return d
+
+    def _add_env_vars(self, d: dict):
+        """Add environment variables for a Cloud Run Job.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar 
+        """
+        if self.set_env_vars is not None:
+            env = [{"name": k, "value": v} for k,v in self.set_env_vars.items()]
+            d["env"] = env
+        
+        return d
+
+    def add_container_settings(self, d: dict) -> dict:
+        """
+        Add settings related to containers for Cloud Run Jobs to a dictionary.
+
+        Includes environment variables, entrypoint command, entrypoint arguments,
+        and cpu and memory limits.
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
+        and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
+        """
+        d = self._add_env_vars(d)
+        d = self._add_resources(d)
+        d = self._add_command(d)
+        d = self._add_args(d)
+
+        return d
+
+    @property
+    def job_name(self):
+        if self._job_name is None:
+            image_name = self.image_url.split("/")[-1]
+            self._job_name = image_name + str(uuid4())
+        
+        return self._job_name
+
 if __name__ == "__main__":
     creds = GcpCredentials(service_account_file="creds.json")
 
     job = CloudRunJob(
-        job_name="peyton-test5",
         project_id="helical-bongo-360018",
         region="us-east1",
         image_url="gcr.io/helical-bongo-360018/peytons-test-image",
         credentials=creds,
-        always_recreate=True,
-        settings=CloudRunJobSettings(
-            set_env_vars = {"a": "b"},
-            command=["my", "dog", "skip"],
-
-        )
+        # set_env_vars = {"a": "b"},
+        # command=["my", "dog", "skip"],
     )
 
     job.run()
