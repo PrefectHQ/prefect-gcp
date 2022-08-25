@@ -3,6 +3,8 @@ from unittest.mock import MagicMock
 import pytest
 from google.cloud.exceptions import NotFound
 
+from prefect_gcp.credentials import GcpCredentials
+
 
 @pytest.fixture
 def oauth2_credentials(monkeypatch):
@@ -119,8 +121,12 @@ class SecretManagerClient:
 
 @pytest.fixture
 def gcp_credentials():
-    gcp_credentials_mock = MagicMock(project="gcp_credentials_project")
-    gcp_credentials_mock.get_cloud_storage_client.return_value = CloudStorageClient()
-    gcp_credentials_mock.get_bigquery_client.return_value = BigQueryClient()
-    gcp_credentials_mock.get_secret_manager_client.return_value = SecretManagerClient()
+    gcp_credentials_mock = GcpCredentials(project="gcp_credentials_project")
+    gcp_credentials_mock.get_cloud_storage_client = (
+        lambda *args, **kwargs: CloudStorageClient()
+    )
+    gcp_credentials_mock.get_bigquery_client = lambda *args, **kwargs: BigQueryClient()
+    gcp_credentials_mock.get_secret_manager_client = (
+        lambda *args, **kwargs: SecretManagerClient()
+    )
     return gcp_credentials_mock

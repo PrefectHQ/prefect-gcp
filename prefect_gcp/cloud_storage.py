@@ -12,16 +12,18 @@ from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compati
 from prefect.utilities.filesystem import filter_files
 from pydantic import validator
 
+# cannot be type_checking only or else `fields = cls.schema()` raises
+# TypeError: issubclass() arg 1 must be a class
+from prefect_gcp.credentials import GcpCredentials
+
 if TYPE_CHECKING:
     from google.cloud.storage import Bucket
-
-    from prefect_gcp.credentials import GcpCredentials
 
 
 @task
 async def cloud_storage_create_bucket(
     bucket: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
     location: Optional[str] = None,
 ) -> str:
@@ -64,7 +66,7 @@ async def cloud_storage_create_bucket(
 
 async def _get_bucket(
     bucket: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
 ) -> "Bucket":
     """
@@ -79,7 +81,7 @@ async def _get_bucket(
 async def cloud_storage_download_blob_as_bytes(
     bucket: str,
     blob: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
@@ -143,7 +145,7 @@ async def cloud_storage_download_blob_to_file(
     bucket: str,
     blob: str,
     path: Union[str, Path],
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
@@ -216,7 +218,7 @@ async def cloud_storage_upload_blob_from_string(
     data: Union[str, bytes],
     bucket: str,
     blob: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     content_type: Optional[str] = None,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
@@ -282,7 +284,7 @@ async def cloud_storage_upload_blob_from_file(
     file: Union[str, Path, BytesIO],
     bucket: str,
     blob: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
@@ -353,7 +355,7 @@ async def cloud_storage_copy_blob(
     source_bucket: str,
     dest_bucket: str,
     source_blob: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     dest_blob: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
     project: Optional[str] = None,
@@ -442,23 +444,24 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         from prefect_gcp import GcpCloudStorageBucket
         gcp_cloud_storage_bucket_block = GcpCloudStorageBucket.load("BLOCK_NAME")
         ```
-
     """
 
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "GCS Bucket"
 
     bucket: str
-    gcp_credentials: "GcpCredentials"
+    gcp_credentials: GcpCredentials
     basepath: Optional[Path]
 
     @validator("basepath", pre=True)
-    def cast_pathlib(cls, value):
-
+    def cast_pathlib(cls, value) -> str:
         """
         If basepath provided, it means we aren't writing to the root directory
         of the bucket. We need to ensure that it is a valid path. This is called
         when the GCS bucket block is instantiated.
+
+        Returns:
+            The str type of the basepath.
         """
 
         if isinstance(value, Path):
@@ -472,12 +475,16 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         Args:
             path: Name of the key, e.g. "file1". Each object in your
                 bucket has a unique key (or key name).
+
+        Returns:
+            The joined path.
         """
         path = path or str(uuid4())
 
         # If basepath provided, it means we won't write to the root dir of
         # the bucket. So we need to add it on the front of the path.
         path = str(Path(self.basepath) / path) if self.basepath else path
+        return path
 
     @sync_compatible
     async def get_directory(
@@ -538,6 +545,9 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
                 basepath.
             ignore_file: Path to file containing gitignore style expressions for
                 filepaths to ignore.
+
+        Returns:
+            The number of files uploaded.
         """
         if to_path is None:
             to_path = self._resolve_path(to_path)
@@ -576,8 +586,8 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         Args:
             path: Entire path to (and including) the key.
 
-        Example:
-            TODO
+        Returns:
+            A bytes or string representation of the blob object.
         """
         path = self._resolve_path(path)
         return await cloud_storage_download_blob_as_bytes.fn(
@@ -594,8 +604,8 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
                 key (or key name).
             content: What you are uploading to GCS Bucket.
 
-        Example:
-            TODO
+        Returns:
+            The path that the contents were written to.
         """
         path = self._resolve_path(path)
         await cloud_storage_upload_blob_from_string.fn(

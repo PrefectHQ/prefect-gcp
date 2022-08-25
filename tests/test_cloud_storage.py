@@ -5,6 +5,7 @@ import pytest
 from prefect import flow
 
 from prefect_gcp.cloud_storage import (
+    GcsBucket,
     cloud_storage_copy_blob,
     cloud_storage_create_bucket,
     cloud_storage_download_blob_as_bytes,
@@ -99,3 +100,23 @@ def test_cloud_storage_copy_blob(dest_blob, gcp_credentials):
         assert test_flow() == "source_blob"
     else:
         assert test_flow() == "dest_blob"
+
+
+class TestGcsBucket:
+    @pytest.fixture
+    def gcs_bucket(self, gcp_credentials):
+        return GcsBucket(
+            bucket="bucket", gcp_credentials=gcp_credentials, basepath="basepath"
+        )
+
+    @pytest.mark.parametrize("path", [Path("test_path", "test_path")])
+    def test_cast_pathlib(self, gcs_bucket, path):
+        actual = gcs_bucket.cast_pathlib(Path(path))
+        assert actual == str(path)
+
+    def test_resolve_path(self, gcs_bucket):
+        actual = gcs_bucket._resolve_path("subpath")
+        assert actual == "basepath/subpath"
+
+    def test_read_path(self, gcs_bucket):
+        assert gcs_bucket.read_path("blob") == b"bytes"
