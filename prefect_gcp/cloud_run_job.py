@@ -30,7 +30,7 @@ class Job(BaseModel):
 
     def is_ready(self):
         """See if job is ready to be executed"""
-        return self.ready_condition["status"] == "True"
+        return self.ready_condition.get("status") == "True"
 
     def is_finished(self):
         """See if job has a run in progress."""
@@ -77,18 +77,20 @@ class Execution(BaseModel):
     status: dict
     log_uri: str
 
-    def get_status(self):
-        if self.status.get("failedCount"):
-            return ""
-            pass
-        if self.status.get("runningCount"):
-            # happens when it's running
-            pass
-        if self.status.get("conditions"):
-            # type: "Started"
-            pass
-        else:
-            return f"Starting execution... Googe Cloud Logs can be found at {self.log_uri}"
+    def is_running(self):
+        return self.status.get("completionTime") is None
+
+    def final_status(self):
+        for condition in self.status["conditions"]:
+            if condition["type"] == "Completed":
+                return condition
+
+    def succeeded(self):
+        completed = self.final_status()
+        if completed and completed["status"] == "True":
+            return True
+        
+        return False
 
     @classmethod
     def from_json(cls, execution):
@@ -99,6 +101,8 @@ class Execution(BaseModel):
             status = execution['status'],
             log_uri = execution['status'].get('logUri'),
         )
+
+
 class CloudRunJobSettings(Block):
     """
     Block that contains optional settings for CloudRunJob infrastructure. It 
@@ -241,6 +245,23 @@ class CloudRunJobSettings(Block):
         
         return d
 
+
+class GoogleCloudLog(BaseModel):
+    severity: str
+    timestamp: datetime.datetime
+    insert_id: str
+    message: str
+
+    @classmethod
+    def from_list_entry(cls, entry):
+        return cls(
+            severity=entry.severity,
+            timestamp=entry.timestamp,
+            insert_id=entry.insert_id,
+            message=entry.payload["status"].get("message")
+        )
+
+
 class CloudRunJobLogs(BaseModel):
     job_name: str
     project_id: str
@@ -263,24 +284,20 @@ class CloudRunJobLogs(BaseModel):
             )
 
     def get_logs(self):
-        logs = self._get_raw_execution_logs()
-        return self._process_logs(logs)
+        raw_logs = self._get_raw_execution_logs()
+        new_logs = self._handle_duplicate_logs(raw_logs)
+        return [
+            GoogleCloudLog.from_list_entry(entry)
+            for entry in new_logs
+        ]
     
-    def _process_logs(self, logs):
-        logs = self._remove_duplicate_logs(logs)
-
-        updated_logs = []
-        for log in logs:
-            if log.payload.get("status"):
-                msg = log.payload["status"].get("message")
-            updated_logs.append([log.severity, log.timestamp, log.insert_id, msg])
-        return updated_logs
-
-    def _remove_duplicate_logs(self, logs):
+    def _handle_duplicate_logs(self, logs):
         new_logs = []
         for log in logs:
             if log.insert_id not in self.last_log_ids:
                 new_logs.append(log)
+        
+        self.last_log_ids = {log.insert_id for log in new_logs}
         return new_logs
 
     def _get_raw_execution_logs(self):
@@ -288,6 +305,7 @@ class CloudRunJobLogs(BaseModel):
             project=self.project_id, 
             credentials=self.credentials.get_credentials_from_service_account(),
             )
+
         filter = (
             'resource.type:cloud_run_job and '
             f'resource.labels.job_name:{self.job_name} and '
@@ -297,7 +315,7 @@ class CloudRunJobLogs(BaseModel):
 
         if self.latest_check:
             # date needs to be wrapped in quotes to filter
-            print(f"LATEST CHECK: {self.latest_check}")
+            # print(f"LATEST CHECK: {self.latest_check}")
             filter = filter + f' and timestamp >= "{self.latest_check}"'
 
         # Make sure that we don't miss logs between gaps
@@ -311,7 +329,7 @@ class CloudRunJobLogs(BaseModel):
             filter_=filter,
             order_by=ASCENDING
         )
-        breakpoint()
+
         self.latest_check = iso_time_at_check
         return [e for e in entries]
 
@@ -339,7 +357,6 @@ class CloudRunJob(Infrastructure):
         with self._get_jobs_client() as jobs_client:
             try:
                 self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-                print(f"Creating Cloud Run Job {self.job_name}")
                 self.create_job(client=jobs_client)
             except Exception as exc:
                 self.logger.exception(f"Encountered an unexpected error when creating Cloud Run Job {self.job_name}:\n{exc!r}")
@@ -348,31 +365,32 @@ class CloudRunJob(Infrastructure):
 
             try:
                 self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
-                print(f"Submitting Cloud Run Job {self.job_name} for execution.")
                 job_run = self._submit_job_for_execution(client=jobs_client)
             except Exception as exc:
                 self.logger.exception(f"Received an unexpected exception when sumbitting Cloud Run Job '{self.job_name}':\n{exc!r}")
                 raise
 
             try:
-                self._watch_job_run(job_run=job_run)
+                job_run = self._watch_job_run(job_run=job_run)
             except Exception as exc:
                 self.logger.exception(f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name}':\n{exc!r}")
                 raise
-        
-        job = self._get_job(client=jobs_client)
-        print(f"FINISHED JOB {job}")
-        # TODO log terminal status ("Cloud Run Job {self.job_name} finshed successfully") or with an error
+
+        if job_run.succeeded():
+            status_code = 0
+            self.logger.info(f"Job Run {self.job_name} completed successfully")
+        else:
+            status_code = 1
+            self.logger.error(f"Job Run {self.job_name} did not complete successfully. {job_run.final_status()['message']}")
 
         if not self.keep_job_after_completion:
             try:
                 self.logger.info(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
-                print(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
                 self._delete_job(client=jobs_client)
             except googleapiclient.errors.HttpError as Exc:
                 self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
         
-        return CloudRunJobResult(identifier=self.job_name, status_code=0)
+        return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
     def create_job(self, client):
         try:
@@ -381,7 +399,6 @@ class CloudRunJob(Infrastructure):
             # exc.status_code == 409: 
             self.logger.exception(f"Cloud run job received an unexpected exception when creating Cloud Run Job '{self.job_name}':\n{exc!r}")
             raise
-
 
     def _create(self, client):
         request = client.create(
@@ -428,15 +445,6 @@ class CloudRunJob(Infrastructure):
         }
         return body
 
-    def _list_jobs(self, client):
-        request = client.list(parent=f"namespaces/{self.project_id}")
-        try:
-            jobs = request.execute()
-        except googleapiclient.errors.HttpError as exc:
-            self.logger.exception(f"Cloud run job received an unexpected exception when listing Cloud Run Jobs in project '{self.project_id}':\n{exc!r}")
-            raise
-
-        return [Job.from_json(job) for job in jobs]
 
     def _get_job(self, client) -> Job:
         request = client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
@@ -466,47 +474,39 @@ class CloudRunJob(Infrastructure):
     def _get_jobs_client(self):
         return self._get_client().jobs()
 
+
     def _get_executions_client(self):
         return self._get_client().executions()
+
 
     def preview(self):
         pass
 
-    def delete_job(self, job, client):
-        self.logger.info(f"Deleting job '{self.job_name}'.")
-        while job.is_finished():
-            self.logger.info(f"Job '{self.job_name}'is currently running and cannot be deleted.")
-            print(f"Job is currently running and cannot be deleted.")
-            time.sleep(5)
-            job = self._get_job(client=client) 
-        try:
-            self._delete(client)
-        except googleapiclient.errors.HttpError as exc:
-            self.logger.exception(f"Cloud run job received an unexpected exception when deleting existing Cloud Run Job '{self.job_name}':\n{exc!r}")
-            raise
 
     def _delete_job(self, client):
         request = client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
         response = request.execute()
         return response
 
-    def _wait_for_job_finish(self, client):
-        pass
 
     def _watch_job_run(self, job_run: Execution, poll_interval=5):
         client = self._get_executions_client()
-        run_logs = CloudRunJobLogs.from_cloud_run_job(self, job_run, poll_interval=poll_interval)
-        while True:
-            # self.logger.info(f"Job run status: {job_run.status}")
-            # print(f"Job run status: {job_run.status}\n")
-            print("*"*20)
-            print(run_logs.get_logs())
+        run_log_source = CloudRunJobLogs.from_cloud_run_job(self, job_run, poll_interval=poll_interval)
+
+        while job_run.is_running():
+            logs = run_log_source.get_logs()
+            if logs:
+                for log in logs:
+                    self.logger.info(f"{log.timestamp}: {log.message}")
             time.sleep(poll_interval)
+
             job_run = Execution.from_json(
                 client.get(
                     name=f"namespaces/{job_run.metadata['namespace']}/executions/{job_run.metadata['name']}"
                 ).execute()
             )
+        
+        return job_run
 
 
     def _wait_for_job_creation(self, client, poll_interval=5):
@@ -515,7 +515,6 @@ class CloudRunJob(Infrastructure):
 
         while not job.is_ready():
             self.logger.info(f"Job is not yet ready... Current condition: {job.ready_condition}")
-            print(f"Job is not yet ready... Current condition: {job.ready_condition}")
             time.sleep(poll_interval)
             job = self._get_job(client=client) 
 
@@ -599,9 +598,6 @@ if __name__ == "__main__":
         region="us-east1",
         image_url="gcr.io/helical-bongo-360018/peytons-test-image",
         credentials=creds,
-        set_env_vars = {"a": "b"},
-        command=["my", "dog", "skip"],
-        keep_job_after_completion=True
     )
 
     job.run()
