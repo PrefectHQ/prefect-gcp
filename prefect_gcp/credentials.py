@@ -1,7 +1,6 @@
 """Module handling GCP credentials"""
 
 import functools
-import os
 from pathlib import Path
 from typing import Dict, Optional
 
