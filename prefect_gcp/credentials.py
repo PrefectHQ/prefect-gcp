@@ -83,7 +83,7 @@ class GcpCredentials(Block):
     _block_type_name = "GCP Credentials"
 
     service_account_file: Optional[Path] = None
-    service_account_info: Optional[Union[Json, Dict]] = None
+    service_account_info: Optional[Union[Dict[str, str], Json]] = None
     project: Optional[str] = None
 
     @staticmethod
