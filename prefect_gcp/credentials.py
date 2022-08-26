@@ -68,7 +68,7 @@ class GcpCredentials(Block):
 
     Attributes:
         service_account_file: Path to the service account JSON keyfile.
-        service_account_info: The contents of the keyfile as a JSON string / dictionary.
+        service_account_info: The contents of the keyfile as a dict or JSON string.
         project: Name of the project to use.
 
     Example:
