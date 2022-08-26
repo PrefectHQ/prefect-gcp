@@ -30,10 +30,18 @@ class GoogleCloudRegistry(BaseDockerLogin):
         client = self._get_docker_client()
         service_account_value = self.credentials.get_service_account_value()
         if isinstance(service_account_value, dict):
+            # make fail
+            # for k in service_account_value.keys():
+            #     service_account_value[k] = "fail"
             password = json.dumps(service_account_value)
         else:
             password = service_account_value
-        return self._login(password=password, client=client)
+        # return self._login(password=password, client=client)
+        res = self._login(password=password, client=client)
+        print(res)
+        print(client.containers.list())
+        # breakpoint()
+        # print(client)
 
     def _login(self, password, client):
         return client.login(
@@ -43,13 +51,16 @@ class GoogleCloudRegistry(BaseDockerLogin):
             reauth=self.reauth,
         )
 
+    def list(self):
+        client = self._get_docker_client()
+ 
 if __name__ == "__main__":
     creds = GcpCredentials(service_account_file="creds.json")
     registry = GoogleCloudRegistry(
         credentials=creds,
     )
-    breakpoint()
-    print(registry)
+    registry.login()
+
 # class ContainerRegistry(GoogleCloudRegistry):
 #     pass
 
