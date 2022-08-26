@@ -3,7 +3,7 @@
 import functools
 import os
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from google.oauth2.service_account import Credentials
 from pydantic import Json
@@ -66,7 +66,7 @@ class GcpCredentials(Block):
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
     for more info about the possible credential configurations.
 
-    Args:
+    Attributes:
         service_account_file: Path to the service account JSON keyfile.
         service_account_info: The contents of the keyfile as a JSON string / dictionary.
         project: Name of the project to use.
@@ -83,7 +83,7 @@ class GcpCredentials(Block):
     _block_type_name = "GCP Credentials"
 
     service_account_file: Optional[Path] = None
-    service_account_info: Optional[Json] = None
+    service_account_info: Optional[Union[Dict[str, str], Json]] = None
     project: Optional[str] = None
 
     @staticmethod
