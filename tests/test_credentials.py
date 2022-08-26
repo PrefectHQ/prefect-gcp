@@ -34,7 +34,7 @@ def test_get_credentials_from_service_account_file(
     credentials = GcpCredentials._get_credentials_from_service_account(
         service_account_file=service_account_file
     )
-    assert credentials == service_account_file
+    assert str(credentials) == service_account_file
 
 
 def test_get_credentials_from_service_account_info(
