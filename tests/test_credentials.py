@@ -77,7 +77,6 @@ def test_get_cloud_storage_client(
     @flow
     def test_flow():
         project = "test_project"
-        print(service_account_info)
         credentials = GcpCredentials(
             service_account_info=service_account_info,
             project=project,
