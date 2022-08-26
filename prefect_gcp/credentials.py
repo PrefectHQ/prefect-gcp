@@ -1,12 +1,13 @@
 """Module handling GCP credentials"""
 
 import functools
+import json
 import os
 from pathlib import Path
 from typing import Dict, Optional, Union
 
 from google.oauth2.service_account import Credentials
-from pydantic import Json
+from pydantic import Json, root_validator, validator
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -84,60 +85,56 @@ class GcpCredentials(Block):
 
     service_account_file: Optional[Path] = None
     service_account_info: Optional[Json] = None
-    project: Optional[str] = None
+
+    @root_validator
+    def provide_one_service_account_source(cls, values):
+        if values["service_account_info"] is not None and values["service_account_file"] is not None:
+            raise ValueError(
+                "Only one of service_account_info or service_account_file "
+                "can be specified at once"
+            )
+        if values["service_account_info"] is None and values["service_account_file"] is None:
+            raise ValueError(
+                "You must provide either service_account_info or service_account_file"
+                "to create a GcpCredentails block."
+            )
+        return values
+
+    @validator('service_account_file')
+    def check_service_account_file_exists(cls, file):
+        if not os.path.exists(file):
+            raise ValueError("The provided path to the service account is invalid")
+        elif isinstance(file, Path):
+            service_account_file = file.expanduser()
+        else:
+            service_account_file = os.path.expanduser(file)
+        return file
+
+    def get_project_id(self):
+        return self.get_credentials_from_service_account().project_id
 
     def get_credentials_from_service_account(self) -> Union[Credentials, None]:
         """
         Helper method to serialize credentials by using either
         service_account_file or service_account_info.
         """
-        if self.service_account_info and self.service_account_file:
-            raise ValueError(
-                "Only one of service_account_info or service_account_file "
-                "can be specified at once"
-            )
-        elif self.service_account_file:
-            if not os.path.exists(self.service_account_file):
-                raise ValueError("The provided path to the service account is invalid")
-            elif isinstance(self.service_account_file, Path):
-                service_account_file = self.service_account_file.expanduser()
-            else:
-                service_account_file = os.path.expanduser(self.service_account_file)
-            credentials = Credentials.from_service_account_file(service_account_file)
+        if self.service_account_file:
+            credentials = Credentials.from_service_account_file(self.service_account_file)
         elif self.service_account_info:
             credentials = Credentials.from_service_account_info(self.service_account_info)
         else:
             return None
         return credentials
 
-    @staticmethod
-    def _get_credentials_from_service_account(
-        service_account_file: Optional[str] = None,
-        service_account_info: Optional[Dict[str, str]] = None,
-    ) -> Credentials:
-        """
-        Helper method to serialize credentials by using either
-        service_account_file or service_account_info.
-        """
-        if service_account_info and service_account_file:
-            raise ValueError(
-                "Only one of service_account_info or service_account_file "
-                "can be specified at once"
-            )
-        elif service_account_file:
-            if not os.path.exists(service_account_file):
-                raise ValueError("The provided path to the service account is invalid")
-            elif isinstance(service_account_file, Path):
-                service_account_file = service_account_file.expanduser()
-            else:
-                service_account_file = os.path.expanduser(service_account_file)
-            credentials = Credentials.from_service_account_file(service_account_file)
-        elif service_account_info:
-            credentials = Credentials.from_service_account_info(service_account_info)
+    def get_service_account_value(self) -> Json:
+        if self.service_account_file:
+            with open(self.service_account_file, "r") as f:
+                value = json.load(f)
         else:
-            return None
-        return credentials
-
+            value = self.service_account_info
+        
+        return value
+        
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
         self, project: Optional[str] = None
@@ -190,7 +187,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
+        credentials = self.get_credentials_from_service_account(
             service_account_file=self.service_account_file,
             service_account_info=self.service_account_info,
         )
@@ -253,7 +250,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
+        credentials = self.get_credentials_from_service_account(
             service_account_file=self.service_account_file,
             service_account_info=self.service_account_info,
         )
@@ -315,7 +312,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
+        credentials = self.get_credentials_from_service_account(
             service_account_file=self.service_account_file,
             service_account_info=self.service_account_info,
         )
