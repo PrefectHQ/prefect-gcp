@@ -139,7 +139,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
 
-            Gets a GCP Cloud Storage client from a JSON str.
+            Gets a GCP Cloud Storage client from a dictionary.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
@@ -201,7 +201,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
 
-            Gets a GCP BigQuery client from a JSON str.
+            Gets a GCP BigQuery client from a dictionary.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
@@ -262,7 +262,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
 
-            Gets a GCP Cloud Storage client from a JSON str.
+            Gets a GCP Cloud Storage client from a dictionary.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
