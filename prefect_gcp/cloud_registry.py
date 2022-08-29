@@ -17,7 +17,7 @@ class LocationType(Enum):
     REGION = "Region"
     MULTI_REGION = "Multi-region"
 
-
+PREFECT_REPOSITORY_NAME = "prefecthq/prefect"
 class GoogleCloudRegistry(BaseDockerLogin):
     _block_type_name = "Google Cloud Registry"
     credentials: GcpCredentials
@@ -68,7 +68,7 @@ class GoogleCloudRegistry(BaseDockerLogin):
             reauth=True,
         )
 
-    def get_prefect_image(self):
+    def get_prefect_repo(self):
         """Return the name of the Prefect image in GCR.
         
         If the image does not exist in GCR, this will add the image to GCR and
@@ -76,17 +76,19 @@ class GoogleCloudRegistry(BaseDockerLogin):
         """
         self.login()
         client = self._get_docker_client()
-        prefect_repository, tag = self.prefect_gcr_name.split(":")
+        gcr_prefect_repository, tag = self.prefect_gcr_name.split(":")
         repos = self._list_repositories()
 
+        add_prefect_to_registry = True
         # See if an existing match is up there
-        if prefect_repository in repos:
-            if tag in self._list_tags_for_repository(prefect_repository):
-                return self.prefect_gcr_name
-
-        # Add if existing match not there
-        self._add_prefect_image_to_registry(client=client)
-        return self.prefect_gcr_name
+        if gcr_prefect_repository in repos:
+            if tag in self._list_tags_for_repository(gcr_prefect_repository):
+                add_prefect_to_registry = False
+             
+        if add_prefect_to_registry:
+            self._add_prefect_image_to_registry(client=client)
+        
+        return f"gcr.io/{self.prefect_gcr_name}"
 
     def _add_prefect_image_to_registry(self, client):
         """Add the correct Prefect docker image to a Google Container Registry.
@@ -158,7 +160,8 @@ if __name__ == "__main__":
         credentials=creds,
     )
 
-    registry.get_prefect_image()
+    im = registry.get_prefect_image()
+    print(im)
 
 # class ContainerRegistry(GoogleCloudRegistry):
 #     pass

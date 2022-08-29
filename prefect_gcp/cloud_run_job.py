@@ -3,10 +3,10 @@ import datetime
 from ast import Delete
 from importlib.metadata import metadata
 import time
-from typing import Any, List, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 from unicodedata import name
 from uuid import uuid4
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, root_validator, validator
 from google.api_core.client_options import ClientOptions
 from google.oauth2 import service_account
 from googleapiclient import discovery
@@ -17,6 +17,8 @@ from google.cloud import logging
 from google.cloud.logging import ASCENDING
 import pytz
 from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.cloud_registry import GoogleCloudRegistry
+from prefect.docker import get_prefect_image_name
 
 class CloudRunJobResult(InfrastructureResult):
     pass
@@ -102,150 +104,6 @@ class Execution(BaseModel):
             log_uri = execution['status'].get('logUri'),
         )
 
-
-class CloudRunJobSettings(Block):
-    """
-    Block that contains optional settings for CloudRunJob infrastructure. It 
-    does not include mandatory settings, which are found on the CloudRunJob
-    itself.
-    """
-    args: Optional[List[str]] = None # done
-    command: Optional[List[str]] = None # done
-    cpu: Optional[Any] = None # done
-    labels: Optional[List[str]] = None # done
-    memory: Optional[Any] = None # done
-    set_cloud_sql_instances: Optional[List] = None # done
-    set_env_vars: Optional[dict] = None # done
-    set_secrets: Optional[Any] = None #TODO how does this work?
-    vpc_connector: Optional[Any] = None #TODO how does this work? # done
-    vpc_egress: Optional[Any] = None #TODO how does this work? # done
-
-    def add_container_settings(self, d: dict) -> dict:
-        """
-        Add settings related to containers for Cloud Run Jobs to a dictionary.
-
-        Includes environment variables, entrypoint command, entrypoint arguments,
-        and cpu and memory limits.
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
-        """
-        d = self._add_env_vars(d)
-        d = self._add_resources(d)
-        d = self._add_command(d)
-        d = self._add_args(d)
-
-        return d
-
-    def add_jobs_metadata_settings(self, d: dict) -> dict:
-        """
-        Add top-level Jobs metadata settings for Cloud Run Jobs to a dictionary.
-
-        Includes labels.
-        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs
-        """
-        return self._add_labels(d)
-
-    def add_execution_template_spec_metadata(self, d: dict) -> dict:
-        """Add settings related to the ExecutionTemplateSpec for Cloud Run Jobs
-        to a dictionary. 
-
-        Includes Cloud SQL Instances, VPC Access connector, and VPC egress.
-        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
-        """
-        d = self._add_cloud_sql_instances(d)
-        d = self._add_vpc_connector(d)
-        d = self._add_vpc_egress(d)
-
-        return d
-
-    def _add_env_vars(self, d: dict):
-        """Add environment variables for a Cloud Run Job.
-
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar 
-        """
-        if self.set_env_vars is not None:
-            env = [{"name": k, "value": v} for k,v in self.set_env_vars.items()]
-            d["env"] = env
-        
-        return d
-
-    def _add_resources(self, d: dict):
-        """Set specified resources limits for a Cloud Run Job.
-
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
-        """
-        resources = {"limits": {}}
-        if self.cpu is not None:
-            resources["limits"]["cpu"] = self.cpu
-        if self.memory is not None:
-            resources["limits"]["memory"] = self.memory
-        
-        if resources["limits"]:
-            d["resources"] = resources
-        
-        return d
-
-    def _add_command(self, d: dict):
-        """Set the command that a container will run for a Cloud Run Job.
-
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        """
-        if self.command:
-            d["command"] = self.command
-        
-        return d
-
-    def _add_args(self, d: dict):
-        """Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
-
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        """
-        if self.args:
-            d["args"] = self.args
-        
-        return d
-
-    def _add_labels(self, d: dict) -> dict:
-        """Provide labels to a Cloud Run Job.
-
-        See: https://cloud.google.com/run/docs/reference/rest/v1/ObjectMeta
-        """
-        if self.labels:
-            d["labels"] = self.labels
-        
-        return d
-    
-    def _add_cloud_sql_instances(self, d:dict) -> dict:
-        """Set Cloud SQL connections for a Cloud Run Job.
-
-        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
-        """
-        if self.set_cloud_sql_instances is not None:
-            d["annotations"]["run.googleapis.com/cloudsql-instances"] = self.set_cloud_sql_instances
-
-        return d
-
-    def _add_vpc_connector(self, d:dict) -> dict:
-        """Set a Serverless VPC Access connector for a Cloud Run Job.
-
-        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
-        """
-        if self.vpc_connector is not None:
-            d["annotations"]["run.googleapis.com/vpc-access-connector"] = self.vpc_connector
-        
-        return d
-
-    def _add_vpc_egress(self, d:dict) -> dict:
-        """Set VPC egrees for a Cloud Run Job.
-
-        See: https://cloud.google.com/static/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec
-        """
-        if self.vpc_egress is not None:
-            d["annotations"]["run.googleapis.com/vpc-access-egress"] = self.vpc_egress
-        
-        return d
-
-
 class GoogleCloudLog(BaseModel):
     severity: str
     timestamp: datetime.datetime
@@ -293,6 +151,7 @@ class CloudRunJobLogs(BaseModel):
     
     def _handle_duplicate_logs(self, logs):
         new_logs = []
+        # breakpoint()
         for log in logs:
             if log.insert_id not in self.last_log_ids:
                 new_logs.append(log)
@@ -324,39 +183,57 @@ class CloudRunJobLogs(BaseModel):
         # Time is expected to be in ISO format and in UTC
         iso_time_at_check = time_at_check.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        entries = logging_client.list_entries(
-            resource_names=[f"projects/{self.project_id}"],
-            filter_=filter,
-            order_by=ASCENDING
-        )
+        entry_list = []
+        # need to give logs a second to populate initially
+        while entry_list == [] and self.last_log_ids == {}:
+            entries = logging_client.list_entries(
+                resource_names=[f"projects/{self.project_id}"],
+                filter_=filter,
+                order_by=ASCENDING
+            )
+            entry_list = [e for e in entries]
+            time.sleep(1)
 
         self.latest_check = iso_time_at_check
-        return [e for e in entries]
+        return entry_list
+
+PREFECT_GCP_CONTAINER_NAME = "prefect"
 
 class CloudRunJob(Infrastructure):
     """Infrastructure block used to run GCP Cloud Run Jobs.
 
     Optional settings are available through the CloudRunJobSettings block.
     """
-    type: str = "Cloud Run Job"
-    job_name: str
+    type: Literal["cloud-run-job"] = "cloud-run-job"
     project_id: str
-    image_url: str
+    registry: Any
+    image: str = Field(default=None)
     region: str
     credentials: GcpCredentials
-    args: Optional[List[str]] = None # done
-    command: Optional[List[str]] = None # done
+
+    # Job settings
     cpu: Optional[Any] = None # done
     memory: Optional[Any] = None # done
-    _job_name: str = None
-    set_env_vars: Optional[dict] = None # done
+
+    args: Optional[List[str]] = None # done
+    command: list[str] = Field(default_factory=list)# done
+    env: dict[str, str] = Field(default_factory=dict)
+    stream_output: bool = False
+
+    # Cleanup behavior
     keep_job_after_completion: Optional[bool] = False
+
+    # Private stuff that we use
+    _job_name: str = None
     _execution: Optional[Execution] = None
 
     def run(self):
         with self._get_jobs_client() as jobs_client:
+            if self.image is None:
+                self.image = self.registry.get_prefect_repo()
             try:
                 self.logger.info(f"Creating Cloud Run Job {self.job_name}")
+                print(f"Creating Cloud Run Job {self.job_name}")
                 self.create_job(client=jobs_client)
             except Exception as exc:
                 self.logger.exception(f"Encountered an unexpected error when creating Cloud Run Job {self.job_name}:\n{exc!r}")
@@ -365,10 +242,20 @@ class CloudRunJob(Infrastructure):
 
             try:
                 self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
+                print(f"Submitting Cloud Run Job {self.job_name} for execution.")
                 job_run = self._submit_job_for_execution(client=jobs_client)
             except Exception as exc:
                 self.logger.exception(f"Received an unexpected exception when sumbitting Cloud Run Job '{self.job_name}':\n{exc!r}")
                 raise
+
+            self.logger.info(
+                f"Cloud Run Job {self.name!r}: Running command {' '.join(self.command)!r} "
+                f"in container {PREFECT_GCP_CONTAINER_NAME!r} ({self.image})..."
+            )
+            print(
+                f"Cloud Run Job {self.name!r}: Running command {' '.join(self.command)!r} "
+                f"in container {self.image}..."
+            )
 
             try:
                 job_run = self._watch_job_run(job_run=job_run)
@@ -379,13 +266,16 @@ class CloudRunJob(Infrastructure):
         if job_run.succeeded():
             status_code = 0
             self.logger.info(f"Job Run {self.job_name} completed successfully")
+            print(f"Job Run {self.job_name} completed successfully")
         else:
             status_code = 1
             self.logger.error(f"Job Run {self.job_name} did not complete successfully. {job_run.final_status()['message']}")
+            print(f"Job Run {self.job_name} did not complete successfully. {job_run.final_status()['message']}")
 
         if not self.keep_job_after_completion:
             try:
                 self.logger.info(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
+                print(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
                 self._delete_job(client=jobs_client)
             except googleapiclient.errors.HttpError as Exc:
                 self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
@@ -424,7 +314,7 @@ class CloudRunJob(Infrastructure):
         # self.settings.add_execution_template_spec_metadata(execution_template_spec_metadata)
 
         containers = [
-            self.add_container_settings({"image": self.image_url})
+            self._add_container_settings({"image": self.image})
         ]
         body = {
             "apiVersion": "run.googleapis.com/v1",
@@ -498,6 +388,7 @@ class CloudRunJob(Infrastructure):
             if logs:
                 for log in logs:
                     self.logger.info(f"{log.timestamp}: {log.message}")
+                    print(f"{log.timestamp}: {log.message}")
             time.sleep(poll_interval)
 
             job_run = Execution.from_json(
@@ -515,6 +406,7 @@ class CloudRunJob(Infrastructure):
 
         while not job.is_ready():
             self.logger.info(f"Job is not yet ready... Current condition: {job.ready_condition}")
+            print(f"Job is not yet ready... Current condition: {job.ready_condition}")
             time.sleep(poll_interval)
             job = self._get_job(client=client) 
 
@@ -554,18 +446,18 @@ class CloudRunJob(Infrastructure):
         
         return d
 
-    def _add_env_vars(self, d: dict):
+    def _add_env(self, d: dict):
         """Add environment variables for a Cloud Run Job.
 
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar 
         """
-        if self.set_env_vars is not None:
-            env = [{"name": k, "value": v} for k,v in self.set_env_vars.items()]
+        if self.env is not None:
+            env = [{"name": k, "value": v} for k,v in self.env.items()]
             d["env"] = env
         
         return d
 
-    def add_container_settings(self, d: dict) -> dict:
+    def _add_container_settings(self, d: dict) -> dict:
         """
         Add settings related to containers for Cloud Run Jobs to a dictionary.
 
@@ -574,7 +466,7 @@ class CloudRunJob(Infrastructure):
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         """
-        d = self._add_env_vars(d)
+        d = self._add_env(d)
         d = self._add_resources(d)
         d = self._add_command(d)
         d = self._add_args(d)
@@ -584,7 +476,8 @@ class CloudRunJob(Infrastructure):
     @property
     def job_name(self):
         if self._job_name is None:
-            image_name = self.image_url.split("/")[-1]
+            image_name = self.image.split("/")[-1]
+            image_name = image_name.replace((":"),"-").replace(("."),"-") # only alphanumeric and '-' allowed
             self._job_name = f"{image_name}-{uuid4()}"
         
         return self._job_name
@@ -592,12 +485,16 @@ class CloudRunJob(Infrastructure):
 
 if __name__ == "__main__":
     creds = GcpCredentials(service_account_file="creds.json")
-
+    registry = GoogleCloudRegistry(credentials=creds)
     job = CloudRunJob(
         project_id="helical-bongo-360018",
         region="us-east1",
-        image_url="gcr.io/helical-bongo-360018/peytons-test-image",
+        # image="gcr.io/helical-bongo-360018/peytons-test-image",
         credentials=creds,
+        keep_job_after_completion=False,
+        command=["echo", "hello $PLANET"],
+        env={"PLANET": "earth"},
+        registry=registry
     )
 
     job.run()
