@@ -8,6 +8,7 @@ from typing import Dict, Optional, Union
 
 from google.oauth2.service_account import Credentials
 from pydantic import Json, root_validator, validator
+import google.auth.transport.requests
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -119,9 +120,9 @@ class GcpCredentials(Block):
         service_account_file or service_account_info.
         """
         if self.service_account_file:
-            credentials = Credentials.from_service_account_file(self.service_account_file)
+            credentials = Credentials.from_service_account_file(self.service_account_file, scopes=['https://www.googleapis.com/auth/cloud-platform'])
         elif self.service_account_info:
-            credentials = Credentials.from_service_account_info(self.service_account_info)
+            credentials = Credentials.from_service_account_info(self.service_account_info, scopes=['https://www.googleapis.com/auth/cloud-platform'])
         else:
             return None
         return credentials
@@ -135,6 +136,16 @@ class GcpCredentials(Block):
         
         return value
         
+    def get_access_token(self):
+        """
+        See: https://stackoverflow.com/a/69107745
+        also: https://www.jhanley.com/google-cloud-creating-oauth-access-tokens-for-rest-api-calls/
+        """
+        request = google.auth.transport.requests.Request()
+        credentials = self.get_credentials_from_service_account()
+        credentials.refresh(request)
+
+        return credentials.token
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
         self, project: Optional[str] = None
