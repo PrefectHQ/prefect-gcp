@@ -3,6 +3,7 @@ from pydantic import Field, BaseModel
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 from prefect_gcp.credentials import GcpCredentials
+from prefect.docker import get_prefect_image_name
 from prefect.infrastructure.docker import BaseDockerLogin
 
 if TYPE_CHECKING:
@@ -10,7 +11,8 @@ if TYPE_CHECKING:
 
     from prefect_gcp.credentials import GcpCredentials
 
-PREFECT_DOCKERHUB_NAME = "prefecthq/prefect"
+PREFECT_DOCKERHUB_NAME = get_prefect_image_name()
+
 class LocationType(Enum):
     REGION = "Region"
     MULTI_REGION = "Multi-region"
@@ -30,17 +32,28 @@ class GoogleCloudRegistry(BaseDockerLogin):
 
     def login(self):
         client = self._get_docker_client()
+        res = self._login(username=self.username, password=self.password, client=client)
+
+    @property 
+    def password(self):
         service_account_value = self.credentials.get_service_account_value()
         if isinstance(service_account_value, dict):
             password = json.dumps(service_account_value)
         else:
             password = service_account_value
-        res = self._login(password=password, client=client)
-    
+        
+        return password
+
+    @property
+    def username(self):
+        return "_json_key"
+
     def get_prefect_image(self):
+        self.login()
+        client = self._get_docker_client()
         prefect_image_tag = self._get_tag_for_prefect_image_in_google_registry()
         if prefect_image_tag is None:
-            prefect_image_tag = self._add_prefect_image_to_registry
+            prefect_image_tag = self._add_prefect_image_to_registry(client=client)
         
         return prefect_image_tag
 
@@ -54,8 +67,14 @@ class GoogleCloudRegistry(BaseDockerLogin):
                 raise
         
         local_prefect_image.tag(self.prefect_gcr_name)
-        client.push(self.prefect_gcr_name)
-        
+        for line in client.images.push(
+            repository=self.prefect_gcr_name, 
+            stream=True, 
+            auth_config={"username": self.username, "password": self.password},
+            decode=True
+        ):
+            print(line)
+
         return self.prefect_gcr_name
 
 
@@ -65,9 +84,9 @@ class GoogleCloudRegistry(BaseDockerLogin):
                 if tag == PREFECT_DOCKERHUB_NAME:
                     return image
 
-    def _login(self, password, client):
+    def _login(self, username, password, client):
         return client.login(
-            username="_json_key",
+            username=username,
             password=password,
             registry=self.registry_name,
             reauth=True,
@@ -89,6 +108,8 @@ class GoogleCloudRegistry(BaseDockerLogin):
         return client.images.list()
     
     def _get_tag_for_prefect_image_in_google_registry(self):
+        return None 
+
         for image in self._list_images():
             for tag in image.tags:
                 if self.prefect_gcr_name in tag:
@@ -102,7 +123,6 @@ if __name__ == "__main__":
     )
     registry.login()
     image = registry.get_prefect_image()
-    breakpoint()
     print(image)
 
 # class ContainerRegistry(GoogleCloudRegistry):
