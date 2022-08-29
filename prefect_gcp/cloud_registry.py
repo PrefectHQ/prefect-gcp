@@ -80,7 +80,7 @@ class GoogleCloudRegistry(BaseDockerLogin):
 
 
     def _get_local_prefect_image(self):
-        for image in self.list_images():
+        for image in self.list_repositories():
             for tag in image.tags:
                 if tag == PREFECT_DOCKERHUB_NAME:
                     return image
@@ -104,14 +104,25 @@ class GoogleCloudRegistry(BaseDockerLogin):
     def prefect_gcr_name(self):
         return f"{self.registry_name}/{PREFECT_DOCKERHUB_NAME}"
 
-    def list_images(self):
+    def list_repositories(self):
         access_token = self.credentials.get_access_token()
         resp = requests.get('https://gcr.io/v2/_catalog', auth=('_token', access_token))
-
+        breakpoint()
         return resp.json()
     
+    def _list_tags_for_repository(self, repository):
+        prefect_repository_name = get_prefect_image_name.split(":")[0]
+        access_token = self.credentials.get_access_token()
+        
+        resp = requests.get(
+            f"https:{self.registry_name}/{prefect_repository_name}/tags/list", 
+            auth=('_token', access_token)
+        )
+        return resp.json()
+
     def _get_tag_for_prefect_image_in_google_registry(self):
-        for image in self.list_images():
+        for image in self.list_repositories():
+            breakpoint()
             for tag in image.tags:
                 if self.prefect_gcr_name in tag:
                     return tag
@@ -123,7 +134,7 @@ if __name__ == "__main__":
         credentials=creds,
     )
     registry.login()
-    print(registry.list_images())
+    print(registry.list_repositories())
 
 # class ContainerRegistry(GoogleCloudRegistry):
 #     pass
