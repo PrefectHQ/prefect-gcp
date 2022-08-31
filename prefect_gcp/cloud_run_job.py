@@ -51,10 +51,10 @@ class Job(BaseModel):
     execution_status: dict
 
     def is_ready(self):
-        """See if job is ready to be executed"""
+        """Whether a job is finished registering and ready to be executed"""
         return self.ready_condition.get("status") == "True"
 
-    def is_finished(self):
+    def has_execution_in_progress(self):
         """See if job has a run in progress."""
         return (
             self.execution_status and
@@ -99,23 +99,27 @@ class Execution(BaseModel):
     status: dict
     log_uri: str
 
-    def is_running(self):
+    def is_running(self) -> bool:
+        """Returns True if Execution is not completed."""
         return self.status.get("completionTime") is None
 
-    def final_status(self):
+    def condition_after_completion(self):
+        """Returns Execution condition if Execution has completed."""
         for condition in self.status["conditions"]:
             if condition["type"] == "Completed":
                 return condition
 
     def succeeded(self):
-        completed = self.final_status()
-        if completed and completed["status"] == "True":
+        """Whether or not the Execution completed is a successful state."""
+        completed_condition = self.condition_after_completion()
+        if completed_condition and completed_condition["status"] == "True":
             return True
         
         return False
 
     @classmethod
     def from_json(cls, execution):
+        """Create an Execution instance from a GCP Execution API request."""
         return cls(
             name = execution['metadata']['name'],
             metadata = execution['metadata'],
@@ -127,6 +131,9 @@ class Execution(BaseModel):
 class CloudRunJob(Infrastructure):
     """Infrastructure block used to run GCP Cloud Run Jobs.
     """
+    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _block_type_name = "Cloud Run Job"
+
     type: Literal["cloud-run-job"] = Field(
         "cloud-run-job", description="The slug for this task type."
     )
@@ -185,7 +192,6 @@ class CloudRunJob(Infrastructure):
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
         with self._get_jobs_client() as jobs_client:
-
             try:
                 #TODO check if container actually exists
                 self.logger.info(f"Creating Cloud Run Job {self.job_name}")
@@ -197,57 +203,14 @@ class CloudRunJob(Infrastructure):
 
             self._wait_for_job_creation(client=jobs_client)
 
-            try:
-                self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
-                print(f"Submitting Cloud Run Job {self.job_name} for execution.")
-                job_execution = self._submit_job_for_execution(client=jobs_client)
-            except Exception as exc:
-                self.logger.exception(f"Received an unexpected exception when sumbitting Cloud Run Job '{self.job_name}':\n{exc!r}")
-                raise
+            if task_status:
+                task_status.started(self.job_name) 
 
-            self.logger.info(
-                f"Cloud Run Job {self.job_name}: Running command {' '.join(self.command)!r} "
+            return await run_sync_in_worker_thread(
+                self._watch_job_and_get_result,
+                jobs_client,
+                5,
             )
-            print(
-                f"Cloud Run Job {self.job_name}: Running command {' '.join(self.command)!r} "
-            )
-
-            try:
-                job_execution = self._watch_job_execution(job_execution=job_execution)
-            except Exception as exc:
-                self.logger.exception(f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name}':\n{exc!r}")
-                raise
-
-        if job_execution.succeeded():
-            status_code = 0
-            self.logger.info(f"Job Run {self.job_name} completed successfully")
-            print(f"Job Run {self.job_name} completed successfully")
-        else:
-            status_code = 1
-            self.logger.error(f"Job Run {self.job_name} did not complete successfully. {job_execution.final_status()['message']}")
-            print(f"Job Run {self.job_name} did not complete successfully. {job_execution.final_status()['message']}")
-
-        self.logger.info(f"Job Run logs can be found on GCP at: {job_execution.log_uri}") 
-        print(f"Job Run logs can be found on GCP at: {job_execution.log_uri}") 
-
-        if not self.keep_job_after_completion:
-            try:
-                self.logger.info(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
-                print(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
-                self._delete_job(client=jobs_client)
-            except googleapiclient.errors.HttpError as Exc:
-                self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
-        if task_status:
-            task_status.started(self.job_name) 
-
-        return await run_sync_in_worker_thread(
-            self.get_result,
-            self.job_name,
-            status_code
-        )
-
-    def get_result(self, identifier, status_code):
-        return CloudRunJobResult(identifier=identifier, status_code=status_code)
 
     def _create_job(self, client):
         """Create a new Cloud Run Job."""
@@ -369,7 +332,7 @@ class CloudRunJob(Infrastructure):
         job = self._get_job(client=client) 
 
         while not job.is_ready():
-            ready_condition = job.ready_condition if job.ready_condtion else "waiting for condition update"
+            ready_condition = job.ready_condition if job.ready_condition else "waiting for condition update"
             self.logger.info(f"Job is not yet ready... Current condition: {ready_condition}")
             print(f"Job is not yet ready... Current condition: {ready_condition}")
             time.sleep(poll_interval)
@@ -411,12 +374,16 @@ class CloudRunJob(Infrastructure):
 
     def _add_env(self, d: dict):
         """Add environment variables for a Cloud Run Job.
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar 
+
+        Method `self._base_environment()` gets necessary Prefect environment variables
+        from the config.
+
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar for 
+        how environment variables are specified for Cloud Run Jobs.
         """
-        if self.env is not None:
-            env = [{"name": k, "value": v} for k,v in self.env.items()]
-            d["env"] = env
-        
+        env = {**self._base_environment(), **self.env}
+        cloud_run_job_env = [{"name": k, "value": v} for k,v in env.items()]
+        d["env"] = cloud_run_job_env
         return d
 
     def _add_container_settings(self, d: dict) -> dict:
@@ -434,7 +401,50 @@ class CloudRunJob(Infrastructure):
 
         return d
 
+    def _watch_job_and_get_result(self, client, poll_interval):
+        try:
+            self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
+            print(f"Submitting Cloud Run Job {self.job_name} for execution.")
+            job_execution = self._submit_job_for_execution(client=client)
+        except Exception as exc:
+            self.logger.exception(f"Received an unexpected exception when submitting Cloud Run Job '{self.job_name}':\n{exc!r}")
+        
+        command = ' '.join(self.command) if self.command else "'default container command'"
 
+        self.logger.info(
+            f"Cloud Run Job {self.job_name}: Running command {command} "
+        )
+        print(
+            f"Cloud Run Job {self.job_name}: Running command {command} "
+        )
+
+        try:
+            job_execution = self._watch_job_execution(job_execution=job_execution, poll_interval=poll_interval)
+        except Exception as exc:
+            self.logger.exception(f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name}':\n{exc!r}")
+            raise
+
+        if job_execution.succeeded():
+            status_code = 0
+            self.logger.info(f"Job Run {self.job_name} completed successfully")
+            print(f"Job Run {self.job_name} completed successfully")
+        else:
+            status_code = 1
+            self.logger.error(f"Job Run {self.job_name} did not complete successfully. {job_execution.condition_after_completion()['message']}")
+            print(f"Job Run {self.job_name} did not complete successfully. {job_execution.condition_after_completion()['message']}")
+
+        self.logger.info(f"Job Run logs can be found on GCP at: {job_execution.log_uri}") 
+        print(f"Job Run logs can be found on GCP at: {job_execution.log_uri}") 
+
+        if not self.keep_job_after_completion:
+            try:
+                self.logger.info(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
+                print(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
+                self._delete_job(client=client)
+            except googleapiclient.errors.HttpError as Exc:
+                self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
+
+        return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
 if __name__ == "__main__":
     creds = GcpCredentials(service_account_file="creds.json")
@@ -444,7 +454,8 @@ if __name__ == "__main__":
         region="us-east1",
         credentials=creds,
         # command=["echo", "hello $DOG"],
-        command=["printenv"],
+        command=["echo"],
+        args=["$DOG"],
         env={"DOG": "Manny"}
     )
 
