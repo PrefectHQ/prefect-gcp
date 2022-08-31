@@ -112,6 +112,15 @@ class GcpCredentials(Block):
     def get_project_id(self):
         return self.get_credentials_from_service_account().project_id
 
+    def get_credentials_from_service_account(self) -> Union[Credentials, None]:
+        """
+        Helper method to serialize credentials by using either
+        service_account_file or service_account_info.
+        """
+        if self.service_account_file:
+            credentials = Credentials.from_service_account_file(self.service_account_file, scopes=['https://www.googleapis.com/auth/cloud-platform'])
+        elif self.service_account_info:
+            credentials = Credentials.from_service_account_info(self.service_account_info, scopes=['https://www.googleapis.com/auth/cloud-platform'])
         else:
             return None
         return credentials
