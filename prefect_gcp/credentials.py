@@ -86,30 +86,29 @@ class GcpCredentials(Block):
     service_account_info: Optional[Json] = None
     project: Optional[str] = None
 
-    @staticmethod
-    def _get_credentials_from_service_account(
-        service_account_file: Optional[str] = None,
-        service_account_info: Optional[Dict[str, str]] = None,
-    ) -> Credentials:
-        """
-        Helper method to serialize credentials by using either
-        service_account_file or service_account_info.
-        """
-        if service_account_info and service_account_file:
+    @root_validator
+    def provide_one_service_account_source(cls, values):
+        if values.get("service_account_info") is not None and values.get("service_account_file") is not None:
             raise ValueError(
                 "Only one of service_account_info or service_account_file "
                 "can be specified at once"
             )
-        elif service_account_file:
-            if not os.path.exists(service_account_file):
-                raise ValueError("The provided path to the service account is invalid")
-            elif isinstance(service_account_file, Path):
-                service_account_file = service_account_file.expanduser()
-            else:
-                service_account_file = os.path.expanduser(service_account_file)
-            credentials = Credentials.from_service_account_file(service_account_file)
-        elif service_account_info:
-            credentials = Credentials.from_service_account_info(service_account_info)
+        if values.get("service_account_info") is None and values.get("service_account_file") is None:
+            raise ValueError(
+                "You must provide either service_account_info or service_account_file "
+                "to create a GcpCredentails block."
+            )
+        return values
+
+    @validator('service_account_file')
+    def check_service_account_file_exists(cls, file):
+        if not os.path.exists(file):
+            raise ValueError("The provided path to the service account is invalid")
+        elif isinstance(file, Path):
+            service_account_file = file.expanduser()
+        else:
+            service_account_file = os.path.expanduser(file)
+        return file
         else:
             return None
         return credentials
