@@ -109,6 +109,9 @@ class GcpCredentials(Block):
         else:
             service_account_file = os.path.expanduser(file)
         return file
+    def get_project_id(self):
+        return self.get_credentials_from_service_account().project_id
+
         else:
             return None
         return credentials
