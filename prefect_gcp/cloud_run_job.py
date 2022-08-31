@@ -124,23 +124,6 @@ class Execution(BaseModel):
             log_uri = execution['status'].get('logUri'),
         )
 
-
-class GoogleCloudLog(BaseModel):
-    severity: str
-    timestamp: datetime.datetime
-    insert_id: str
-    message: str
-
-    @classmethod
-    def from_list_entry(cls, entry):
-        return cls(
-            severity=entry.severity,
-            timestamp=entry.timestamp,
-            insert_id=entry.insert_id,
-            message=entry.payload["status"].get("message")
-        )
-
-
 class CloudRunJob(Infrastructure):
     """Infrastructure block used to run GCP Cloud Run Jobs.
     """
