@@ -125,6 +125,14 @@ class GcpCredentials(Block):
             return None
         return credentials
 
+    def get_service_account_value(self) -> Json:
+        if self.service_account_file:
+            with open(self.service_account_file, "r") as f:
+                value = json.load(f)
+        else:
+            value = self.service_account_info
+        
+        return value
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
         self, project: Optional[str] = None
