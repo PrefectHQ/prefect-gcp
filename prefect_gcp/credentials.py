@@ -133,6 +133,18 @@ class GcpCredentials(Block):
             value = self.service_account_info
         
         return value
+        
+    def get_access_token(self):
+        """
+        See: https://stackoverflow.com/a/69107745
+        also: https://www.jhanley.com/google-cloud-creating-oauth-access-tokens-for-rest-api-calls/
+        """
+        request = google.auth.transport.requests.Request()
+        credentials = self.get_credentials_from_service_account()
+        credentials.refresh(request)
+
+        return credentials.token
+
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
         self, project: Optional[str] = None
