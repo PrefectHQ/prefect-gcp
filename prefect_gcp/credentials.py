@@ -89,14 +89,14 @@ class GcpCredentials(Block):
 
     @root_validator
     def provide_one_service_account_source(cls, values):
-        if values["service_account_info"] is not None and values["service_account_file"] is not None:
+        if values.get("service_account_info") is not None and values.get("service_account_file") is not None:
             raise ValueError(
                 "Only one of service_account_info or service_account_file "
                 "can be specified at once"
             )
-        if values["service_account_info"] is None and values["service_account_file"] is None:
+        if values.get("service_account_info") is None and values.get("service_account_file") is None:
             raise ValueError(
-                "You must provide either service_account_info or service_account_file"
+                "You must provide either service_account_info or service_account_file "
                 "to create a GcpCredentails block."
             )
         return values
@@ -146,6 +146,7 @@ class GcpCredentials(Block):
         credentials.refresh(request)
 
         return credentials.token
+
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
         self, project: Optional[str] = None

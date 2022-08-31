@@ -21,7 +21,7 @@ def service_account_info():
 def test_get_credentials_from_service_account_file(
     service_account_file, oauth2_credentials
 ):
-    credentials = GcpCredentials._get_credentials_from_service_account(
+    credentials = GcpCredentials.get_credentials_from_service_account(
         service_account_file=service_account_file
     )
     assert credentials == service_account_file
@@ -30,19 +30,19 @@ def test_get_credentials_from_service_account_file(
 def test_get_credentials_from_service_account_info(
     service_account_info, oauth2_credentials
 ):
-    credentials = GcpCredentials._get_credentials_from_service_account(
+    credentials = GcpCredentials.get_credentials_from_service_account(
         service_account_info=service_account_info
     )
     assert credentials == service_account_info
 
 
 def test_get_credentials_from_service_account_none(oauth2_credentials):
-    assert GcpCredentials._get_credentials_from_service_account() is None
+    assert GcpCredentials.get_credentials_from_service_account() is None
 
 
 def test_get_credentials_from_service_account_file_error(oauth2_credentials):
     with pytest.raises(ValueError):
-        GcpCredentials._get_credentials_from_service_account(
+        GcpCredentials.get_credentials_from_service_account(
             service_account_file="~/doesnt/exist"
         )
 
@@ -51,7 +51,7 @@ def test_get_credentials_from_service_account_both_error(
     service_account_info, oauth2_credentials
 ):
     with pytest.raises(ValueError):
-        GcpCredentials._get_credentials_from_service_account(
+        GcpCredentials.get_credentials_from_service_account(
             service_account_file=SERVICE_ACCOUNT_FILES[0],
             service_account_info=service_account_info,
         )

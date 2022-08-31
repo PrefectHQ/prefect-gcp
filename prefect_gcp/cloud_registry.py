@@ -144,6 +144,7 @@ class GoogleCloudRegistry(BaseDockerLogin):
 
     def _get_local_prefect_image(self):
         """Get an image object for the expected Prefect image."""
+        self.login()
         client = self._get_docker_client()
         if get_prefect_image_name() not in self._list_local_images():
             try:
