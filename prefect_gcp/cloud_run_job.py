@@ -153,7 +153,6 @@ class CloudRunJob(Infrastructure):
     memory: Optional[str] = None 
 
     args: Optional[List[str]] = None 
-    command: list[str] = Field(default_factory=list)
     env: dict[str, str] = Field(default_factory=dict)
     stream_output: bool = False
 
@@ -195,7 +194,6 @@ class CloudRunJob(Infrastructure):
             try:
                 #TODO check if container actually exists
                 self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-                print(f"Creating Cloud Run Job {self.job_name}")
                 self._create_job(client=jobs_client)
             except Exception as exc:
                 self.logger.exception(f"Encountered an unexpected error when creating Cloud Run Job {self.job_name}:\n{exc!r}")
@@ -334,7 +332,6 @@ class CloudRunJob(Infrastructure):
         while not job.is_ready():
             ready_condition = job.ready_condition if job.ready_condition else "waiting for condition update"
             self.logger.info(f"Job is not yet ready... Current condition: {ready_condition}")
-            print(f"Job is not yet ready... Current condition: {ready_condition}")
             time.sleep(poll_interval)
 
             job = self._get_job(client=client) 
@@ -404,7 +401,6 @@ class CloudRunJob(Infrastructure):
     def _watch_job_and_get_result(self, client, poll_interval):
         try:
             self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
-            print(f"Submitting Cloud Run Job {self.job_name} for execution.")
             job_execution = self._submit_job_for_execution(client=client)
         except Exception as exc:
             self.logger.exception(f"Received an unexpected exception when submitting Cloud Run Job '{self.job_name}':\n{exc!r}")
@@ -412,9 +408,6 @@ class CloudRunJob(Infrastructure):
         command = ' '.join(self.command) if self.command else "'default container command'"
 
         self.logger.info(
-            f"Cloud Run Job {self.job_name}: Running command {command} "
-        )
-        print(
             f"Cloud Run Job {self.job_name}: Running command {command} "
         )
 
@@ -427,19 +420,15 @@ class CloudRunJob(Infrastructure):
         if job_execution.succeeded():
             status_code = 0
             self.logger.info(f"Job Run {self.job_name} completed successfully")
-            print(f"Job Run {self.job_name} completed successfully")
         else:
             status_code = 1
             self.logger.error(f"Job Run {self.job_name} did not complete successfully. {job_execution.condition_after_completion()['message']}")
-            print(f"Job Run {self.job_name} did not complete successfully. {job_execution.condition_after_completion()['message']}")
 
         self.logger.info(f"Job Run logs can be found on GCP at: {job_execution.log_uri}") 
-        print(f"Job Run logs can be found on GCP at: {job_execution.log_uri}") 
 
         if not self.keep_job_after_completion:
             try:
                 self.logger.info(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
-                print(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
                 self._delete_job(client=client)
             except googleapiclient.errors.HttpError as Exc:
                 self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
