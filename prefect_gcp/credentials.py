@@ -1,12 +1,14 @@
 """Module handling GCP credentials"""
 
 import functools
+import json
 import os
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from google.oauth2.service_account import Credentials
-from pydantic import Json
+from pydantic import Json, root_validator, validator
+import google.auth.transport.requests
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -65,12 +67,10 @@ class GcpCredentials(Block):
     in the env from the command, `gcloud auth application-default login`. Refer to the
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
     for more info about the possible credential configurations.
-
     Args:
         service_account_file: Path to the service account JSON keyfile.
         service_account_info: The contents of the keyfile as a JSON string / dictionary.
         project: Name of the project to use.
-
     Example:
         Load stored GCP credentials:
         ```python
@@ -84,7 +84,6 @@ class GcpCredentials(Block):
 
     service_account_file: Optional[Path] = None
     service_account_info: Optional[Json] = None
-    project: Optional[str] = None
 
     @root_validator
     def provide_one_service_account_source(cls, values):
@@ -109,6 +108,7 @@ class GcpCredentials(Block):
         else:
             service_account_file = os.path.expanduser(file)
         return file
+
     def get_project_id(self):
         return self.get_credentials_from_service_account().project_id
 
@@ -153,29 +153,24 @@ class GcpCredentials(Block):
         Args:
             project: Name of the project to use; overrides the base
                 class's project if provided.
-
         Examples:
             Gets a GCP Cloud Storage client from a path.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
                     service_account_file=service_account_file
                 ).get_cloud_storage_client()
-
             example_get_client_flow()
             ```
-
             Gets a GCP Cloud Storage client from a JSON str.
             ```python
             import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_info = json.dumps({
@@ -193,11 +188,10 @@ class GcpCredentials(Block):
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_cloud_storage_client()
-
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
+        credentials = self.get_credentials_from_service_account(
             service_account_file=self.service_account_file,
             service_account_info=self.service_account_info,
         )
@@ -216,29 +210,24 @@ class GcpCredentials(Block):
             project: Name of the project to use; overrides the base
                 class's project if provided.
             location: Location to use.
-
         Examples:
             Gets a GCP BigQuery client from a path.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
                     service_account_file=service_account_file
                 ).get_bigquery_client()
-
             example_get_client_flow()
             ```
-
             Gets a GCP BigQuery client from a JSON str.
             ```python
             import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_info = json.dumps({
@@ -256,11 +245,10 @@ class GcpCredentials(Block):
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_bigquery_client(json)
-
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
+        credentials = self.get_credentials_from_service_account(
             service_account_file=self.service_account_file,
             service_account_info=self.service_account_info,
         )
@@ -278,29 +266,24 @@ class GcpCredentials(Block):
         Args:
             project: Name of the project to use; overrides the base
                 class's project if provided.
-
         Examples:
             Gets a GCP Secret Manager client from a path.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
                     service_account_file=service_account_file
                 ).get_secret_manager_client()
-
             example_get_client_flow()
             ```
-
             Gets a GCP Cloud Storage client from a JSON str.
             ```python
             import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_info = json.dumps({
@@ -318,11 +301,10 @@ class GcpCredentials(Block):
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_secret_manager_client()
-
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
+        credentials = self.get_credentials_from_service_account(
             service_account_file=self.service_account_file,
             service_account_info=self.service_account_info,
         )
