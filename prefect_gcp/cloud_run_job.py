@@ -349,8 +349,7 @@ class CloudRunJob(Infrastructure):
         """Set the command that a container will run for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         """
-        if self.command:
-            d["command"] = self.command
+        d["command"] = self.command
         
         return d
 
@@ -408,7 +407,7 @@ class CloudRunJob(Infrastructure):
         command = ' '.join(self.command) if self.command else "'default container command'"
 
         self.logger.info(
-            f"Cloud Run Job {self.job_name}: Running command {command} "
+            f"Cloud Run Job {self.job_name}: Running command '{command}'"
         )
 
         try:
@@ -434,18 +433,3 @@ class CloudRunJob(Infrastructure):
                 self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
-
-if __name__ == "__main__":
-    creds = GcpCredentials(service_account_file="creds.json")
-
-    job = CloudRunJob(
-        image="gcr.io/helical-bongo-360018/taylor-made-image",
-        region="us-east1",
-        credentials=creds,
-        # command=["echo", "hello $DOG"],
-        command=["echo"],
-        args=["$DOG"],
-        env={"DOG": "Manny"}
-    )
-
-    job.run()
