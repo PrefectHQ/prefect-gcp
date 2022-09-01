@@ -1,8 +1,9 @@
 import pytest
-from prefect_gcp.cloud_run_job import CloudRunJob
+from prefect_gcp.cloud_run_job import CloudRunJob, Execution
 from prefect_gcp.credentials import GcpCredentials
 from prefect.settings import temporary_settings, PREFECT_API_URL, PREFECT_API_KEY, PREFECT_PROFILES_PATH
-
+from googleapiclient.http import HttpMock
+from googleapiclient import discovery
 class TestJob:
     def test_get_execution_status(self):
         pass
@@ -21,7 +22,86 @@ class TestJob:
     
 
 class TestExecution:
-    pass
+    def test_succeeded_responds_true(self):
+        execution = Execution(
+            name="Test",
+            metadata={},
+            spec={},
+            status={"conditions": [{"type": "Completed", "status": "True"}]},
+            log_uri=''
+        )
+        assert execution.succeeded()
+
+    @pytest.mark.parametrize(
+        "conditions",
+        [
+            [],
+            [{"type": "Dog", "status": "True"}],
+            [{"type": "Completed", "status": "False"}],
+
+        ]
+    )
+    def test_succeeded_responds_false(self, conditions):
+        execution = Execution(
+            name="Test",
+            metadata={},
+            spec={},
+            status={"conditions": conditions},
+            log_uri=''
+        )
+        assert not execution.succeeded()
+
+    @pytest.mark.parametrize(
+        "status,expected_value",
+        [
+            ({}, True),
+            ({"completionTime": "xyz"}, False)
+        ]
+    )
+    def test_is_running(self, status, expected_value):
+        execution = Execution(
+            name="Test",
+            metadata={},
+            spec={},
+            status=status,
+            log_uri=''
+        )
+        assert execution.is_running() == expected_value
+
+    @pytest.mark.parametrize(
+        "conditions, expected_value",
+        [
+            ([], None),
+            ([{"type": "Dog", "status": "True"}], None),
+            ([{"type": "Completed", "status": "False"}], {"type": "Completed", "status": "False"}),
+            ([{"type": "Dog", "status": "True"}, {"type": "Completed", "status": "False"}], {"type": "Completed", "status": "False"}),
+
+        ]
+    )
+    def test_condition_after_completion_returns_correct_condition(self, conditions, expected_value):
+        execution = Execution(
+            name="Test",
+            metadata={},
+            spec={},
+            status={"conditions": conditions},
+            log_uri=''
+        )
+        assert execution.condition_after_completion() == expected_value
+
+    def test_from_json(self):
+        execution_dict = {
+            "metadata": {"name": "Test"},
+            "spec": {"MySpec": "spec"},
+            "status": {'logUri': "my_uri.com"}
+        }
+        execution = Execution.from_json(execution_dict)
+
+        assert execution.name == execution_dict["metadata"]["name"]
+        assert execution.metadata == execution_dict["metadata"]
+        assert execution.spec == execution_dict["spec"]
+        assert execution.status == execution_dict["status"]
+        assert execution.log_uri == execution_dict["status"]["logUri"]
+
 
 @pytest.fixture
 def cloud_run_job():
@@ -114,3 +194,12 @@ class TestCloudRunJobContainerSettings:
         base_setting = {}
         result = cloud_run_job._add_container_settings(base_setting)
         assert result["args"] == args
+
+# @pytest.fixture
+def test_mock_client():
+    res = HttpMock('tests/api_test_files/dog.json', {'status': 200})
+    api_key = "test"
+    service = discovery.build("run", "v1", http=res)
+class TestCloudRunJobGCPInteraction:
+    def test_create(self):
+        pass

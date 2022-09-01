@@ -126,7 +126,7 @@ class Execution(BaseModel):
             metadata = execution['metadata'],
             spec = execution['spec'],
             status = execution['status'],
-            log_uri = execution['status'].get('logUri'),
+            log_uri = execution['status']['logUri'],
         )
 
 class CloudRunJob(Infrastructure):
@@ -211,6 +211,40 @@ class CloudRunJob(Infrastructure):
                 5,
             )
 
+    def _watch_job_and_get_result(self, client, poll_interval):
+        self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
+        job_execution = self._submit_job_for_execution(client=client)
+
+        command = ' '.join(self.command) if self.command else "'default container command'"
+
+        self.logger.info(
+            f"Cloud Run Job {self.job_name}: Running command '{command}'"
+        )
+
+        try:
+            job_execution = self._watch_job_execution(job_execution=job_execution, poll_interval=poll_interval)
+        except Exception as exc:
+            self.logger.exception(f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name}':\n{exc!r}")
+            raise
+
+        if job_execution.succeeded():
+            status_code = 0
+            self.logger.info(f"Job Run {self.job_name} completed successfully")
+        else:
+            status_code = 1
+            self.logger.error(f"Job Run {self.job_name} did not complete successfully. {job_execution.condition_after_completion()['message']}")
+
+        self.logger.info(f"Job Run logs can be found on GCP at: {job_execution.log_uri}") 
+
+        if not self.keep_job_after_completion:
+            try:
+                self.logger.info(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
+                self._delete_job(client=client)
+            except googleapiclient.errors.HttpError as Exc:
+                self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
+
+        return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
+
     def _create_job(self, client):
         """Create a new Cloud Run Job."""
         try:
@@ -219,14 +253,6 @@ class CloudRunJob(Infrastructure):
             # exc.status_code == 409: 
             self.logger.exception(f"Cloud run job received an unexpected exception when creating Cloud Run Job '{self.job_name}':\n{exc!r}")
             raise
-
-    def _create(self, client, body):
-        """Submit a create request to Cloud Run Job API."""
-        request = client.create(
-            parent=f"namespaces/{self.project_id}", body=body
-        )
-        response = request.execute()
-        return response
 
     def _body_for_create(self):
         """Create properly formatted body used for a Job CREATE request.
@@ -266,54 +292,12 @@ class CloudRunJob(Infrastructure):
         }
         return body
 
-    def _get_job(self, client) -> Job:
-        """Get the Job associated with the CloudRunJob."""
-        request = client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
-        res = request.execute()
-        return Job.from_json(res)
-
-    def _submit_job_for_execution(self, client):
-        """Submit a request to begin a new run of the Cloud Run Job."""
-        request = client.run(
-            name=f"namespaces/{self.project_id}/jobs/{self.job_name}"
-        )
-        response = request.execute()
-        return Execution.from_json(response)
-
-    def _get_client(self):
-        """Get the base client needed for interacting with GCP APIs."""
-        # region needed for 'v1' API
-        api_endpoint = f"https://{self.region}-run.googleapis.com"
-        credentials = self.credentials.get_credentials_from_service_account()
-        options = ClientOptions(api_endpoint=api_endpoint)
-
-        return (
-            discovery.build(
-                "run", "v1", client_options=options, credentials=credentials
-            )
-            .namespaces()
-        )
-
-    def _get_jobs_client(self):
-        """Get the client needed for interacting with Cloud Run Jobs."""
-        return self._get_client().jobs()
-
-    def _get_executions_client(self):
-        """Get the client needed for interacting with container executions."""
-        return self._get_client().executions()
-
     def preview(self):
         """Generate a preview of the job definition that will be sent to GCP."
         """
         body = self._body_for_create()
 
         return json.dumps(body, indent=2)
-
-    def _delete_job(self, client):
-        """Make a delete request for the Cloud Run Job."""
-        request = client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
-        response = request.execute()
-        return response
 
     def _watch_job_execution(self, job_execution: Execution, poll_interval=5):
         """Update job_execution status until it is no longer running."""
@@ -340,6 +324,72 @@ class CloudRunJob(Infrastructure):
             time.sleep(poll_interval)
 
             job = self._get_job(client=client) 
+
+    # GCP API CALLS
+    def _create(self, client, body):
+        """Submit a create request to Cloud Run Job API."""
+        request = client.create(
+            parent=f"namespaces/{self.project_id}", body=body
+        )
+        response = request.execute()
+        return response
+
+    def _delete_job(self, client):
+        """Make a delete request for the Cloud Run Job."""
+        request = client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
+        response = request.execute()
+        return response
+
+    def _submit_job_for_execution(self, client):
+        """Submit a request to begin a new run of the Cloud Run Job."""
+        request = client.run(
+            name=f"namespaces/{self.project_id}/jobs/{self.job_name}"
+        )
+        response = request.execute()
+
+        return Execution.from_json(response)
+
+    def _get_job(self, client) -> Job:
+        """Get the Job associated with the CloudRunJob."""
+        request = client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
+        res = request.execute()
+        return Job.from_json(res)
+
+    # GCP API CLIENT
+    def _get_client(self):
+        """Get the base client needed for interacting with GCP APIs."""
+        # region needed for 'v1' API
+        api_endpoint = f"https://{self.region}-run.googleapis.com"
+        credentials = self.credentials.get_credentials_from_service_account()
+        options = ClientOptions(api_endpoint=api_endpoint)
+
+        return discovery.build(
+                "run", "v1", client_options=options, credentials=credentials
+            ).namespaces()
+
+    def _get_jobs_client(self):
+        """Get the client needed for interacting with Cloud Run Jobs."""
+        return self._get_client().jobs()
+
+    def _get_executions_client(self):
+        """Get the client needed for interacting with container executions."""
+        return self._get_client().executions()
+
+    # CONTAINER SETTINGS
+    def _add_container_settings(self, d: dict) -> dict:
+        """
+        Add settings related to containers for Cloud Run Jobs to a dictionary.
+        Includes environment variables, entrypoint command, entrypoint arguments,
+        and cpu and memory limits.
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
+        and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
+        """
+        d = self._add_env(d)
+        d = self._add_resources(d)
+        d = self._add_command(d)
+        d = self._add_args(d)
+
+        return d
 
     def _add_args(self, d: dict):
         """Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
@@ -387,57 +437,6 @@ class CloudRunJob(Infrastructure):
         d["env"] = cloud_run_job_env
         return d
 
-    def _add_container_settings(self, d: dict) -> dict:
-        """
-        Add settings related to containers for Cloud Run Jobs to a dictionary.
-        Includes environment variables, entrypoint command, entrypoint arguments,
-        and cpu and memory limits.
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
-        """
-        d = self._add_env(d)
-        d = self._add_resources(d)
-        d = self._add_command(d)
-        d = self._add_args(d)
-
-        return d
-
-    def _watch_job_and_get_result(self, client, poll_interval):
-        try:
-            self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
-            job_execution = self._submit_job_for_execution(client=client)
-        except Exception as exc:
-            self.logger.exception(f"Received an unexpected exception when submitting Cloud Run Job '{self.job_name}':\n{exc!r}")
-        
-        command = ' '.join(self.command) if self.command else "'default container command'"
-
-        self.logger.info(
-            f"Cloud Run Job {self.job_name}: Running command '{command}'"
-        )
-
-        try:
-            job_execution = self._watch_job_execution(job_execution=job_execution, poll_interval=poll_interval)
-        except Exception as exc:
-            self.logger.exception(f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name}':\n{exc!r}")
-            raise
-
-        if job_execution.succeeded():
-            status_code = 0
-            self.logger.info(f"Job Run {self.job_name} completed successfully")
-        else:
-            status_code = 1
-            self.logger.error(f"Job Run {self.job_name} did not complete successfully. {job_execution.condition_after_completion()['message']}")
-
-        self.logger.info(f"Job Run logs can be found on GCP at: {job_execution.log_uri}") 
-
-        if not self.keep_job_after_completion:
-            try:
-                self.logger.info(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
-                self._delete_job(client=client)
-            except googleapiclient.errors.HttpError as Exc:
-                self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
-
-        return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
 if __name__ == "__main__":
     creds = GcpCredentials(service_account_file="creds.json")
@@ -447,4 +446,4 @@ if __name__ == "__main__":
         image="gcr.io/helical-bongo-360018/crj",
     )
 
-    print(job.preview())
+    job.run()
