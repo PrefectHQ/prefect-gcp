@@ -19,6 +19,7 @@ from __future__ import annotations
 import datetime
 from ast import Delete
 from importlib.metadata import metadata
+import json
 import time
 from typing import Any, List, Literal, Optional, Union
 from unicodedata import name
@@ -302,7 +303,11 @@ class CloudRunJob(Infrastructure):
         return self._get_client().executions()
 
     def preview(self):
-        pass
+        """Generate a preview of the job definition that will be sent to GCP."
+        """
+        body = self._body_for_create()
+
+        return json.dumps(body, indent=2)
 
     def _delete_job(self, client):
         """Make a delete request for the Cloud Run Job."""
@@ -433,3 +438,13 @@ class CloudRunJob(Infrastructure):
                 self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
+
+if __name__ == "__main__":
+    creds = GcpCredentials(service_account_file="creds.json")
+    job = CloudRunJob(
+        credentials=creds,
+        region="us-east1",
+        image="gcr.io/helical-bongo-360018/crj",
+    )
+
+    print(job.preview())
