@@ -6,6 +6,7 @@ from prefect.settings import temporary_settings, PREFECT_API_URL, PREFECT_API_KE
 from googleapiclient.http import HttpMock
 from googleapiclient import discovery
 from unittest.mock import Mock
+import prefect_gcp
 
 class TestJob:
     @pytest.mark.parametrize(
@@ -320,14 +321,74 @@ class TestCloudRunJobContainerSettings:
         result = cloud_run_job._add_container_settings(base_setting)
         assert result["args"] == args
 
-# @pytest.fixture
-def test_mock_client():
-    res = HttpMock('tests/api_test_files/dog.json', {'status': 200})
-    api_key = "test"
-    service = discovery.build("run", "v1", http=res)
+@pytest.fixture
+def mock_credentials(monkeypatch):
+    mock_credentials = Mock(name="Credentials")
+    monkeypatch.setattr(
+        "prefect_gcp.cloud_run_job.GcpCredentials.get_credentials_from_service_account",
+        mock_credentials
+    )
+
+    return mock_credentials
+
+@pytest.fixture
+def mock_client(monkeypatch, mock_credentials):
+    mock_client = Mock(name="Client")
+    monkeypatch.setattr(
+        "prefect_gcp.cloud_run_job.CloudRunJob._get_client",
+        mock_client
+    )
+    return mock_client
+
+def list_mock_calls(mock_client):
+    return [str(call) for call in mock_client.mock_calls]
 
 class TestCloudRunJobGCPInteraction:
 
+    def test_get_client_uses_correct_endpoint(self, monkeypatch, mock_credentials, cloud_run_job):
+        mock = Mock()
+        monkeypatch.setattr(
+            "prefect_gcp.cloud_run_job.discovery.build",
+            mock
+        )
+        cloud_run_job._get_client() 
 
-    def test_create(self):
-        mock_client = Mock()
+        desired_endpoint = f"https://{cloud_run_job.region}-run.googleapis.com"
+        assert mock.call_args[1]["client_options"].api_endpoint == desired_endpoint
+
+    def test_get_jobs_client(self, mock_client, cloud_run_job):
+        cloud_run_job._get_jobs_client() 
+        assert list_mock_calls(mock_client) == ["call()", "call().jobs()"]
+
+    def test_get_executions_client(self, mock_client, cloud_run_job):
+        cloud_run_job._get_executions_client() 
+        assert list_mock_calls(mock_client) == ["call()", "call().executions()"]
+        
+    def test_create_job(self, mock_client, cloud_run_job):
+        cloud_run_job._project_id = 'my-project-id'
+        cloud_run_job._create_job(jobs_client=mock_client, body="Test")
+
+        mock_client.create.assert_called_with(parent='namespaces/my-project-id', body='Test')
+
+    def test_delete_job(self, mock_client, cloud_run_job):
+        cloud_run_job._project_id = 'my-project-id'
+        cloud_run_job._job_name = 'my-job-name'
+        cloud_run_job._delete_job(jobs_client=mock_client)
+
+        mock_client.delete.assert_called_with(name='namespaces/my-project-id/jobs/my-job-name')
+
+    def test_submit_job_for_execution(self, mock_client, cloud_run_job):
+        cloud_run_job._project_id = 'my-project-id'
+        cloud_run_job._job_name = 'my-job-name'
+        cloud_run_job._submit_job_for_execution(jobs_client=mock_client)
+
+        mock_client.run.assert_called_with(name='namespaces/my-project-id/jobs/my-job-name')
+
+    def test_get_job(self, mock_client, cloud_run_job):
+        cloud_run_job._project_id = 'my-project-id'
+        cloud_run_job._job_name = 'my-job-name'
+        cloud_run_job._get_job(jobs_client=mock_client)
+
+        mock_client.get.assert_called_with(name='namespaces/my-project-id/jobs/my-job-name')
+
+

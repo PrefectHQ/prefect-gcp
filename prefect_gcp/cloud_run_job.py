@@ -51,37 +51,35 @@ class Job(BaseModel):
     ready_condition: dict
     execution_status: dict
 
-    def is_ready(self):
+    def is_ready(self) -> bool:
         """Whether a job is finished registering and ready to be executed"""
         return self.ready_condition.get("status") == "True"
 
-    def has_execution_in_progress(self):
+    def has_execution_in_progress(self) -> bool:
         """See if job has a run in progress."""
         return (
-            self.execution_status and
-            self.execution_status.get("completionTimestamp") is not None
+            self.execution_status == {} or
+            self.execution_status.get("completionTimestamp") is None
         )
 
     @staticmethod
-    def _get_ready_condition(job):
-        ready_condition = {}
-
+    def _get_ready_condition(job: dict) -> dict:
         if job["status"].get("conditions"):
             for condition in job["status"]["conditions"]:
                 if condition["type"] == 'Ready':
-                    ready_condition = condition
+                    return condition
         
-        return ready_condition
+        return {}
 
     @staticmethod 
-    def _get_execution_status(job):
+    def _get_execution_status(job: dict):
         if job["status"].get("latestCreatedExecution"):
             return job["status"]["latestCreatedExecution"]
         
         return {}
     
     @classmethod
-    def from_json(cls, job):
+    def from_json(cls, job: dict):
         """Construct a Job instance from a Jobs JSON response."""
 
         return cls(
@@ -213,7 +211,7 @@ class CloudRunJob(Infrastructure):
 
     def _watch_job_and_get_result(self, client, poll_interval):
         self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
-        job_execution = self._submit_job_for_execution(client=client)
+        job_execution = Execution.from_json(self._submit_job_for_execution(jobs_client=client))
 
         command = ' '.join(self.command) if self.command else "'default container command'"
 
@@ -248,7 +246,7 @@ class CloudRunJob(Infrastructure):
     def _create_job(self, client):
         """Create a new Cloud Run Job."""
         try:
-            self._create(client, body=self._body_for_create())
+            self._create_job(client, body=self._body_for_create())
         except googleapiclient.errors.HttpError as exc:
             # exc.status_code == 409: 
             self.logger.exception(f"Cloud run job received an unexpected exception when creating Cloud Run Job '{self.job_name}':\n{exc!r}")
@@ -316,44 +314,43 @@ class CloudRunJob(Infrastructure):
 
     def _wait_for_job_creation(self, client, poll_interval=5):
         """Give created job time to register"""
-        job = self._get_job(client=client) 
+        job = Job.from_json(self._get_job(jobs_client=client))
 
         while not job.is_ready():
             ready_condition = job.ready_condition if job.ready_condition else "waiting for condition update"
             self.logger.info(f"Job is not yet ready... Current condition: {ready_condition}")
             time.sleep(poll_interval)
 
-            job = self._get_job(client=client) 
+            job = Job.from_json(self._get_job(jobs_client=client))
 
     # GCP API CALLS
-    def _create(self, client, body):
+    def _create_job(self, jobs_client, body):
         """Submit a create request to Cloud Run Job API."""
-        request = client.create(
+        request = jobs_client.create(
             parent=f"namespaces/{self.project_id}", body=body
         )
         response = request.execute()
         return response
 
-    def _delete_job(self, client):
+    def _delete_job(self, jobs_client):
         """Make a delete request for the Cloud Run Job."""
-        request = client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
+        request = jobs_client.delete(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
         response = request.execute()
         return response
 
-    def _submit_job_for_execution(self, client):
+    def _submit_job_for_execution(self, jobs_client):
         """Submit a request to begin a new run of the Cloud Run Job."""
-        request = client.run(
+        request = jobs_client.run(
             name=f"namespaces/{self.project_id}/jobs/{self.job_name}"
         )
         response = request.execute()
+        return response
 
-        return Execution.from_json(response)
-
-    def _get_job(self, client) -> Job:
+    def _get_job(self, jobs_client) -> Job:
         """Get the Job associated with the CloudRunJob."""
-        request = client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
-        res = request.execute()
-        return Job.from_json(res)
+        request = jobs_client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
+        response = request.execute()
+        return response
 
     # GCP API CLIENT
     def _get_client(self):
