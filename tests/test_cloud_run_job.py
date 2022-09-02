@@ -391,4 +391,16 @@ class TestCloudRunJobGCPInteraction:
 
         mock_client.get.assert_called_with(name='namespaces/my-project-id/jobs/my-job-name')
 
+    def test_get_execution(self, mock_client, cloud_run_job):
+        cloud_run_job._project_id = 'my-project-id' # Neither of these will be used
+        cloud_run_job._job_name = 'my-job-name'     # because data gather from Execution
+        job_execution = Mock(metadata={"namespace": "dog", "name": "puppy"})
+
+        cloud_run_job._get_execution(
+            executions_client=mock_client,
+            job_execution=job_execution
+            )
+
+        mock_client.get.assert_called_with(name='namespaces/dog/executions/puppy')
+
 
