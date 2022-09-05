@@ -104,8 +104,6 @@ class Job(BaseModel):
             execution_status = cls._get_execution_status(job)
         )
     
-
-
 class Execution(BaseModel):
     name: str
     metadata: dict
@@ -151,9 +149,17 @@ class CloudRunJob(Infrastructure):
     type: Literal["cloud-run-job"] = Field(
         "cloud-run-job", description="The slug for this task type."
     )
-    image: str = Field(
+    existing_job_name: Optional[str] = Field(
         description=(
-            "The image to use for the Cloud Run Job. This value must"
+            "The name of an existing Cloud Run Job. This value must"
+            "refer to a job listed under Cloud Run Jobs. If the job"
+            "does not yet exist, use the `image` field instead."
+        ),
+
+    )
+    image: Optional[str] = Field(
+        description=(
+            "The image to use for a new Cloud Run Job. This value must"
             "refer to an image within either Google Container Registry"
             "or Google Artifact Registry."
         ),
@@ -188,21 +194,34 @@ class CloudRunJob(Infrastructure):
     @property
     def job_name(self):
         """Create a unique and valid job name."""
+
         if self._job_name is None:
-            components = self.image.split("/")
-            #gcr.io/<project_name>/repo/whatever
-            image_name = components[2]
-            modified_image_name = image_name.replace((":"),"-").replace(("."),"-") # only alphanumeric and '-' allowed
-            self._job_name = f"{modified_image_name}-{uuid4()}"
+            if self.existing_job_name:
+                self._job_name = self.existing_job_name
+            else:
+                components = self.image.split("/")
+                #gcr.io/<project_name>/repo/whatever
+                image_name = components[2]
+                modified_image_name = image_name.replace((":"),"-").replace(("."),"-") # only alphanumeric and '-' allowed
+                self._job_name = f"{modified_image_name}-{uuid4()}"
         
         return self._job_name
 
     @validator("image")
     def remove_spaces(cls, value):
         """Deal with sneaky spaces in image names (hard to see on UI)."""
-        return value.replace(" ", "")
+        if value is not None:
+            return value.replace(" ", "")
 
-    def _cloud_run_job_error(self, exc):
+    @root_validator
+    def check_image_or_job_name(cls, values):
+        if values.get("image") is None and values.get("existing_job_name") is None:
+            raise ValueError("You must provide either an existing job name or a container image.")
+        elif values.get("image") is not None and values.get("existing_job_name") is not None:
+            raise ValueError("You can only provide one of: an existing job name or a container image name for a new job.")
+        return values
+
+    def _create_job_error(self, exc):
         if exc.status_code == 404:
             raise RuntimeError(
                 f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
@@ -215,25 +234,26 @@ class CloudRunJob(Infrastructure):
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
         with self._get_jobs_client() as jobs_client:
-            try:
-                self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-                self._create_job(jobs_client=jobs_client, body=self._body_for_create())
-            except googleapiclient.errors.HttpError as exc:
-                self._cloud_run_job_error(exc)
+            if self.image:
+                try:
+                    self.logger.info(f"Creating Cloud Run Job {self.job_name}")
+                    self._create_job(jobs_client=jobs_client, body=self._body_for_create())
+                except googleapiclient.errors.HttpError as exc:
+                    self._create_job_error(exc)
 
-            try:
-                self._wait_for_job_creation(client=jobs_client)
-            except Exception as exc:
-                self.logger.exception(
-                    f"Encountered an exception while waiting for job run creation {exc!r}"
-                    )
-                if not self.keep_job_after_completion:
-                    try:
-                        self.logger.info(f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run.")
-                        self._delete_job(jobs_client=jobs_client)
-                    except Exception as exc:
-                        self.logger.exception(f"Encountered an exception while attempting to delete failed Cloud Run Job.'{self.job_name}':\n{exc!r}")
-                sys.exit(1)
+                try:
+                    self._wait_for_job_creation(client=jobs_client)
+                except Exception as exc:
+                    self.logger.exception(
+                        f"Encountered an exception while waiting for job run creation {exc!r}"
+                        )
+                    if not self.keep_job_after_completion:
+                        try:
+                            self.logger.info(f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run.")
+                            self._delete_job(jobs_client=jobs_client)
+                        except Exception as exc:
+                            self.logger.exception(f"Encountered an exception while attempting to delete failed Cloud Run Job.'{self.job_name}':\n{exc!r}")
+                    sys.exit(1)
 
             if task_status:
                 task_status.started(self.job_name) 
@@ -339,7 +359,6 @@ class CloudRunJob(Infrastructure):
     def _wait_for_job_creation(self, client, poll_interval=5):
         """Give created job time to register"""
         job = Job.from_json(self._get_job(jobs_client=client))
-
         while not job.is_ready():
             ready_condition = job.ready_condition if job.ready_condition else "waiting for condition update"
             self.logger.info(f"Job is not yet ready... Current condition: {ready_condition}")

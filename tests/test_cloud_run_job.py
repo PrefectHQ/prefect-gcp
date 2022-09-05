@@ -1,6 +1,6 @@
 from importlib.metadata import metadata
 import pytest
-from prefect_gcp.cloud_run_job import CloudRunJob, Execution, Job
+from prefect_gcp.cloud_run_job import CloudRunJob, CloudRunJobResult, Execution, Job
 from prefect_gcp.credentials import GcpCredentials
 from prefect.settings import temporary_settings, PREFECT_API_URL, PREFECT_API_KEY, PREFECT_PROFILES_PATH
 from googleapiclient.http import HttpMock
@@ -236,6 +236,32 @@ def cloud_run_job():
         region="middle-earth2",
         credentials=GcpCredentials(service_account_info='{"hello":"world"}'),
     )
+class TestCloudRunJob:
+    @pytest.mark.parametrize(
+        "image,job_name,should_error",
+        [
+            ("my-dog-image", None, False),
+            (None, "my-cat-job", False),
+            ("my-dog-image", "my-cat-job", True),
+            (None, None, True)
+        ]
+    )
+    def test_only_takes_single_source_option(self, image, job_name, should_error):
+        if should_error:
+            with pytest.raises(ValueError):
+                CloudRunJob(
+                    image=image,
+                    existing_job_name=job_name,
+                    region="middle-earth2",
+                    credentials=GcpCredentials(service_account_info='{"hello":"world"}'),
+                )
+        else:
+            CloudRunJob(
+                image=image,
+                existing_job_name=job_name,
+                region="middle-earth2",
+                credentials=GcpCredentials(service_account_info='{"hello":"world"}'),
+            )
 
 class TestCloudRunJobContainerSettings:
     def test_captures_prefect_env(self, cloud_run_job):
@@ -404,3 +430,133 @@ class TestCloudRunJobGCPInteraction:
         mock_client.get.assert_called_with(name='namespaces/dog/executions/puppy')
 
 
+class TestCloudRunJobExecution:
+    
+    def test_wait_for_job_creation(self, monkeypatch, mock_client, cloud_run_job):
+        """`_wait_for_job_creation should loop until job.is_ready() == True.
+
+        Behavior to test: should loop while `is_ready()` is False, and should exit the loop
+        when `is_ready()` is True.
+        """
+        class MockJobInstance():
+            def __init__(self, is_ready, *args, **kwargs):
+                self._is_ready = is_ready
+                self.ready_condition = {}
+
+            def is_ready(self):
+                return self._is_ready
+
+        class MockJob(Mock):
+            call_count = 0
+            is_ready = False
+
+            @classmethod
+            def from_json(cls, *args, **kwargs):
+                """Return a mock object that is ready on the third loop"""
+                if cls.call_count < 2:
+                    is_ready=False
+                else:
+                    is_ready = True
+                cls.call_count += 1
+                return MockJobInstance(is_ready=is_ready)
+
+        monkeypatch.setattr(
+            "prefect_gcp.cloud_run_job.Job",
+            MockJob
+        )
+        cloud_run_job._wait_for_job_creation(client=mock_client, poll_interval=1)
+        assert MockJob.call_count == 3
+
+    def test_watch_job_execution(self, monkeypatch, mock_client, cloud_run_job):
+        """`_watch_job_execution should loop until execution.is_running() == False.
+
+        Behavior to test: should loop while `is_running()` is True, and should exit the loop
+        when `is_running()` is False.
+        """
+        class MockExecutionInstance():
+            def __init__(self, is_running, *args, **kwargs):
+                self._is_running = is_running
+                self.metadata = {"namespace": "cat", "name": "dog"}
+
+            def is_running(self):
+                return self._is_running
+
+        class MockExecution(Mock):
+            call_count = 0
+            is_ready = False
+
+            @classmethod
+            def from_json(cls, *args, **kwargs):
+                """Return a mock object that responds False to `is_running()` on the third loop"""
+                if cls.call_count < 2:
+                    is_running = True
+                else:
+                    is_running = False
+                cls.call_count += 1
+                return MockExecutionInstance(is_running=is_running)
+
+        monkeypatch.setattr(
+            "prefect_gcp.cloud_run_job.Execution",
+            MockExecution
+        )
+        cloud_run_job._watch_job_execution(
+            job_execution=MockExecutionInstance(is_running=True),
+            poll_interval=1
+            )
+        assert MockExecution.call_count == 3
+
+    @pytest.mark.parametrize(
+        "keep_job,succeeded,expected_code",
+        [
+            (True, True, 0),
+            (True, False, 1),
+            (False, True, 0),
+            (False, False, 1)
+        ]
+    )
+    def test_watch_job_and_get_result(self, monkeypatch, mock_client, cloud_run_job, keep_job, succeeded, expected_code):
+        """
+        Behavior to test:
+        - Returns a succeeded CloudRunJobResult if execution.succeeded()
+        - Returns a failed CloudRunJobResult if execution.succeeded() is False
+        - In either instance, calls delete_job if keep_job_after_completion is false
+        """
+        def return_mock_execution(*args, **kwargs):
+            class MockExecution:
+                log_uri = "test_uri"
+
+                def succeeded(self):
+                    return succeeded
+
+                def condition_after_completion(self):
+                    return {"message": "test"}
+
+            return MockExecution()
+
+        cloud_run_job.keep_job_after_completion = keep_job
+
+        # Ignore this function because it is already tested
+        monkeypatch.setattr(
+            "prefect_gcp.cloud_run_job.Execution",
+            Mock()
+        )
+
+        # Mock function to have specified `succeeded()` value
+        monkeypatch.setattr(
+            "prefect_gcp.cloud_run_job.CloudRunJob._watch_job_execution",
+            return_mock_execution
+        )
+
+        res = cloud_run_job._watch_job_and_get_result(client=mock_client, poll_interval=1)
+        assert isinstance(res, CloudRunJobResult)
+        assert res.identifier == cloud_run_job.job_name
+        assert res.status_code == expected_code
+
+        if keep_job:
+            # There should be no deletes if the job is being kept
+            assert any(
+                "call.delete" in str(call) for call in mock_client.method_calls
+            ) == False
+        else:
+            # The last call should be a delete
+            assert "call.delete" in str(mock_client.method_calls[-1])
