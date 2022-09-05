@@ -20,6 +20,8 @@ import datetime
 from ast import Delete
 from importlib.metadata import metadata
 import json
+import os
+import sys
 import time
 from typing import Any, List, Literal, Optional, Union
 from unicodedata import name
@@ -51,8 +53,19 @@ class Job(BaseModel):
     ready_condition: dict
     execution_status: dict
 
+    def _is_missing_container(self):
+        """Check if Job status is not ready because the specified container cannot be found."""
+        if (
+            self.ready_condition.get("status") == "False" and
+            self.ready_condition.get("reason") == "ContainerMissing"
+        ):
+            return True
+        return False
+
     def is_ready(self) -> bool:
         """Whether a job is finished registering and ready to be executed"""
+        if self._is_missing_container():
+            raise Exception(f"{self.ready_condition['message']}")
         return self.ready_condition.get("status") == "True"
 
     def has_execution_in_progress(self) -> bool:
@@ -90,6 +103,8 @@ class Job(BaseModel):
             ready_condition = cls._get_ready_condition(job),
             execution_status = cls._get_execution_status(job)
         )
+    
+
 
 class Execution(BaseModel):
     name: str
@@ -187,18 +202,38 @@ class CloudRunJob(Infrastructure):
         """Deal with sneaky spaces in image names (hard to see on UI)."""
         return value.replace(" ", "")
 
+    def _cloud_run_job_error(self, exc):
+        if exc.status_code == 404:
+            raise RuntimeError(
+                f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
+                "the correct region for your Cloud Run Job."
+            ) from exc
+        
+        raise exc
+
+        
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
         with self._get_jobs_client() as jobs_client:
             try:
-                #TODO check if container actually exists
                 self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-                self._create_job(client=jobs_client)
-            except Exception as exc:
-                self.logger.exception(f"Encountered an unexpected error when creating Cloud Run Job {self.job_name}:\n{exc!r}")
-                raise
+                self._create_job(jobs_client=jobs_client, body=self._body_for_create())
+            except googleapiclient.errors.HttpError as exc:
+                self._cloud_run_job_error(exc)
 
-            self._wait_for_job_creation(client=jobs_client)
+            try:
+                self._wait_for_job_creation(client=jobs_client)
+            except Exception as exc:
+                self.logger.exception(
+                    f"Encountered an exception while waiting for job run creation {exc!r}"
+                    )
+                if not self.keep_job_after_completion:
+                    try:
+                        self.logger.info(f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run.")
+                        self._delete_job(jobs_client=jobs_client)
+                    except Exception as exc:
+                        self.logger.exception(f"Encountered an exception while attempting to delete failed Cloud Run Job.'{self.job_name}':\n{exc!r}")
+                sys.exit(1)
 
             if task_status:
                 task_status.started(self.job_name) 
@@ -237,20 +272,11 @@ class CloudRunJob(Infrastructure):
         if not self.keep_job_after_completion:
             try:
                 self.logger.info(f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run...")
-                self._delete_job(client=client)
-            except googleapiclient.errors.HttpError as Exc:
+                self._delete_job(jobs_client=client)
+            except Exception as exc:
                 self.logger.exception(f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}")
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
-
-    def _create_job(self, client):
-        """Create a new Cloud Run Job."""
-        try:
-            self._create_job(client, body=self._body_for_create())
-        except googleapiclient.errors.HttpError as exc:
-            # exc.status_code == 409: 
-            self.logger.exception(f"Cloud run job received an unexpected exception when creating Cloud Run Job '{self.job_name}':\n{exc!r}")
-            raise
 
     def _body_for_create(self):
         """Create properly formatted body used for a Job CREATE request.
@@ -305,9 +331,7 @@ class CloudRunJob(Infrastructure):
             time.sleep(poll_interval)
 
             job_execution = Execution.from_json(
-                client.get(
-                    name=f"namespaces/{job_execution.metadata['namespace']}/executions/{job_execution.metadata['name']}"
-                ).execute()
+                self._get_execution(executions_client=client, job_execution=job_execution)
             )
 
         return job_execution
@@ -346,9 +370,16 @@ class CloudRunJob(Infrastructure):
         response = request.execute()
         return response
 
-    def _get_job(self, jobs_client) -> Job:
+    def _get_job(self, jobs_client):
         """Get the Job associated with the CloudRunJob."""
         request = jobs_client.get(name=f"namespaces/{self.project_id}/jobs/{self.job_name}")
+        response = request.execute()
+        return response
+
+    def _get_execution(self, executions_client, job_execution):
+        request = executions_client.get(
+            name=f"namespaces/{job_execution.metadata['namespace']}/executions/{job_execution.metadata['name']}"
+        )
         response = request.execute()
         return response
 
@@ -441,6 +472,7 @@ if __name__ == "__main__":
         credentials=creds,
         region="us-east1",
         image="gcr.io/helical-bongo-360018/crj",
+        keep_job_after_completion=False
     )
 
     job.run()
