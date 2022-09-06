@@ -47,17 +47,18 @@ def test_cloud_storage_download_blob_as_bytes(gcp_credentials):
 @pytest.mark.parametrize(
     "file",
     [
-        "./file_path",
-        BytesIO(b"bytes_data"),
+        "./file_path.html",
+        BytesIO(b"<div>bytes_data</div>"),
     ],
 )
 def test_cloud_storage_upload_blob_from_file(file, gcp_credentials):
     blob = "blob"
+    content_type = "text/html"
 
     @flow
     def test_flow():
         return cloud_storage_upload_blob_from_file(
-            file, "bucket", blob, gcp_credentials
+            file, "bucket", blob, gcp_credentials, content_type=content_type
         )
 
     assert test_flow() == blob

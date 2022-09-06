@@ -229,7 +229,7 @@ async def cloud_storage_upload_blob_from_string(
         blob: Name of the Cloud Storage blob.
         gcp_credentials: Credentials to use for authentication with GCP.
         content_type: Type of content being uploaded.
-        chunk_size (int, optional): The size of a chunk of data whenever
+        chunk_size: The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
             per the API specification.
         encryption_key: An encryption key.
@@ -281,6 +281,7 @@ async def cloud_storage_upload_blob_from_file(
     bucket: str,
     blob: str,
     gcp_credentials: "GcpCredentials",
+    content_type: Optional[str] = None,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
@@ -296,7 +297,8 @@ async def cloud_storage_upload_blob_from_file(
         bucket: Name of the bucket.
         blob: Name of the Cloud Storage blob.
         gcp_credentials: Credentials to use for authentication with GCP.
-        chunk_size (int, optional): The size of a chunk of data whenever
+        content_type: Type of content being uploaded.
+        chunk_size: The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
             per the API specification.
         encryption_key: An encryption key.
@@ -336,9 +338,16 @@ async def cloud_storage_upload_blob_from_file(
     )
 
     if isinstance(file, BytesIO):
-        partial_upload = partial(blob_obj.upload_from_file, file, timeout=timeout)
+        partial_upload = partial(
+            blob_obj.upload_from_file, file, content_type=content_type, timeout=timeout
+        )
     else:
-        partial_upload = partial(blob_obj.upload_from_filename, file, timeout=timeout)
+        partial_upload = partial(
+            blob_obj.upload_from_filename,
+            file,
+            content_type=content_type,
+            timeout=timeout,
+        )
     await to_thread.run_sync(partial_upload)
     return blob
 
