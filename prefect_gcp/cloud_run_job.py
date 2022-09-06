@@ -20,9 +20,7 @@ import datetime
 from ast import Delete
 from importlib.metadata import metadata
 import json
-import os
 import re
-import sys
 import time
 from typing import Any, List, Literal, Optional, Union
 from unicodedata import name
@@ -170,7 +168,6 @@ class CloudRunJob(Infrastructure):
 
     args: Optional[List[str]] = None 
     env: dict[str, str] = Field(default_factory=dict)
-    stream_output: bool = False
 
     # Cleanup behavior
     keep_job_after_completion: Optional[bool] = True
@@ -235,6 +232,7 @@ class CloudRunJob(Infrastructure):
                 raise exc
         
         raise exc
+
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
         with self._get_jobs_client() as jobs_client:
@@ -256,7 +254,7 @@ class CloudRunJob(Infrastructure):
                         self._delete_job(jobs_client=jobs_client)
                     except Exception as exc:
                         self.logger.exception(f"Encountered an exception while attempting to delete failed Cloud Run Job.'{self.job_name}':\n{exc!r}")
-                sys.exit(1)
+                raise exc
 
             try:
                 self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
@@ -268,7 +266,6 @@ class CloudRunJob(Infrastructure):
                     f"Cloud Run Job {self.job_name}: Running command '{command}'"
                 )
             except Exception as exc:
-                breakpoint()
                 self._job_run_submission_error(exc)
 
             if task_status:
@@ -500,8 +497,7 @@ if __name__ == "__main__":
     job = CloudRunJob(
         credentials=creds,
         region="us-east1",
-        existing_job_name="crj-f2c40707-403b-455b-aa02-1c00bd363f88 ",
-        # image="gcr.io/helical-bongo-360018/crj",
+        image="gcr.io/helical-bongo-360018/crj",
         keep_job_after_completion=True
     )
 
