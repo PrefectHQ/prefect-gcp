@@ -153,8 +153,8 @@ class CloudRunJob(Infrastructure):
     )
     image: str = Field(
         description=(
-            "The image to use for a new Cloud Run Job. This value must"
-            "refer to an image within either Google Container Registry"
+            "The image to use for a new Cloud Run Job. This value must "
+            "refer to an image within either Google Container Registry "
             "or Google Artifact Registry."
         ),
     )
@@ -163,12 +163,26 @@ class CloudRunJob(Infrastructure):
     credentials: GcpCredentials
 
     # Job settings
-    cpu: Optional[str] = None 
-    memory: Optional[str] = None 
-
-    args: Optional[List[str]] = None 
-    env: dict[str, str] = Field(default_factory=dict)
-
+    cpu: Optional[int] = Field(
+        description=(
+            "The amount of compute allocated to the Cloud Run Job. The int must be valid "
+            "based on the rules specified at https://cloud.google.com/run/docs/configuring/cpu#setting-jobs"
+        )
+    ) 
+    memory: Optional[str] = Field(
+        description=(
+            "The amount of compute allocated to the Cloud Run Job. The string must be valid "
+            "based on the rules specified at https://cloud.google.com/run/docs/configuring/memory-limits#setting-jobs ."
+        )
+    ) 
+    args: Optional[List[str]] = Field(
+        description=("Arguments to be passed to your Cloud Run Job's entrypoint command.")
+    ) 
+    env: dict[str, str] = Field(
+        default_factory=dict,
+        description="Environment variables to be passed to your Cloud Run Job."
+        )
+        
     # Cleanup behavior
     keep_job_after_completion: Optional[bool] = True
 
