@@ -21,6 +21,7 @@ from ast import Delete
 from importlib.metadata import metadata
 import json
 import os
+import re
 import sys
 import time
 from typing import Any, List, Literal, Optional, Union
@@ -142,6 +143,9 @@ class Execution(BaseModel):
 
 class CloudRunJob(Infrastructure):
     """Infrastructure block used to run GCP Cloud Run Jobs.
+
+    Project name information is provided by the Credentials object, and should always
+    be correct as long as the Credentials object is for the correct project.
     """
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "Cloud Run Job"
@@ -177,7 +181,7 @@ class CloudRunJob(Infrastructure):
     stream_output: bool = False
 
     # Cleanup behavior
-    keep_job_after_completion: Optional[bool] = False
+    keep_job_after_completion: Optional[bool] = True
 
     # For private use
     _job_name: str = None
@@ -208,8 +212,14 @@ class CloudRunJob(Infrastructure):
         return self._job_name
 
     @validator("image")
-    def remove_spaces(cls, value):
-        """Deal with sneaky spaces in image names (hard to see on UI)."""
+    def remove_image_spaces(cls, value):
+        """Deal with spaces in image names."""
+        if value is not None:
+            return value.replace(" ", "")
+
+    @validator("existing_job_name")
+    def remove_job_spaces(cls, value):
+        """Deal with spaces in Job names."""
         if value is not None:
             return value.replace(" ", "")
 
@@ -222,14 +232,41 @@ class CloudRunJob(Infrastructure):
         return values
 
     def _create_job_error(self, exc):
+        """Provides a nicer error for 404s when trying to create a Cloud Run Job."""
         if exc.status_code == 404:
             raise RuntimeError(
                 f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
-                "the correct region for your Cloud Run Job."
+                f"the correct region for your Cloud Run Job and that {self.project_id} is the "
+                "correct GCP project. If your project ID is not correct, you are using a Credentials "
+                "block with permissions for the wrong project."
             ) from exc
         
         raise exc
 
+    def _job_run_submission_error(self, exc):
+        """Provides a nicer error for 404s when submitting job runs."""
+        if exc.status_code == 404:
+            pat1 = r"The requested URL [^ ]+ was not found on this server"
+            pat2 = r"Resource '[^ ]+' of kind 'JOB' in region '[\w\-0-9]+' in project '[\w\-0-9]+' does not exist"
+            if re.findall(pat1, str(exc)):
+                raise RuntimeError(
+                    f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
+                    f"the correct region for your Cloud Run Job and that {self.project_id} is the "
+                    "correct GCP project. If your project ID is not correct, you are using a Credentials "
+                    "block with permissions for the wrong project."
+                ) from exc
+            elif re.findall(pat2, str(exc)):
+                raise RuntimeError(
+                    f"Failed to find Job at {exc.uri}. Confirm that {self.job_name} is "
+                    f"the correct Cloud Run Job name, that region '{self.region}' is the "
+                    f"correct region for your Cloud Run Job, and that {self.project_id} is the "
+                    "correct GCP project. If your project ID is not correct, you are using "
+                    "a Credentials block with permissions for the wrong project."
+                ) from exc
+            else:
+                raise exc
+        
+        raise exc
         
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
@@ -266,10 +303,7 @@ class CloudRunJob(Infrastructure):
                     f"Cloud Run Job {self.job_name}: Running command '{command}'"
                 )
             except Exception as exc:
-                # Handle bad job name TODO
-                breakpoint()
-                print(exc)
-                raise
+                self._job_run_submission_error(exc)
 
             if task_status:
                 task_status.started(self.job_name) 
@@ -498,8 +532,9 @@ if __name__ == "__main__":
     job = CloudRunJob(
         credentials=creds,
         region="us-east1",
-        image="gcr.io/helical-bongo-360018/crj",
-        keep_job_after_completion=False
+        existing_job_name="crj-97ff3452-a73a-41db-8d82-21129cd92252 ",
+        # image="gcr.io/helical-bongo-360018/crj",
+        keep_job_after_completion=True
     )
 
     job.run()
