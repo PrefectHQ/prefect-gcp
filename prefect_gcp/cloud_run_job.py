@@ -153,15 +153,7 @@ class CloudRunJob(Infrastructure):
     type: Literal["cloud-run-job"] = Field(
         "cloud-run-job", description="The slug for this task type."
     )
-    existing_job_name: Optional[str] = Field(
-        description=(
-            "The name of an existing Cloud Run Job. This value must"
-            "refer to a job listed under Cloud Run Jobs. If the job"
-            "does not yet exist, use the `image` field instead."
-        ),
-
-    )
-    image: Optional[str] = Field(
+    image: str = Field(
         description=(
             "The image to use for a new Cloud Run Job. This value must"
             "refer to an image within either Google Container Registry"
@@ -217,19 +209,6 @@ class CloudRunJob(Infrastructure):
         if value is not None:
             return value.replace(" ", "")
 
-    @validator("existing_job_name")
-    def remove_job_spaces(cls, value):
-        """Deal with spaces in Job names."""
-        if value is not None:
-            return value.replace(" ", "")
-
-    @root_validator
-    def check_image_or_job_name(cls, values):
-        if values.get("image") is None and values.get("existing_job_name") is None:
-            raise ValueError("You must provide either an existing job name or a container image.")
-        elif values.get("image") is not None and values.get("existing_job_name") is not None:
-            raise ValueError("You can only provide one of: an existing job name or a container image name for a new job.")
-        return values
 
     def _create_job_error(self, exc):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""
@@ -255,52 +234,33 @@ class CloudRunJob(Infrastructure):
                     "correct GCP project. If your project ID is not correct, you are using a Credentials "
                     "block with permissions for the wrong project."
                 ) from exc
-            elif re.findall(pat2, str(exc)):
-                raise RuntimeError(
-                    f"Failed to find Job at {exc.uri}. Confirm that '{self.job_name}' is "
-                    f"the correct Cloud Run Job name, that region '{self.region}' is the "
-                    f"correct region for your Cloud Run Job, and that '{self.project_id}' is the "
-                    "correct GCP project. If your project ID is not correct, you are using "
-                    "a Credentials block with permissions for the wrong project."
-                ) from exc
             else:
                 raise exc
         
         raise exc
-        
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
         with self._get_jobs_client() as jobs_client:
-            if self.image:
-                # Cloud Run Job does not yet exist
-                try:
-                    self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-                    self._create_job(jobs_client=jobs_client, body=self._jobs_body())
-                except googleapiclient.errors.HttpError as exc:
-                    self._create_job_error(exc)
+            try:
+                self.logger.info(f"Creating Cloud Run Job {self.job_name}")
+                self._create_job(jobs_client=jobs_client, body=self._jobs_body())
+            except googleapiclient.errors.HttpError as exc:
+                self._create_job_error(exc)
 
-                try:
-                    self._wait_for_job_creation(client=jobs_client)
-                except Exception as exc:
-                    self.logger.exception(
-                        f"Encountered an exception while waiting for job run creation {exc!r}"
-                        )
-                    if not self.keep_job_after_completion:
-                        try:
-                            self.logger.info(f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run.")
-                            self._delete_job(jobs_client=jobs_client)
-                        except Exception as exc:
-                            self.logger.exception(f"Encountered an exception while attempting to delete failed Cloud Run Job.'{self.job_name}':\n{exc!r}")
-                    sys.exit(1)
-            else:
-                try:
-                    existing = self._get_job(jobs_client=jobs_client) 
-                    print(existing["spec"]["template"]["spec"]["template"]["spec"]["containers"][0]["env"])
-                    update = self._update_job(jobs_client=jobs_client)
-                    print(update["spec"]["template"]["spec"]["template"]["spec"]["containers"][0]["env"])
-                except Exception as exc:
-                    breakpoint()
-                    print(exc)
+            try:
+                self._wait_for_job_creation(client=jobs_client)
+            except Exception as exc:
+                self.logger.exception(
+                    f"Encountered an exception while waiting for job run creation {exc!r}"
+                    )
+                if not self.keep_job_after_completion:
+                    try:
+                        self.logger.info(f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run.")
+                        self._delete_job(jobs_client=jobs_client)
+                    except Exception as exc:
+                        self.logger.exception(f"Encountered an exception while attempting to delete failed Cloud Run Job.'{self.job_name}':\n{exc!r}")
+                sys.exit(1)
+
             try:
                 self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
                 job_execution = Execution.from_json(self._submit_job_for_execution(jobs_client=jobs_client))
@@ -311,6 +271,7 @@ class CloudRunJob(Infrastructure):
                     f"Cloud Run Job {self.job_name}: Running command '{command}'"
                 )
             except Exception as exc:
+                breakpoint()
                 self._job_run_submission_error(exc)
 
             if task_status:
@@ -454,17 +415,6 @@ class CloudRunJob(Infrastructure):
         response = request.execute()
         return response
 
-    def _replace_job(self, jobs_client, body):
-        request = jobs_client.replaceJob(name=f"namespaces/{self.project_id}/jobs/{self.job_name}", body=body)
-        response = request.execute()
-        return response
-
-    def _update_job(self, jobs_client):
-        existing_job = self._get_job(jobs_client=jobs_client)
-        image_name = existing_job["spec"]["template"]["spec"]["template"]["spec"]["containers"][0]["image"]
-        body = self._jobs_body(image_name=image_name)
-        res = self._replace_job(jobs_client=jobs_client, body=body)
-        return res
     # GCP API CLIENT
     def _get_client(self):
         """Get the base client needed for interacting with GCP APIs."""
