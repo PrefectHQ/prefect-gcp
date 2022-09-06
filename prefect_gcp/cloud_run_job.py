@@ -235,6 +235,7 @@ class CloudRunJob(Infrastructure):
     async def run(self, task_status: Optional[TaskStatus] = None):
         with self._get_jobs_client() as jobs_client:
             if self.image:
+                # Cloud Run Job does not yet exist
                 try:
                     self.logger.info(f"Creating Cloud Run Job {self.job_name}")
                     self._create_job(jobs_client=jobs_client, body=self._body_for_create())
@@ -255,27 +256,34 @@ class CloudRunJob(Infrastructure):
                             self.logger.exception(f"Encountered an exception while attempting to delete failed Cloud Run Job.'{self.job_name}':\n{exc!r}")
                     sys.exit(1)
 
+            try:
+                self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
+                job_execution = Execution.from_json(self._submit_job_for_execution(jobs_client=jobs_client))
+
+                command = ' '.join(self.command) if self.command else "'default container command'"
+
+                self.logger.info(
+                    f"Cloud Run Job {self.job_name}: Running command '{command}'"
+                )
+            except Exception as exc:
+                # Handle bad job name TODO
+                breakpoint()
+                print(exc)
+                raise
+
             if task_status:
                 task_status.started(self.job_name) 
 
             return await run_sync_in_worker_thread(
                 self._watch_job_and_get_result,
                 jobs_client,
+                job_execution,
                 5,
             )
 
-    def _watch_job_and_get_result(self, client, poll_interval):
-        self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
-        job_execution = Execution.from_json(self._submit_job_for_execution(jobs_client=client))
-
-        command = ' '.join(self.command) if self.command else "'default container command'"
-
-        self.logger.info(
-            f"Cloud Run Job {self.job_name}: Running command '{command}'"
-        )
-
+    def _watch_job_and_get_result(self, client, execution, poll_interval):
         try:
-            job_execution = self._watch_job_execution(job_execution=job_execution, poll_interval=poll_interval)
+            job_execution = self._watch_job_execution(job_execution=execution, poll_interval=poll_interval)
         except Exception as exc:
             self.logger.exception(f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name}':\n{exc!r}")
             raise

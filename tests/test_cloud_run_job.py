@@ -533,6 +533,7 @@ class TestCloudRunJobExecution:
 
             return MockExecution()
 
+        # Set whether or not we should delete the job after completion
         cloud_run_job.keep_job_after_completion = keep_job
 
         # Ignore this function because it is already tested
@@ -546,8 +547,13 @@ class TestCloudRunJobExecution:
             "prefect_gcp.cloud_run_job.CloudRunJob._watch_job_execution",
             return_mock_execution
         )
+        execution = return_mock_execution()
+        res = cloud_run_job._watch_job_and_get_result(
+            client=mock_client, 
+            execution=execution, 
+            poll_interval=1
+        )
 
-        res = cloud_run_job._watch_job_and_get_result(client=mock_client, poll_interval=1)
         assert isinstance(res, CloudRunJobResult)
         assert res.identifier == cloud_run_job.job_name
         assert res.status_code == expected_code
@@ -560,3 +566,18 @@ class TestCloudRunJobExecution:
         else:
             # The last call should be a delete
             assert "call.delete" in str(mock_client.method_calls[-1])
+    
+    def test_run(self):
+        """
+        Behavior to test:
+        - if image
+            - calls create job
+            - waits for job creation
+                - if job creation fails
+                    - if delete
+                        - deletes the job
+                    - exits with status code 1
+        - if not image
+            - doesn't call create job
+        - 
+        """
