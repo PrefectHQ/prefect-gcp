@@ -192,14 +192,11 @@ class CloudRunJob(Infrastructure):
         """Create a unique and valid job name."""
 
         if self._job_name is None:
-            if self.existing_job_name:
-                self._job_name = self.existing_job_name
-            else:
-                components = self.image.split("/")
-                #gcr.io/<project_name>/repo/whatever
-                image_name = components[2]
-                modified_image_name = image_name.replace((":"),"-").replace(("."),"-") # only alphanumeric and '-' allowed
-                self._job_name = f"{modified_image_name}-{uuid4()}"
+            components = self.image.split("/")
+            #gcr.io/<project_name>/repo/whatever
+            image_name = components[2]
+            modified_image_name = image_name.replace((":"),"-").replace(("."),"-") # only alphanumeric and '-' allowed
+            self._job_name = f"{modified_image_name}-{uuid4()}"
         
         return self._job_name
 

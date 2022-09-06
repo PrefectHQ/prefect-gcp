@@ -236,32 +236,6 @@ def cloud_run_job():
         region="middle-earth2",
         credentials=GcpCredentials(service_account_info='{"hello":"world"}'),
     )
-class TestCloudRunJob:
-    @pytest.mark.parametrize(
-        "image,job_name,should_error",
-        [
-            ("my-dog-image", None, False),
-            (None, "my-cat-job", False),
-            ("my-dog-image", "my-cat-job", True),
-            (None, None, True)
-        ]
-    )
-    def test_only_takes_single_source_option(self, image, job_name, should_error):
-        if should_error:
-            with pytest.raises(ValueError):
-                CloudRunJob(
-                    image=image,
-                    existing_job_name=job_name,
-                    region="middle-earth2",
-                    credentials=GcpCredentials(service_account_info='{"hello":"world"}'),
-                )
-        else:
-            CloudRunJob(
-                image=image,
-                existing_job_name=job_name,
-                region="middle-earth2",
-                credentials=GcpCredentials(service_account_info='{"hello":"world"}'),
-            )
 
 class TestCloudRunJobContainerSettings:
     def test_captures_prefect_env(self, cloud_run_job):
