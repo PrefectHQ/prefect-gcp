@@ -22,7 +22,9 @@ def test_cloud_storage_create_bucket(gcp_credentials):
 
     @flow
     def test_flow():
-        return cloud_storage_create_bucket(bucket, gcp_credentials, location=location)
+        return cloud_storage_create_bucket(
+            bucket, gcp_credentials, location=location, timeout=10
+        )
 
     assert test_flow() == "expected"
 
@@ -32,7 +34,7 @@ def test_cloud_storage_download_blob_to_file(path, gcp_credentials):
     @flow
     def test_flow():
         return cloud_storage_download_blob_to_file(
-            "bucket", "blob", path, gcp_credentials
+            "bucket", "blob", path, gcp_credentials, timeout=10
         )
 
     assert test_flow() == path
@@ -41,7 +43,9 @@ def test_cloud_storage_download_blob_to_file(path, gcp_credentials):
 def test_cloud_storage_download_blob_as_bytes(gcp_credentials):
     @flow
     def test_flow():
-        return cloud_storage_download_blob_as_bytes("bucket", "blob", gcp_credentials)
+        return cloud_storage_download_blob_as_bytes(
+            "bucket", "blob", gcp_credentials, timeout=10
+        )
 
     assert test_flow() == b"bytes"
 
@@ -49,17 +53,18 @@ def test_cloud_storage_download_blob_as_bytes(gcp_credentials):
 @pytest.mark.parametrize(
     "file",
     [
-        "./file_path",
-        BytesIO(b"bytes_data"),
+        "./file_path.html",
+        BytesIO(b"<div>bytes_data</div>"),
     ],
 )
 def test_cloud_storage_upload_blob_from_file(file, gcp_credentials):
     blob = "blob"
+    content_type = "text/html"
 
     @flow
     def test_flow():
         return cloud_storage_upload_blob_from_file(
-            file, "bucket", blob, gcp_credentials
+            file, "bucket", blob, gcp_credentials, content_type=content_type, timeout=10
         )
 
     assert test_flow() == blob
@@ -79,7 +84,7 @@ def test_cloud_storage_upload_blob_from_string(data, blob, gcp_credentials):
     @flow
     def test_flow():
         return cloud_storage_upload_blob_from_string(
-            data, "bucket", "blob", gcp_credentials
+            data, "bucket", "blob", gcp_credentials, timeout=10
         )
 
     assert test_flow() == blob
@@ -95,6 +100,7 @@ def test_cloud_storage_copy_blob(dest_blob, gcp_credentials):
             "source_blob",
             gcp_credentials,
             dest_blob=dest_blob,
+            timeout=10,
         )
 
     if dest_blob is None:

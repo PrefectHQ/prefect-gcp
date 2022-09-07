@@ -26,8 +26,8 @@ class CloudStorageClient:
         self.credentials = credentials
         self.project = project
 
-    def create_bucket(self, bucket, location=None):
-        return {"bucket": bucket, "location": location}
+    def create_bucket(self, bucket, location=None, **create_kwargs):
+        return {"bucket": bucket, "location": location, **create_kwargs}
 
     def get_bucket(self, bucket):
         blob_obj = MagicMock()

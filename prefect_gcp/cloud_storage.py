@@ -3,7 +3,7 @@
 import os
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 from uuid import uuid4
 
 from prefect import get_run_logger, task
@@ -26,6 +26,7 @@ async def cloud_storage_create_bucket(
     gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
     location: Optional[str] = None,
+    **create_kwargs: Dict[str, Any],
 ) -> str:
     """
     Creates a bucket.
@@ -36,6 +37,7 @@ async def cloud_storage_create_bucket(
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
         location: Location of the bucket.
+        create_kwargs: Additional keyword arguments to pass to `client.create_bucket`.
 
     Returns:
         The bucket name.
@@ -60,7 +62,9 @@ async def cloud_storage_create_bucket(
     logger.info("Creating %s bucket", bucket)
 
     client = gcp_credentials.get_cloud_storage_client(project=project)
-    await run_sync_in_worker_thread(client.create_bucket, bucket, location=location)
+    await run_sync_in_worker_thread(
+        client.create_bucket, bucket, location=location, **create_kwargs
+    )
     return bucket
 
 
@@ -86,6 +90,7 @@ async def cloud_storage_download_blob_as_bytes(
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
     project: Optional[str] = None,
+    **download_kwargs: Dict[str, Any],
 ) -> bytes:
     """
     Downloads a blob as bytes.
@@ -105,6 +110,8 @@ async def cloud_storage_download_blob_as_bytes(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
+        download_kwargs: Additional keyword arguments to pass to
+            `Blob.download_as_bytes`.
 
     Returns:
         A bytes or string representation of the blob object.
@@ -135,7 +142,7 @@ async def cloud_storage_download_blob_as_bytes(
     )
 
     contents = await run_sync_in_worker_thread(
-        blob_obj.download_as_bytes, timeout=timeout
+        blob_obj.download_as_bytes, timeout=timeout, **download_kwargs
     )
     return contents
 
@@ -150,6 +157,7 @@ async def cloud_storage_download_blob_to_file(
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
     project: Optional[str] = None,
+    **download_kwargs: Dict[str, Any],
 ) -> Union[str, Path]:
     """
     Downloads a blob to a file path.
@@ -169,6 +177,8 @@ async def cloud_storage_download_blob_to_file(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
+        download_kwargs: Additional keyword arguments to pass to
+            `Blob.download_to_filename`.
 
     Returns:
         The path to the blob object.
@@ -208,7 +218,7 @@ async def cloud_storage_download_blob_to_file(
             path = os.path.join(path, blob)  # keep as str if a str is passed
 
     await run_sync_in_worker_thread(
-        blob_obj.download_to_filename, path, timeout=timeout
+        blob_obj.download_to_filename, path, timeout=timeout, **download_kwargs
     )
     return path
 
@@ -224,6 +234,7 @@ async def cloud_storage_upload_blob_from_string(
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
     project: Optional[str] = None,
+    **upload_kwargs: Dict[str, Any],
 ) -> str:
     """
     Uploads a blob from a string or bytes representation of data.
@@ -234,7 +245,7 @@ async def cloud_storage_upload_blob_from_string(
         blob: Name of the Cloud Storage blob.
         gcp_credentials: Credentials to use for authentication with GCP.
         content_type: Type of content being uploaded.
-        chunk_size (int, optional): The size of a chunk of data whenever
+        chunk_size: The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
             per the API specification.
         encryption_key: An encryption key.
@@ -243,6 +254,8 @@ async def cloud_storage_upload_blob_from_string(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
+        upload_kwargs: Additional keyword arguments to pass to
+            `Blob.upload_from_string`.
 
     Returns:
         The blob name.
@@ -274,7 +287,11 @@ async def cloud_storage_upload_blob_from_string(
     )
 
     await run_sync_in_worker_thread(
-        blob_obj.upload_from_string, data, content_type=content_type, timeout=timeout
+        blob_obj.upload_from_string,
+        data,
+        content_type=content_type,
+        timeout=timeout,
+        **upload_kwargs,
     )
     return blob
 
@@ -285,10 +302,12 @@ async def cloud_storage_upload_blob_from_file(
     bucket: str,
     blob: str,
     gcp_credentials: GcpCredentials,
+    content_type: Optional[str] = None,
     chunk_size: Optional[int] = None,
     encryption_key: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
     project: Optional[str] = None,
+    **upload_kwargs: Dict[str, Any],
 ) -> str:
     """
     Uploads a blob from file path or file-like object. Usage for passing in
@@ -300,7 +319,8 @@ async def cloud_storage_upload_blob_from_file(
         bucket: Name of the bucket.
         blob: Name of the Cloud Storage blob.
         gcp_credentials: Credentials to use for authentication with GCP.
-        chunk_size (int, optional): The size of a chunk of data whenever
+        content_type: Type of content being uploaded.
+        chunk_size: The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
             per the API specification.
         encryption_key: An encryption key.
@@ -309,6 +329,8 @@ async def cloud_storage_upload_blob_from_file(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
+        upload_kwargs: Additional keyword arguments to pass to
+            `Blob.upload_from_file` or `Blob.upload_from_filename`.
 
     Returns:
         The blob name.
@@ -341,11 +363,19 @@ async def cloud_storage_upload_blob_from_file(
 
     if isinstance(file, BytesIO):
         await run_sync_in_worker_thread(
-            blob_obj.upload_from_file, file, timeout=timeout
+            blob_obj.upload_from_file,
+            file,
+            content_type=content_type,
+            timeout=timeout,
+            **upload_kwargs,
         )
     else:
         await run_sync_in_worker_thread(
-            blob_obj.upload_from_filename, file, timeout=timeout
+            blob_obj.upload_from_filename,
+            file,
+            content_type=content_type,
+            timeout=timeout,
+            **upload_kwargs,
         )
     return blob
 
@@ -359,6 +389,7 @@ async def cloud_storage_copy_blob(
     dest_blob: Optional[str] = None,
     timeout: Union[float, Tuple[float, float]] = 60,
     project: Optional[str] = None,
+    **copy_kwargs: Dict[str, Any],
 ) -> str:
     """
     Copies data from one Google Cloud Storage bucket to another,
@@ -375,6 +406,8 @@ async def cloud_storage_copy_blob(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
+        copy_kwargs: Additional keyword arguments to pass to
+            `Bucket.copy_blob`.
 
     Returns:
         Destination blob name.
@@ -424,6 +457,7 @@ async def cloud_storage_copy_blob(
         destination_bucket=dest_bucket_obj,
         new_name=dest_blob,
         timeout=timeout,
+        **copy_kwargs,
     )
 
     return dest_blob
