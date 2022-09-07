@@ -67,10 +67,10 @@ class GcpCredentials(Block):
     in the env from the command, `gcloud auth application-default login`. Refer to the
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
     for more info about the possible credential configurations.
-    Args:
+
+    Attributes:
         service_account_file: Path to the service account JSON keyfile.
-        service_account_info: The contents of the keyfile as a JSON string / dictionary.
-        project: Name of the project to use.
+        service_account_info: The contents of the keyfile as a dict or JSON string.
     Example:
         Load stored GCP credentials:
         ```python
@@ -83,7 +83,7 @@ class GcpCredentials(Block):
     _block_type_name = "GCP Credentials"
 
     service_account_file: Optional[Path] = None
-    service_account_info: Optional[Json] = None
+    service_account_info: Optional[Union[Dict[str, str], Json]] = None
 
     @root_validator
     def provide_one_service_account_source(cls, values):
@@ -166,25 +166,25 @@ class GcpCredentials(Block):
                 ).get_cloud_storage_client()
             example_get_client_flow()
             ```
-            Gets a GCP Cloud Storage client from a JSON str.
+
+            Gets a GCP Cloud Storage client from a dictionary.
             ```python
-            import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
             @flow()
             def example_get_client_flow():
-                service_account_info = json.dumps({
+                service_account_info = {
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
-                    "private_key": private_key",
+                    "private_key": "private_key",
                     "client_email": "client_email",
                     "client_id": "client_id",
                     "auth_uri": "auth_uri",
                     "token_uri": "token_uri",
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
-                })
+                }
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_cloud_storage_client()
@@ -223,28 +223,29 @@ class GcpCredentials(Block):
                 ).get_bigquery_client()
             example_get_client_flow()
             ```
-            Gets a GCP BigQuery client from a JSON str.
+
+            Gets a GCP BigQuery client from a dictionary.
             ```python
-            import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
             @flow()
             def example_get_client_flow():
-                service_account_info = json.dumps({
+                service_account_info = {
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
-                    "private_key": private_key",
+                    "private_key": "private_key",
                     "client_email": "client_email",
                     "client_id": "client_id",
                     "auth_uri": "auth_uri",
                     "token_uri": "token_uri",
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
-                })
+                }
                 client = GcpCredentials(
                     service_account_info=service_account_info
-                ).get_bigquery_client(json)
+                ).get_bigquery_client()
+
             example_get_client_flow()
             ```
         """
@@ -279,14 +280,14 @@ class GcpCredentials(Block):
                 ).get_secret_manager_client()
             example_get_client_flow()
             ```
-            Gets a GCP Cloud Storage client from a JSON str.
+
+            Gets a GCP Cloud Storage client from a dictionary.
             ```python
-            import json
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
             @flow()
             def example_get_client_flow():
-                service_account_info = json.dumps({
+                service_account_info = {
                     "type": "service_account",
                     "project_id": "project_id",
                     "private_key_id": "private_key_id",
