@@ -485,7 +485,7 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
 
     bucket: str
     gcp_credentials: GcpCredentials
-    basepath: str = "gs://"
+    basepath: str = ""
 
     def _resolve_path(self, path: str) -> str:
         """
@@ -500,13 +500,9 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         """
         path = path or str(uuid4())
 
-        basepath = (
-            self.basepath + "/" if not self.basepath.endswith("/") else self.basepath
-        )
-
         # If basepath provided, it means we won't write to the root dir of
         # the bucket. So we need to add it on the front of the path.
-        path = f"{basepath}{path}" if basepath else path
+        path = os.path.join(self.basepath, path) if self.basepath else path
         return path
 
     @sync_compatible
@@ -524,26 +520,30 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
             local_path: Local path to download GCS bucket contents to.
                 Defaults to the current working directory.
         """
-        if from_path is None:
-            from_path = self.basepath
+        from_path = (
+            self.basepath if from_path is None else self._resolve_path(from_path)
+        )
 
         if local_path is None:
-            local_path = str(Path(".").absolute())
+            local_path = os.path.abspath(".")
+        else:
+            local_path = os.path.expanduser(local_path)
 
         project = self.gcp_credentials.project
         client = self.gcp_credentials.get_cloud_storage_client(project=project)
 
         for blob in client.list_blobs(self.bucket):
-            if blob.name[-1] == "/":
+            blob_path = blob.name
+            if blob_path[-1] == "/":
                 # object is a folder and will be created if it contains any objects
                 continue
-            local_file_path = os.path.join(local_path, from_path)
+            local_file_path = os.path.join(local_path, blob_path)
             os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
 
             with disable_run_logger():
                 await cloud_storage_download_blob_to_file.fn(
                     bucket=self.bucket,
-                    blob=blob,
+                    blob=blob_path,
                     path=local_file_path,
                     gcp_credentials=self.gcp_credentials,
                 )
@@ -573,10 +573,11 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
             The number of files uploaded.
         """
         if local_path is None:
-            local_path = "."
+            local_path = os.path.abspath(".")
+        else:
+            local_path = os.path.expanduser(local_path)
 
-        if to_path is None:
-            to_path = self.basepath
+        to_path = self.basepath if to_path is None else self._resolve_path(to_path)
 
         included_files = None
         if ignore_file:
@@ -586,13 +587,17 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
 
         uploaded_file_count = 0
         for local_file_path in Path(local_path).rglob("*"):
-            if included_files is not None and local_file_path not in included_files:
+            if (
+                included_files is not None
+                and local_file_path.name not in included_files
+            ):
                 continue
             elif not local_file_path.is_dir():
-                remote_file_path = Path(to_path) / local_file_path.name
-                with open(local_file_path, "rb") as local_file:
-                    local_file_content = local_file.read()
-                await self.write_path(str(remote_file_path), content=local_file_content)
+                remote_file_path = os.path.join(
+                    to_path, local_file_path.relative_to(local_path)
+                )
+                local_file_content = local_file_path.read_bytes()
+                await self.write_path(remote_file_path, content=local_file_content)
                 uploaded_file_count += 1
 
         return uploaded_file_count

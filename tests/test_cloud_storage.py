@@ -1,6 +1,7 @@
 import os
 from io import BytesIO
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from prefect import flow
@@ -110,19 +111,23 @@ def test_cloud_storage_copy_blob(dest_blob, gcp_credentials):
 
 
 class TestGcsBucket:
-    @pytest.fixture(params=["gs://", "", "basepath", "basepath/"])
-    def gcs_bucket(self, gcp_credentials, request):
+    @pytest.fixture()
+    def gcs_bucket(self, gcp_credentials, tmp_path):
         return GcsBucket(
-            bucket="bucket", gcp_credentials=gcp_credentials, basepath=request.param
+            bucket="bucket", gcp_credentials=gcp_credentials, basepath=str(tmp_path)
         )
 
-    def test_resolve_path(self, gcs_bucket):
-        actual = gcs_bucket._resolve_path("subpath")
+    @pytest.mark.parametrize("path", [None, "subpath"])
+    def test_resolve_path(self, gcs_bucket, path):
+        actual = gcs_bucket._resolve_path(path)
         basepath = gcs_bucket.basepath
-        if not basepath.endswith("/"):
-            basepath += "/"
-        expected = f"{basepath}subpath"
-        assert actual == expected
+        if path is None:
+            dirname, filename = os.path.split(actual)
+            assert dirname == basepath
+            assert UUID(filename, version=4)
+        else:
+            expected = str(Path(basepath) / path)
+            assert actual == expected
 
     def test_read_path(self, gcs_bucket):
         assert gcs_bucket.read_path("blob") == b"bytes"
@@ -140,5 +145,32 @@ class TestGcsBucket:
             gcs_bucket.get_directory(from_path=from_path, local_path=local_path) is None
         )
         if local_path is None:
-            local_path = "."
+            local_path = os.path.abspath(".")
+
+        if from_path is None:
+            from_path = gcs_bucket.basepath
+
         assert os.path.exists(os.path.join(local_path, os.path.dirname(from_path)))
+
+    @pytest.mark.parametrize("to_path", [None, "to_path"])
+    @pytest.mark.parametrize("ignore", [True, False])
+    def test_put_directory(self, gcs_bucket, tmp_path, to_path, ignore):
+        local_path = tmp_path / "a_directory"
+        local_path.mkdir()
+
+        (local_path / "abc.html").write_text("<div>abc</div>")
+        (local_path / "cab.txt").write_text("cab")
+        (local_path / "some_dir").mkdir()
+
+        expected = 2
+        if ignore:
+            ignore_file = tmp_path / "ignore.txt"
+            ignore_file.write_text("*.html")
+            expected -= 1
+        else:
+            ignore_file = None
+
+        actual = gcs_bucket.put_directory(
+            local_path=local_path, to_path=to_path, ignore_file=ignore_file
+        )
+        assert actual == expected
