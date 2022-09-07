@@ -1,7 +1,6 @@
 """Module handling GCP credentials"""
 
 import functools
-import os
 from pathlib import Path
 from typing import Dict, Optional, Union
 
@@ -101,12 +100,9 @@ class GcpCredentials(Block):
                 "can be specified at once"
             )
         elif service_account_file:
-            if not os.path.exists(service_account_file):
+            service_account_file = Path(service_account_file).expanduser()
+            if not service_account_file.exists():
                 raise ValueError("The provided path to the service account is invalid")
-            elif isinstance(service_account_file, Path):
-                service_account_file = service_account_file.expanduser()
-            else:
-                service_account_file = os.path.expanduser(service_account_file)
             credentials = Credentials.from_service_account_file(service_account_file)
         elif service_account_info:
             credentials = Credentials.from_service_account_info(service_account_info)

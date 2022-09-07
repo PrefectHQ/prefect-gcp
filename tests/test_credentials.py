@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -7,10 +8,19 @@ from prefect.blocks.core import Block
 
 from prefect_gcp import GcpCredentials
 
+
+def _get_first_file_in_root():
+    for path in os.listdir(os.path.expanduser("~")):
+        if os.path.isfile(os.path.join(os.path.expanduser("~"), path)):
+            return os.path.join("~", path)
+
+
 SERVICE_ACCOUNT_FILES = [
     Path(__file__).parent.absolute() / "test_credentials.py",
 ]
 SERVICE_ACCOUNT_FILES.append(str(SERVICE_ACCOUNT_FILES[0]))
+SERVICE_ACCOUNT_FILES.append(_get_first_file_in_root())
+SERVICE_ACCOUNT_FILES.append(os.path.expanduser(_get_first_file_in_root()))
 
 
 @pytest.fixture()
@@ -37,7 +47,7 @@ def test_get_credentials_from_service_account_file(
     credentials = GcpCredentials._get_credentials_from_service_account(
         service_account_file=service_account_file
     )
-    assert credentials == service_account_file
+    assert str(credentials) == os.path.expanduser(service_account_file)
 
 
 def test_get_credentials_from_service_account_info(
