@@ -33,8 +33,10 @@ from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import BaseModel, Field, validator
 
+from google.oauth2.service_account import Credentials
+from pydantic import Json, root_validator, validator
+import google.auth.transport.requests
 from prefect_gcp.credentials import GcpCredentials
-
 
 class CloudRunJobResult(InfrastructureResult):
     """Result from a Cloud Run Job."""
@@ -102,6 +104,7 @@ class Job(BaseModel):
 
 class Execution(BaseModel):
     name: str
+    namespace: str
     metadata: dict
     spec: dict
     status: dict
@@ -125,16 +128,32 @@ class Execution(BaseModel):
 
         return False
 
+    @staticmethod
+    def _get_execution(client: Resource, namespace:str, execution_name:str):
+        request = client.executions().get(
+            # name=f"namespaces/{job_execution.metadata['namespace']}/executions/{job_execution.metadata['name']}"
+            name=f"namespaces/{namespace}/executions/{execution_name}"
+        )
+        response = request.execute()
+        return response
+
     @classmethod
-    def from_json(cls, execution):
-        """Create an Execution instance from a GCP Execution API request."""
+    def get(cls, client, namespace, execution_name):
+        execution = cls._get_execution(
+            client=client, 
+            namespace=namespace, 
+            execution_name=execution_name
+        )
+
         return cls(
             name=execution["metadata"]["name"],
+            namespace=execution["metadata"]["namespace"],
             metadata=execution["metadata"],
             spec=execution["spec"],
             status=execution["status"],
             log_uri=execution["status"]["logUri"],
         )
+
 
 
 class CloudRunJob(Infrastructure):
@@ -163,10 +182,11 @@ class CloudRunJob(Infrastructure):
 
     # Job settings
     cpu: Optional[int] = Field(
+        title="CPU",
         description=(
             "The amount of compute allocated to the Cloud Run Job. The int must be valid "
             "based on the rules specified at https://cloud.google.com/run/docs/configuring/cpu#setting-jobs ."
-        )
+        ),
     )
     memory: Optional[str] = Field(
         description=(
@@ -185,14 +205,16 @@ class CloudRunJob(Infrastructure):
     )
 
     # Cleanup behavior
-    keep_job_after_completion: Optional[bool] = True
+    keep_job_after_completion: Optional[
+        bool
+    ] = True  # TODO make keep_job and add title Field
 
     # For private use
     _job_name: str = None
     _execution: Optional[Execution] = None
     _project_id: str = None
 
-    @property
+    @property  # TODO Project ID shouldn't be public - get it from the credentials
     def project_id(self):
         if self._project_id is None:
             self._project_id = self.credentials.get_project_id()
@@ -210,13 +232,17 @@ class CloudRunJob(Infrastructure):
             modified_image_name = image_name.replace((":"), "-").replace(
                 ("."), "-"
             )  # only alphanumeric and '-' allowed
+            # TODO check that modified image name itself is not 50 chars
+            # UUID has a fixed length, jsut truncate image name to 50 - UUID len
+            # check uuid4().hex() -> potentially shorter
+            # TODO look at GCP job naming conventions
             name = f"{modified_image_name}-{uuid4()}"
-            if len(name) > 50:
-                self.logger.warning(
-                    "Job names must be 50 or fewer characters in length. Shortening "
-                    f"job name from {name} to {name[:50]}."
-                )
-                name = name[:50]
+            # if len(name) > 50: # Consider Deleting
+            #     self.logger.warning(
+            #         "Job names must be 50 or fewer characters in length. Shortening "
+            #         f"job name from {name} to {name[:50]}."
+            #     )
+            #     name = name[:50]
             self._job_name = name
 
         return self._job_name
@@ -225,7 +251,7 @@ class CloudRunJob(Infrastructure):
     def remove_image_spaces(cls, value):
         """Deal with spaces in image names."""
         if value is not None:
-            return value.replace(" ", "")
+            return value.strip()
 
     @validator("cpu")
     def convert_cpu_to_k8s_quantity(cls, value):
@@ -240,9 +266,16 @@ class CloudRunJob(Infrastructure):
         """Make sure memory conforms to expected values for API.
         See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
         """
-        _, size, unit = re.split("(\d+)", value)
-        valid_units = ["G", "Gi", "M", "Mi"]
-        unit = unit.capitalize()
+        _, size, unit = re.split(
+            "(\d+)", value
+        )  # TODO make units a separate field with a dropdown (prefer Pydantic constrained type (possibly enum if that fails))
+        valid_units = [
+            "G",
+            "Gi",
+            "M",
+            "Mi",
+        ]  # Literal is another option if constrained type doesn't work for some reason
+        unit = unit.capitalize()  # Constrained int does some cool stuff
         if unit not in valid_units:
             raise ValueError(
                 f"Memory units must be one of {valid_units}. See docs for more details: "
@@ -257,6 +290,7 @@ class CloudRunJob(Infrastructure):
 
     def _create_job_error(self, exc):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""
+        # TODO consider lookup table instead of the if/else, also check for documented errors
         if exc.status_code == 404:
             raise RuntimeError(
                 f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
@@ -269,6 +303,7 @@ class CloudRunJob(Infrastructure):
 
     def _job_run_submission_error(self, exc):
         """Provides a nicer error for 404s when submitting job runs."""
+        breakpoint()
         if exc.status_code == 404:
             pat1 = r"The requested URL [^ ]+ was not found on this server"
             pat2 = r"Resource '[^ ]+' of kind 'JOB' in region '[\w\-0-9]+' in project '[\w\-0-9]+' does not exist"
@@ -297,7 +332,7 @@ class CloudRunJob(Infrastructure):
                 self._wait_for_job_creation(client=jobs_client)
             except Exception as exc:
                 self.logger.exception(
-                    f"Encountered an exception while waiting for job run creation {exc!r}"
+                    f"Encountered an exception while waiting for job run creation"
                 )
                 if not self.keep_job_after_completion:
                     try:
@@ -315,9 +350,14 @@ class CloudRunJob(Infrastructure):
                 self.logger.info(
                     f"Submitting Cloud Run Job {self.job_name} for execution."
                 )
-                job_execution = Execution.from_json(
-                    self._submit_job_for_execution(jobs_client=jobs_client)
+                submission = self._submit_job_for_execution(jobs_client=jobs_client)
+                job_execution = Execution.get(
+                    client=self._get_client(),
+                    namespace=submission["metadata"]["namespace"],
+                    execution_name=submission["metadata"]["name"]
                 )
+                # TODO refactor Excution and Job client methods
+                # _utils.py inside of cloud_run_job file
 
                 command = (
                     " ".join(self.command)
@@ -331,7 +371,7 @@ class CloudRunJob(Infrastructure):
             except Exception as exc:
                 self._job_run_submission_error(exc)
 
-            if task_status:
+            if task_status:  # TODO
                 task_status.started(self.job_name)
 
             return await run_sync_in_worker_thread(
@@ -360,15 +400,18 @@ class CloudRunJob(Infrastructure):
             self.logger.info(f"Job Run {self.job_name} completed successfully")
         else:
             status_code = 1
+            error_msg = job_execution.condition_after_completion()["message"]
             self.logger.error(
-                f"Job Run {self.job_name} did not complete successfully. {job_execution.condition_after_completion()['message']}"
+                f"Job Run {self.job_name} did not complete successfully. {error_msg}"
             )
 
         self.logger.info(
             f"Job Run logs can be found on GCP at: {job_execution.log_uri}"
         )
 
-        if not self.keep_job_after_completion:
+        if (
+            not self.keep_job_after_completion
+        ):  # Check and see if this should be its own function
             try:
                 self.logger.info(
                     f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run..."
@@ -393,6 +436,7 @@ class CloudRunJob(Infrastructure):
             },
         }
 
+        # TODO try and get rid of this
         execution_template_spec_metadata = {"annotations": {}}
 
         # env and command here
@@ -421,23 +465,26 @@ class CloudRunJob(Infrastructure):
 
         return json.dumps(body, indent=2)
 
-    def _watch_job_execution(self, job_execution: Execution, poll_interval=5):
+    def _watch_job_execution(
+        self, job_execution: Execution, poll_interval=5
+    ):  # TODO look up Michael's timeout
         """Update job_execution status until it is no longer running."""
-        client = self._get_executions_client()
+        client = self._get_client()
 
         while job_execution.is_running():
             time.sleep(poll_interval)
 
-            job_execution = Execution.from_json(
-                self._get_execution(
-                    executions_client=client, job_execution=job_execution
-                )
+            job_execution = Execution.get(
+                client=client,
+                namespace=job_execution.namespace,
+                execution_name=job_execution.name
             )
 
         return job_execution
 
     def _wait_for_job_creation(self, client: Resource, poll_interval: int = 5):
         """Give created job time to register"""
+        # TODO make async to not hog event loop
         job = Job.from_json(self._get_job(jobs_client=client))
         while not job.is_ready():
             ready_condition = (
@@ -483,23 +530,18 @@ class CloudRunJob(Infrastructure):
         response = request.execute()
         return response
 
-    def _get_execution(self, executions_client: Resource, job_execution: Execution):
-        request = executions_client.get(
-            name=f"namespaces/{job_execution.metadata['namespace']}/executions/{job_execution.metadata['name']}"
-        )
-        response = request.execute()
-        return response
 
     # GCP API CLIENT
+
     def _get_client(self) -> Resource:
         """Get the base client needed for interacting with GCP APIs."""
         # region needed for 'v1' API
         api_endpoint = f"https://{self.region}-run.googleapis.com"
-        credentials = self.credentials.get_credentials_from_service_account()
+        gcp_creds = self.credentials.get_credentials_from_service_account()
         options = ClientOptions(api_endpoint=api_endpoint)
 
         return discovery.build(
-            "run", "v1", client_options=options, credentials=credentials
+            "run", "v1", client_options=options, credentials=gcp_creds
         ).namespaces()
 
     def _get_jobs_client(self) -> Resource:
@@ -519,6 +561,8 @@ class CloudRunJob(Infrastructure):
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         """
+        # TODO copy dictionaries instead of mutating input
+        # TODO update from single d
         d = self._add_env(d)
         d = self._add_resources(d)
         d = self._add_command(d)
@@ -575,4 +619,3 @@ class CloudRunJob(Infrastructure):
         cloud_run_job_env = [{"name": k, "value": v} for k, v in env.items()]
         d["env"] = cloud_run_job_env
         return d
-
