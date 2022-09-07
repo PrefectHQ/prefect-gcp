@@ -21,25 +21,17 @@ import json
 import re
 import time
 from ast import Delete
-from importlib.metadata import metadata
-from typing import Any, List, Literal, Optional, Union
-from unicodedata import name
+from typing import Literal, Optional
 from uuid import uuid4
 
 import googleapiclient
-import pytz
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
-from google.cloud import logging
-from google.cloud.logging import ASCENDING, ProtobufEntry, TextEntry
-from google.oauth2 import service_account
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
-from prefect.blocks.core import Block
-from prefect.docker import get_prefect_image_name
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, validator
 
 from prefect_gcp.credentials import GcpCredentials
 
@@ -182,7 +174,7 @@ class CloudRunJob(Infrastructure):
             "based on the rules specified at https://cloud.google.com/run/docs/configuring/memory-limits#setting-jobs ."
         )
     )
-    args: Optional[List[str]] = Field(
+    args: Optional[list[str]] = Field(
         description=(
             "Arguments to be passed to your Cloud Run Job's entrypoint command."
         )
@@ -218,7 +210,14 @@ class CloudRunJob(Infrastructure):
             modified_image_name = image_name.replace((":"), "-").replace(
                 ("."), "-"
             )  # only alphanumeric and '-' allowed
-            self._job_name = f"{modified_image_name}-{uuid4()}"
+            name = f"{modified_image_name}-{uuid4()}"
+            if len(name) > 50:
+                self.logger.warning(
+                    "Job names must be 50 or fewer characters in length. Shortening "
+                    f"job name from {name} to {name[:50]}."
+                )
+                name = name[:50]
+            self._job_name = name
 
         return self._job_name
 
@@ -288,7 +287,6 @@ class CloudRunJob(Infrastructure):
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
         with self._get_jobs_client() as jobs_client:
-            breakpoint()
             try:
                 self.logger.info(f"Creating Cloud Run Job {self.job_name}")
                 self._create_job(jobs_client=jobs_client, body=self._jobs_body())
@@ -383,7 +381,7 @@ class CloudRunJob(Infrastructure):
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
-    def _jobs_body(self):
+    def _jobs_body(self) -> dict:
         """Create properly formatted body used for a Job CREATE request.
         See: https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs
         """
@@ -578,16 +576,3 @@ class CloudRunJob(Infrastructure):
         d["env"] = cloud_run_job_env
         return d
 
-
-if __name__ == "__main__":
-    creds = GcpCredentials(service_account_file="creds.json")
-    job = CloudRunJob(
-        credentials=creds,
-        region="us-east1",
-        image="gcr.io/helical-bongo-360018/crj",
-        keep_job_after_completion=True,
-        cpu=2,
-        memory="1024mi",
-    )
-
-    print(type(job.preview()))
