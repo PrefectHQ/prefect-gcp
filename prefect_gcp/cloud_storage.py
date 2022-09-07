@@ -407,7 +407,7 @@ async def cloud_storage_copy_blob(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
-        upload_kwargs: Additional keyword arguments to pass to
+        copy_kwargs: Additional keyword arguments to pass to
             `Bucket.copy_blob`.
 
     Returns:
