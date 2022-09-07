@@ -8,9 +8,9 @@ from uuid import uuid4
 
 from prefect import get_run_logger, task
 from prefect.filesystems import ReadableFileSystem, WritableFileSystem
+from prefect.logging import disable_run_logger
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from prefect.utilities.filesystem import filter_files
-from pydantic import validator
 
 # cannot be type_checking only or else `fields = cls.schema()` raises
 # TypeError: issubclass() arg 1 must be a class
@@ -451,24 +451,9 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
 
     bucket: str
     gcp_credentials: GcpCredentials
-    basepath: Optional[Path]
+    basepath: str = "gs://"
 
-    @validator("basepath", pre=True)
-    def cast_pathlib(cls, value) -> str:
-        """
-        If basepath provided, it means we aren't writing to the root directory
-        of the bucket. We need to ensure that it is a valid path. This is called
-        when the GCS bucket block is instantiated.
-
-        Returns:
-            The str type of the basepath.
-        """
-
-        if isinstance(value, Path):
-            return str(value)
-        return value
-
-    def _resolve_path(self, path: str) -> Path:
+    def _resolve_path(self, path: str) -> str:
         """
         A helper function used in write_path to join `self.basepath` and `path`.
 
@@ -481,9 +466,13 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         """
         path = path or str(uuid4())
 
+        basepath = (
+            self.basepath + "/" if not self.basepath.endswith("/") else self.basepath
+        )
+
         # If basepath provided, it means we won't write to the root dir of
         # the bucket. So we need to add it on the front of the path.
-        path = str(Path(self.basepath) / path) if self.basepath else path
+        path = f"{basepath}{path}" if basepath else path
         return path
 
     @sync_compatible
@@ -502,28 +491,28 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
                 Defaults to the current working directory.
         """
         if from_path is None:
-            from_path = self._resolve_path(from_path)
+            from_path = self.basepath
 
         if local_path is None:
             local_path = str(Path(".").absolute())
 
-        bucket_obj = await _get_bucket(
-            self.bucket, self.gcp_credentials, project=self.gcp_credentials.project
-        )
+        project = self.gcp_credentials.project
+        client = self.gcp_credentials.get_cloud_storage_client(project=project)
 
-        for blob in bucket_obj.list_blobs():
-            if object.key[-1] == "/":
+        for blob in client.list_blobs(self.bucket):
+            if blob.name[-1] == "/":
                 # object is a folder and will be created if it contains any objects
                 continue
-            target = os.path.join(local_path, from_path)
-            if not os.path.exists(os.path.dirname(target)):
-                os.makedirs(os.path.dirname(target))
-            cloud_storage_download_blob_to_file.fn(
-                bucket=self.bucket,
-                blob=blob,
-                path=target,
-                gcp_credentials=self.gcp_credentials,
-            )
+            local_file_path = os.path.join(local_path, from_path)
+            os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+
+            with disable_run_logger():
+                await cloud_storage_download_blob_to_file.fn(
+                    bucket=self.bucket,
+                    blob=blob,
+                    path=local_file_path,
+                    gcp_credentials=self.gcp_credentials,
+                )
 
     @sync_compatible
     async def put_directory(
@@ -549,11 +538,11 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         Returns:
             The number of files uploaded.
         """
-        if to_path is None:
-            to_path = self._resolve_path(to_path)
-
         if local_path is None:
             local_path = "."
+
+        if to_path is None:
+            to_path = self.basepath
 
         included_files = None
         if ignore_file:
@@ -566,12 +555,9 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
             if included_files is not None and local_file_path not in included_files:
                 continue
             elif not local_file_path.is_dir():
-                remote_file_path = Path(to_path) / local_file_path.relative_to(
-                    local_path
-                )
+                remote_file_path = Path(to_path) / local_file_path.name
                 with open(local_file_path, "rb") as local_file:
                     local_file_content = local_file.read()
-
                 await self.write_path(str(remote_file_path), content=local_file_content)
                 uploaded_file_count += 1
 
@@ -590,9 +576,11 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
             A bytes or string representation of the blob object.
         """
         path = self._resolve_path(path)
-        return await cloud_storage_download_blob_as_bytes.fn(
-            bucket=self.bucket, blob=path, gcp_credentials=self.gcp_credentials
-        )
+        with disable_run_logger():
+            contents = await cloud_storage_download_blob_as_bytes.fn(
+                bucket=self.bucket, blob=path, gcp_credentials=self.gcp_credentials
+            )
+        return contents
 
     @sync_compatible
     async def write_path(self, path: str, content: bytes) -> str:
@@ -608,10 +596,11 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
             The path that the contents were written to.
         """
         path = self._resolve_path(path)
-        await cloud_storage_upload_blob_from_string.fn(
-            data=content,
-            bucket=self.bucket,
-            blob=path,
-            gcp_credentials=self.gcp_credentials,
-        )
+        with disable_run_logger():
+            await cloud_storage_upload_blob_from_string.fn(
+                data=content,
+                bucket=self.bucket,
+                blob=path,
+                gcp_credentials=self.gcp_credentials,
+            )
         return path

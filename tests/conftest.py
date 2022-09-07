@@ -2,8 +2,15 @@ from unittest.mock import MagicMock
 
 import pytest
 from google.cloud.exceptions import NotFound
+from prefect.testing.utilities import prefect_test_harness
 
 from prefect_gcp.credentials import GcpCredentials
+
+
+@pytest.fixture(scope="session", autouse=True)
+def prefect_db():
+    with prefect_test_harness():
+        yield
 
 
 @pytest.fixture
@@ -28,6 +35,11 @@ class CloudStorageClient:
         bucket_obj = MagicMock(bucket=bucket)
         bucket_obj.blob.side_effect = lambda blob, **kwds: blob_obj
         return bucket_obj
+
+    def list_blobs(self, bucket):
+        blob_obj = MagicMock(name="blob")
+        blob_directory = MagicMock(name="directory/")
+        return [blob_obj, blob_directory]
 
 
 @pytest.fixture

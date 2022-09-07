@@ -1,3 +1,4 @@
+import os
 from io import BytesIO
 from pathlib import Path
 
@@ -103,20 +104,35 @@ def test_cloud_storage_copy_blob(dest_blob, gcp_credentials):
 
 
 class TestGcsBucket:
-    @pytest.fixture
-    def gcs_bucket(self, gcp_credentials):
+    @pytest.fixture(params=["gs://", "", "basepath", "basepath/"])
+    def gcs_bucket(self, gcp_credentials, request):
         return GcsBucket(
-            bucket="bucket", gcp_credentials=gcp_credentials, basepath="basepath"
+            bucket="bucket", gcp_credentials=gcp_credentials, basepath=request.param
         )
-
-    @pytest.mark.parametrize("path", [Path("test_path", "test_path")])
-    def test_cast_pathlib(self, gcs_bucket, path):
-        actual = gcs_bucket.cast_pathlib(Path(path))
-        assert actual == str(path)
 
     def test_resolve_path(self, gcs_bucket):
         actual = gcs_bucket._resolve_path("subpath")
-        assert actual == "basepath/subpath"
+        basepath = gcs_bucket.basepath
+        if not basepath.endswith("/"):
+            basepath += "/"
+        expected = f"{basepath}subpath"
+        assert actual == expected
 
     def test_read_path(self, gcs_bucket):
         assert gcs_bucket.read_path("blob") == b"bytes"
+
+    def test_write_path(self, gcs_bucket):
+        basepath = gcs_bucket.basepath
+        if not basepath.endswith("/"):
+            basepath += "/"
+        assert gcs_bucket.write_path("blob", b"bytes_data") == f"{basepath}blob"
+
+    @pytest.mark.parametrize("from_path", [None, "from_path"])
+    @pytest.mark.parametrize("local_path", [None, "local_path"])
+    def test_get_directory(self, gcs_bucket, from_path, local_path):
+        assert (
+            gcs_bucket.get_directory(from_path=from_path, local_path=local_path) is None
+        )
+        if local_path is None:
+            local_path = "."
+        assert os.path.exists(os.path.join(local_path, os.path.dirname(from_path)))
