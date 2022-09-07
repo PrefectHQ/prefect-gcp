@@ -545,13 +545,13 @@ class TestCloudRunJobExecution:
         """
         Behavior to test:
         - if image
-            - calls create job
-            - waits for job creation
-                - if job creation fails
-                    - if delete
-                        - deletes the job
-                    - exits with status code 1
-        - if not image
-            - doesn't call create job
-        - 
+        - calls create job
+        - waits for job creation
+            - if job creation fails
+                - if delete
+                    - deletes the job
+                - otherwise does not delete
+            - if job creation succeeds
+                - sets task status to started
+                - returns function 
         """
