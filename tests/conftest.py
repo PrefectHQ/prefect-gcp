@@ -21,6 +21,11 @@ def oauth2_credentials(monkeypatch):
     monkeypatch.setattr("prefect_gcp.credentials.Credentials", CredentialsMock)
 
 
+class Blob:
+    def __init__(self, name):
+        self.name = name
+
+
 class CloudStorageClient:
     def __init__(self, credentials=None, project=None):
         self.credentials = credentials
@@ -37,8 +42,8 @@ class CloudStorageClient:
         return bucket_obj
 
     def list_blobs(self, bucket):
-        blob_obj = MagicMock(name="blob")
-        blob_directory = MagicMock(name="directory/")
+        blob_obj = Blob(name="blob")
+        blob_directory = Blob(name="directory/")
         return [blob_obj, blob_directory]
 
 
