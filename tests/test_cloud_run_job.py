@@ -1,12 +1,41 @@
+from http import client
 from importlib.metadata import metadata
 import pytest
-from prefect_gcp.cloud_run_job import CloudRunJob, CloudRunJobResult, Execution, Job
+from prefect_gcp.cloud_run_job import CloudRunJob 
+from prefect_gcp.cloud_run_job.gcp_cloud_run_job import CloudRunJobResult, Execution, Job
 from prefect_gcp.credentials import GcpCredentials
 from prefect.settings import temporary_settings, PREFECT_API_URL, PREFECT_API_KEY, PREFECT_PROFILES_PATH
 from googleapiclient.http import HttpMock
 from googleapiclient import discovery
 from unittest.mock import Mock
 import prefect_gcp
+
+def mock_executions_call():
+    """Used to mock the GCP API client executions methods"""
+    mock_executions = Mock()
+    mock_executions.get = Mock(
+        return_value={
+            "metadata": {
+                "name": "test-name",
+                "namespace": "test-namespace"
+            },
+            "spec": "my-spec",
+            "status": {"logUri": "test-log-uri"}
+        }
+    )
+    return mock_executions
+
+@pytest.fixture
+def mock_client(monkeypatch, mock_credentials):
+    class MockClient(Mock):
+        def __init__(self):
+            super().__init__()
+            self.executions = mock_executions_call()
+    return mock_client
+
+
+def list_mock_calls(mock_client):
+    return [str(call) for call in mock_client.mock_calls]
 
 class TestJob:
     @pytest.mark.parametrize(
@@ -151,6 +180,7 @@ class TestExecution:
     def test_succeeded_responds_true(self):
         execution = Execution(
             name="Test",
+            namespace="test-namespace",
             metadata={},
             spec={},
             status={"conditions": [{"type": "Completed", "status": "True"}]},
@@ -170,6 +200,7 @@ class TestExecution:
     def test_succeeded_responds_false(self, conditions):
         execution = Execution(
             name="Test",
+            namespace="test-namespace",
             metadata={},
             spec={},
             status={"conditions": conditions},
@@ -187,6 +218,7 @@ class TestExecution:
     def test_is_running(self, status, expected_value):
         execution = Execution(
             name="Test",
+            namespace="test-namespace",
             metadata={},
             spec={},
             status=status,
@@ -207,6 +239,7 @@ class TestExecution:
     def test_condition_after_completion_returns_correct_condition(self, conditions, expected_value):
         execution = Execution(
             name="Test",
+            namespace="test-namespace",
             metadata={},
             spec={},
             status={"conditions": conditions},
@@ -214,19 +247,20 @@ class TestExecution:
         )
         assert execution.condition_after_completion() == expected_value
 
-    def test_from_json(self):
-        execution_dict = {
-            "metadata": {"name": "Test"},
-            "spec": {"MySpec": "spec"},
-            "status": {'logUri': "my_uri.com"}
-        }
-        execution = Execution.from_json(execution_dict)
+    def test_get(self, mock_client):
+        """Uses response defined in `mock_executions_call`"""
+        res = Execution.get(
+            client=mock_client, 
+            namespace="test-namespace",
+            execution_name="test-name"
+        )
 
-        assert execution.name == execution_dict["metadata"]["name"]
-        assert execution.metadata == execution_dict["metadata"]
-        assert execution.spec == execution_dict["spec"]
-        assert execution.status == execution_dict["status"]
-        assert execution.log_uri == execution_dict["status"]["logUri"]
+        assert res.name == "test-name"
+        assert res.namespace == "test-namespace"
+        assert res.metadata == {"name": "test-name", "namespace": "test-namespace"}
+        assert res.spec == "my-spec"
+        assert res.status == {"logUri": "test-log-uri"}
+        assert res.log_uri == "test-log-uri"
 
 
 @pytest.fixture
@@ -331,17 +365,6 @@ def mock_credentials(monkeypatch):
 
     return mock_credentials
 
-@pytest.fixture
-def mock_client(monkeypatch, mock_credentials):
-    mock_client = Mock(name="Client")
-    monkeypatch.setattr(
-        "prefect_gcp.cloud_run_job.CloudRunJob._get_client",
-        mock_client
-    )
-    return mock_client
-
-def list_mock_calls(mock_client):
-    return [str(call) for call in mock_client.mock_calls]
 
 class TestCloudRunJobGCPInteraction:
 
@@ -391,17 +414,6 @@ class TestCloudRunJobGCPInteraction:
 
         mock_client.get.assert_called_with(name='namespaces/my-project-id/jobs/my-job-name')
 
-    def test_get_execution(self, mock_client, cloud_run_job):
-        cloud_run_job._project_id = 'my-project-id' # Neither of these will be used
-        cloud_run_job._job_name = 'my-job-name'     # because data gather from Execution
-        job_execution = Mock(metadata={"namespace": "dog", "name": "puppy"})
-
-        cloud_run_job._get_execution(
-            executions_client=mock_client,
-            job_execution=job_execution
-            )
-
-        mock_client.get.assert_called_with(name='namespaces/dog/executions/puppy')
 
 
 class TestCloudRunJobExecution:
@@ -544,7 +556,6 @@ class TestCloudRunJobExecution:
     def test_run(self):
         """
         Behavior to test:
-        - if image
         - calls create job
         - waits for job creation
             - if job creation fails
