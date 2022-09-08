@@ -2,27 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://prefecthq.github.io/prefect-gcp/</loc>
-         <lastmod>2022-07-22</lastmod>
+         <lastmod>2022-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://prefecthq.github.io/prefect-gcp/bigquery/</loc>
-         <lastmod>2022-07-22</lastmod>
+         <lastmod>2022-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://prefecthq.github.io/prefect-gcp/cloud_storage/</loc>
-         <lastmod>2022-07-22</lastmod>
+         <lastmod>2022-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://prefecthq.github.io/prefect-gcp/credentials/</loc>
-         <lastmod>2022-07-22</lastmod>
+         <lastmod>2022-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://prefecthq.github.io/prefect-gcp/secret_manager/</loc>
-         <lastmod>2022-07-22</lastmod>
+         <lastmod>2022-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
