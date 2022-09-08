@@ -26,12 +26,31 @@ def mock_executions_call():
     return mock_executions
 
 @pytest.fixture
+def mock_credentials(monkeypatch):
+    mock_credentials = Mock(name="Credentials")
+    monkeypatch.setattr(
+        "prefect_gcp.cloud_run_job.gcp_cloud_run_job.GcpCredentials.get_credentials_from_service_account",
+        mock_credentials
+    )
+
+    return mock_credentials
+
+@pytest.fixture
 def mock_client(monkeypatch, mock_credentials):
     class MockClient(Mock):
-        def __init__(self):
+        def __init__(self, *args, **kwargs):
             super().__init__()
-            self.executions = mock_executions_call()
-    return mock_client
+            self.executions = Mock(return_value=mock_executions_call)
+
+    def get_mock_client(*args, **kwargs):
+        return MockClient()
+
+    monkeypatch.setattr(
+        "prefect_gcp.cloud_run_job.gcp_cloud_run_job.CloudRunJob._get_client",
+        get_mock_client
+    )
+
+    return MockClient()
 
 
 def list_mock_calls(mock_client):
@@ -355,15 +374,6 @@ class TestCloudRunJobContainerSettings:
         result = cloud_run_job._add_container_settings(base_setting)
         assert result["args"] == args
 
-@pytest.fixture
-def mock_credentials(monkeypatch):
-    mock_credentials = Mock(name="Credentials")
-    monkeypatch.setattr(
-        "prefect_gcp.cloud_run_job.GcpCredentials.get_credentials_from_service_account",
-        mock_credentials
-    )
-
-    return mock_credentials
 
 
 class TestCloudRunJobGCPInteraction:
@@ -383,10 +393,6 @@ class TestCloudRunJobGCPInteraction:
         cloud_run_job._get_jobs_client() 
         assert list_mock_calls(mock_client) == ["call()", "call().jobs()"]
 
-    def test_get_executions_client(self, mock_client, cloud_run_job):
-        cloud_run_job._get_executions_client() 
-        assert list_mock_calls(mock_client) == ["call()", "call().executions()"]
-        
     def test_create_job(self, mock_client, cloud_run_job):
         cloud_run_job._project_id = 'my-project-id'
         cloud_run_job._create_job(jobs_client=mock_client, body="Test")
@@ -454,42 +460,39 @@ class TestCloudRunJobExecution:
         assert MockJob.call_count == 3
 
     def test_watch_job_execution(self, monkeypatch, mock_client, cloud_run_job):
-        """`_watch_job_execution should loop until execution.is_running() == False.
-
-        Behavior to test: should loop while `is_running()` is True, and should exit the loop
-        when `is_running()` is False.
         """
-        class MockExecutionInstance():
-            def __init__(self, is_running, *args, **kwargs):
-                self._is_running = is_running
-                self.metadata = {"namespace": "cat", "name": "dog"}
-
-            def is_running(self):
-                return self._is_running
-
+        Behavior to test: 
+        - should loop while `is_running()` is True
+        - should exit the loop when `is_running()` is False
+        - should return an Execution
+        """
         class MockExecution(Mock):
-            call_count = 0
-            is_ready = False
+            call_count=0
+            def __init__(self, *args, **kwargs):
+                super().__init__()
+            
+            def is_running(self):
+                MockExecution.call_count += 1
 
-            @classmethod
-            def from_json(cls, *args, **kwargs):
-                """Return a mock object that responds False to `is_running()` on the third loop"""
-                if cls.call_count < 2:
-                    is_running = True
-                else:
-                    is_running = False
-                cls.call_count += 1
-                return MockExecutionInstance(is_running=is_running)
+                if self.call_count > 2:
+                    return False
+                return True
+
+            @classmethod 
+            def get(cls, *args, **kwargs):
+                return cls()
 
         monkeypatch.setattr(
-            "prefect_gcp.cloud_run_job.Execution",
+            "prefect_gcp.cloud_run_job.gcp_cloud_run_job.Execution",
             MockExecution
         )
-        cloud_run_job._watch_job_execution(
-            job_execution=MockExecutionInstance(is_running=True),
-            poll_interval=1
+
+        res = cloud_run_job._watch_job_execution(
+            job_execution=MockExecution(),
+            poll_interval=0
             )
-        assert MockExecution.call_count == 3
+        assert res.call_count == 3
+        assert isinstance(res, MockExecution)
 
     @pytest.mark.parametrize(
         "keep_job,succeeded,expected_code",
