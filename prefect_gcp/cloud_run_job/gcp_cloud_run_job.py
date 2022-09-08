@@ -89,88 +89,43 @@ class Job(BaseModel):
 
         return {}
 
-    @staticmethod
-    def _get_job(client: Resource, namespace:str, job_name:str):
+    @classmethod
+    def get(cls, client: Resource, namespace:str, job_name:str):
         request = client.jobs().get(
             name=f"namespaces/{namespace}/jobs/{job_name}"
         )
         response = request.execute()
-        return response
-
-    @classmethod
-    def get(cls, client: Resource, namespace:str, job_name:str):
-        job = cls._get_job(
-            client=client, 
-            namespace=namespace, 
-            job_name=job_name
-        )
 
         return cls(
-            metadata=job["metadata"],
-            spec=job["spec"],
-            status=job["status"],
-            name=job["metadata"]["name"],
-            ready_condition=cls._get_ready_condition(job),
-            execution_status=cls._get_execution_status(job),
+            metadata=response["metadata"],
+            spec=response["spec"],
+            status=response["status"],
+            name=response["metadata"]["name"],
+            ready_condition=cls._get_ready_condition(response),
+            execution_status=cls._get_execution_status(response),
         )
 
-    @staticmethod
-    def _create_job(client: Resource, namespace:str, body:dict):
+    @classmethod
+    def create(cls, client: Resource, namespace:str, body:dict):
         request = client.jobs().create(parent=f"namespaces/{namespace}", body=body)
         response = request.execute()
         return response
 
     @classmethod
-    def create(cls, client: Resource, namespace:str, body:dict):
-        return cls._create_job(
-            client=client,
-            namespace=namespace,
-            body=body
-            )
-
-    @staticmethod 
-    def _delete_job(client: Resource, namespace:str, job_name:str):
+    def delete(cls, client: Resource, namespace:str, job_name:str):
         request = client.jobs().delete(
             name=f"namespaces/{namespace}/jobs/{job_name}"
         )
         response = request.execute()
         return response
-
-    @classmethod
-    def delete(cls, client: Resource, namespace:str, job_name:str):
-        return cls._delete_job(
-            client=client,
-            namespace=namespace,
-            job_name=job_name
-        )
     
-    @staticmethod
-    def _run_job(client: Resource, namespace:str, job_name:str):
+    @classmethod
+    def run(cls, client: Resource, namespace:str, job_name:str):
         request = client.jobs().run(
             name=f"namespaces/{namespace}/jobs/{job_name}"
         )
         response = request.execute()
         return response
-
-    @classmethod
-    def run(cls, client: Resource, namespace:str, job_name:str):
-        return cls._run_job(
-            client=client,
-            namespace=namespace,
-            job_name=job_name
-            )
-    # @classmethod
-    # def from_json(cls, job: dict):
-    #     """Construct a Job instance from a Jobs JSON response."""
-
-    #     return cls(
-    #         metadata=job["metadata"],
-    #         spec=job["spec"],
-    #         status=job["status"],
-    #         name=job["metadata"]["name"],
-    #         ready_condition=cls._get_ready_condition(job),
-    #         execution_status=cls._get_execution_status(job),
-    #     )
 
 
 class Execution(BaseModel):
@@ -373,7 +328,6 @@ class CloudRunJob(Infrastructure):
 
     def _job_run_submission_error(self, exc):
         """Provides a nicer error for 404s when submitting job runs."""
-        breakpoint()
         if exc.status_code == 404:
             pat1 = r"The requested URL [^ ]+ was not found on this server"
             pat2 = r"Resource '[^ ]+' of kind 'JOB' in region '[\w\-0-9]+' in project '[\w\-0-9]+' does not exist"
@@ -419,7 +373,7 @@ class CloudRunJob(Infrastructure):
                 submission = Job.run(
                     client=client, 
                     namespace=self.project_id, 
-                    name=self.job_name
+                    job_name=self.job_name
                 )
 
                 job_execution = Execution.get(
@@ -458,7 +412,7 @@ class CloudRunJob(Infrastructure):
         """Wait for execution to complete and then return result."""
         try:
             job_execution = self._watch_job_execution(
-                job_execution=execution, poll_interval=poll_interval
+                client=client, job_execution=execution, poll_interval=poll_interval
             )
         except Exception as exc:
             self.logger.exception(
@@ -568,7 +522,7 @@ class CloudRunJob(Infrastructure):
         return Job.get(
             client=client,
             namespace=self.project_id,
-            name=self.job_name
+            job_name=self.job_name
         )
     
     def _delete_job(self, client):
@@ -578,7 +532,7 @@ class CloudRunJob(Infrastructure):
             return Job.delete(
                 client=client,
                 namespace=self.project_id,
-                name=self.job_name
+                job_name=self.job_name
                 )
         except Exception as exc:
             self.logger.exception(
