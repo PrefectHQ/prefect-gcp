@@ -22,6 +22,7 @@ import re
 import time
 from ast import Delete
 from typing import Literal, Optional
+from unicodedata import name
 from uuid import uuid4
 
 import googleapiclient
@@ -88,9 +89,21 @@ class Job(BaseModel):
 
         return {}
 
+    @staticmethod
+    def _get_job(client: Resource, namespace:str, job_name:str):
+        request = client.jobs().get(
+            name=f"namespaces/{namespace}/jobs/{job_name}"
+        )
+        response = request.execute()
+        return response
+
     @classmethod
-    def from_json(cls, job: dict):
-        """Construct a Job instance from a Jobs JSON response."""
+    def get(cls, client: Resource, namespace:str, job_name:str):
+        job = cls._get_job(
+            client=client, 
+            namespace=namespace, 
+            job_name=job_name
+        )
 
         return cls(
             metadata=job["metadata"],
@@ -100,6 +113,64 @@ class Job(BaseModel):
             ready_condition=cls._get_ready_condition(job),
             execution_status=cls._get_execution_status(job),
         )
+
+    @staticmethod
+    def _create_job(client: Resource, namespace:str, body:dict):
+        request = client.jobs().create(parent=f"namespaces/{namespace}", body=body)
+        response = request.execute()
+        return response
+
+    @classmethod
+    def create(cls, client: Resource, namespace:str, body:dict):
+        return cls._create_job(
+            client=client,
+            namespace=namespace,
+            body=body
+            )
+
+    @staticmethod 
+    def _delete_job(client: Resource, namespace:str, job_name:str):
+        request = client.jobs().delete(
+            name=f"namespaces/{namespace}/jobs/{job_name}"
+        )
+        response = request.execute()
+        return response
+
+    @classmethod
+    def delete(cls, client: Resource, namespace:str, job_name:str):
+        return cls._delete_job(
+            client=client,
+            namespace=namespace,
+            job_name=job_name
+        )
+    
+    @staticmethod
+    def _run_job(client: Resource, namespace:str, job_name:str):
+        request = client.jobs().run(
+            name=f"namespaces/{namespace}/jobs/{job_name}"
+        )
+        response = request.execute()
+        return response
+
+    @classmethod
+    def run(cls, client: Resource, namespace:str, job_name:str):
+        return cls._run_job(
+            client=client,
+            namespace=namespace,
+            job_name=job_name
+            )
+    # @classmethod
+    # def from_json(cls, job: dict):
+    #     """Construct a Job instance from a Jobs JSON response."""
+
+    #     return cls(
+    #         metadata=job["metadata"],
+    #         spec=job["spec"],
+    #         status=job["status"],
+    #         name=job["metadata"]["name"],
+    #         ready_condition=cls._get_ready_condition(job),
+    #         execution_status=cls._get_execution_status(job),
+    #     )
 
 
 class Execution(BaseModel):
@@ -153,7 +224,6 @@ class Execution(BaseModel):
             status=execution["status"],
             log_uri=execution["status"]["logUri"],
         )
-
 
 
 class CloudRunJob(Infrastructure):
@@ -321,36 +391,37 @@ class CloudRunJob(Infrastructure):
 
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
-        with self._get_jobs_client() as jobs_client:
+        # with self._get_jobs_client() as jobs_client:
+        with self._get_client() as client:
             try:
                 self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-                self._create_job(jobs_client=jobs_client, body=self._jobs_body())
+                Job.create(client=client, namespace=self.project_id, body=self._jobs_body())
             except googleapiclient.errors.HttpError as exc:
                 self._create_job_error(exc)
 
             try:
-                self._wait_for_job_creation(client=jobs_client)
+                self._wait_for_job_creation(client=client)
             except Exception as exc:
                 self.logger.exception(
                     f"Encountered an exception while waiting for job run creation"
                 )
                 if not self.keep_job_after_completion:
-                    try:
-                        self.logger.info(
-                            f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run."
-                        )
-                        self._delete_job(jobs_client=jobs_client)
-                    except Exception as exc:
-                        self.logger.exception(
-                            f"Encountered an exception while attempting to delete failed Cloud Run Job.'{self.job_name}':\n{exc!r}"
-                        )
+                    self.logger.info(
+                        f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run."
+                    )
+                    self._delete_job(client=client)
                 raise exc
 
             try:
                 self.logger.info(
                     f"Submitting Cloud Run Job {self.job_name} for execution."
                 )
-                submission = self._submit_job_for_execution(jobs_client=jobs_client)
+                submission = Job.run(
+                    client=client, 
+                    namespace=self.project_id, 
+                    name=self.job_name
+                )
+
                 job_execution = Execution.get(
                     client=self._get_client(),
                     namespace=submission["metadata"]["namespace"],
@@ -375,13 +446,13 @@ class CloudRunJob(Infrastructure):
                 task_status.started(self.job_name)
 
             return await run_sync_in_worker_thread(
-                self._watch_job_and_get_result,
-                jobs_client,
+                self._watch_job_execution_and_get_result,
+                client,
                 job_execution,
                 5,
             )
 
-    def _watch_job_and_get_result(
+    def _watch_job_execution_and_get_result(
         self, client: Resource, execution: Execution, poll_interval: int
     ) -> CloudRunJobResult:
         """Wait for execution to complete and then return result."""
@@ -412,15 +483,10 @@ class CloudRunJob(Infrastructure):
         if (
             not self.keep_job_after_completion
         ):  # Check and see if this should be its own function
-            try:
-                self.logger.info(
-                    f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run..."
-                )
-                self._delete_job(jobs_client=client)
-            except Exception as exc:
-                self.logger.exception(
-                    f"Received an unexpected exception while attempting to delete completed Cloud Run Job.'{self.job_name}':\n{exc!r}"
-                )
+            self.logger.info(
+                f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run..."
+            )
+            self._delete_job(client=client)
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
@@ -466,11 +532,9 @@ class CloudRunJob(Infrastructure):
         return json.dumps(body, indent=2)
 
     def _watch_job_execution(
-        self, job_execution: Execution, poll_interval=5
+        self, client, job_execution: Execution, poll_interval=5
     ):  # TODO look up Michael's timeout
         """Update job_execution status until it is no longer running."""
-        client = self._get_client()
-
         while job_execution.is_running():
             time.sleep(poll_interval)
 
@@ -485,7 +549,8 @@ class CloudRunJob(Infrastructure):
     def _wait_for_job_creation(self, client: Resource, poll_interval: int = 5):
         """Give created job time to register"""
         # TODO make async to not hog event loop
-        job = Job.from_json(self._get_job(jobs_client=client))
+        job = self._get_job(client=client)
+
         while not job.is_ready():
             ready_condition = (
                 job.ready_condition
@@ -496,42 +561,29 @@ class CloudRunJob(Infrastructure):
                 f"Job is not yet ready... Current condition: {ready_condition}"
             )
             time.sleep(poll_interval)
+            job = self._get_job(client=client)
 
-            job = Job.from_json(self._get_job(jobs_client=client))
-
-    # GCP API CALLS
-    def _create_job(self, jobs_client: Resource, body: dict):
-        """Submit a create request to Cloud Run Job API."""
-        request = jobs_client.create(parent=f"namespaces/{self.project_id}", body=body)
-        response = request.execute()
-        return response
-
-    def _delete_job(self, jobs_client: Resource):
-        """Make a delete request for the Cloud Run Job."""
-        request = jobs_client.delete(
-            name=f"namespaces/{self.project_id}/jobs/{self.job_name}"
+    def _get_job(self, client):
+        """Convenience method for getting a job."""
+        return Job.get(
+            client=client,
+            namespace=self.project_id,
+            name=self.job_name
         )
-        response = request.execute()
-        return response
-
-    def _submit_job_for_execution(self, jobs_client: Resource):
-        """Submit a request to begin a new run of the Cloud Run Job."""
-        request = jobs_client.run(
-            name=f"namespaces/{self.project_id}/jobs/{self.job_name}"
-        )
-        response = request.execute()
-        return response
-
-    def _get_job(self, jobs_client: Resource):
-        """Get the Job associated with the CloudRunJob."""
-        request = jobs_client.get(
-            name=f"namespaces/{self.project_id}/jobs/{self.job_name}"
-        )
-        response = request.execute()
-        return response
-
-
-    # GCP API CLIENT
+    
+    def _delete_job(self, client):
+        """Convenience method for deleting a job.
+        """
+        try:
+            return Job.delete(
+                client=client,
+                namespace=self.project_id,
+                name=self.job_name
+                )
+        except Exception as exc:
+            self.logger.exception(
+                f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
+            )
 
     def _get_client(self) -> Resource:
         """Get the base client needed for interacting with GCP APIs."""
@@ -544,13 +596,6 @@ class CloudRunJob(Infrastructure):
             "run", "v1", client_options=options, credentials=gcp_creds
         ).namespaces()
 
-    def _get_jobs_client(self) -> Resource:
-        """Get the client needed for interacting with Cloud Run Jobs."""
-        return self._get_client().jobs()
-
-    def _get_executions_client(self) -> Resource:
-        """Get the client needed for interacting with container executions."""
-        return self._get_client().executions()
 
     # CONTAINER SETTINGS
     def _add_container_settings(self, d: dict) -> dict:
