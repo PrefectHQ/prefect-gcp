@@ -10,20 +10,25 @@ from googleapiclient import discovery
 from unittest.mock import Mock
 import prefect_gcp
 
-def mock_executions_call():
-    """Used to mock the GCP API client executions methods"""
-    mock_executions = Mock()
-    mock_executions.get = Mock(
-        return_value={
-            "metadata": {
-                "name": "test-name",
-                "namespace": "test-namespace"
-            },
-            "spec": "my-spec",
-            "status": {"logUri": "test-log-uri"}
-        }
-    )
-    return mock_executions
+
+executions_return_value={
+    "metadata": {
+        "name": "test-name",
+        "namespace": "test-namespace"
+    },
+    "spec": "my-spec",
+    "status": {"logUri": "test-log-uri"}
+}
+
+jobs_return_value = {
+    "metadata": {"name": "Test", "namespace": "test-namespace"},
+    "spec": {"MySpec": "spec"},
+    "status": {
+        "conditions": [{"type": "Ready", "dog": "cat"}],
+        "latestCreatedExecution": {"puppy": "kitty"}
+    }
+}              
+
 
 @pytest.fixture
 def mock_credentials(monkeypatch):
@@ -37,20 +42,17 @@ def mock_credentials(monkeypatch):
 
 @pytest.fixture
 def mock_client(monkeypatch, mock_credentials):
-    class MockClient(Mock):
-        def __init__(self, *args, **kwargs):
-            super().__init__()
-            self.executions = Mock(return_value=mock_executions_call)
-
     def get_mock_client(*args, **kwargs):
-        return MockClient()
+        m = Mock(name="MockClient")
+        m.jobs().get().execute.return_value = jobs_return_value
+        return m
 
     monkeypatch.setattr(
         "prefect_gcp.cloud_run_job.gcp_cloud_run_job.CloudRunJob._get_client",
         get_mock_client
     )
 
-    return MockClient()
+    return get_mock_client()
 
 
 class MockExecution(Mock):
@@ -149,76 +151,90 @@ class TestJob:
             )
         assert job.has_execution_in_progress() == expected_value
 
-    @pytest.mark.parametrize(
-        "condition,execution,expected_condition,expected_ex_status",
-        [
-            (   # Nothing -> nothing
-                None,
-                None,
-                {},
-                {}
-            ),
-            (   # Nothing -> nothing
-                {},
-                {},
-                {},
-                {}
-            ),
-            (   # Empty conditions
-                {"conditions": []},
-                {},
-                {},
-                {}
-            ),
-            (   # Ready status -> ready status
-                {"conditions": [{"type": "Ready", "dog": "cat"}]},
-                {},
-                {"type": "Ready", "dog": "cat"},
-                {}
-            ),
-            (   # Ready status and execution -> ready status and execution
-                {"conditions":[{"type": "Ready", "dog": "cat"}]},
-                {"latestCreatedExecution": {"puppy": "kitty"}},
-                {"type": "Ready", "dog": "cat"},
-                {"puppy": "kitty"}
-            ),
-            (   # Other status and execution -> nothing and execution
-                {"conditions": [{"type": "OtherThing", "dog": "cat"}]},
-                {"latestCreatedExecution": {"puppy": "kitty"}},
-                {},
-                {"puppy": "kitty"}
-            ),
-            (   # multiple status items -> ready status
-                {"conditions":[
-                    {"type": "OtherThing", "dog": "cat"},
-                    {"type": "Ready", "dog": "cat"}
-                    ]},
-                {"latestCreatedExecution": {"puppy": "kitty"}},
-                {"type": "Ready", "dog": "cat"},
-                {"puppy": "kitty"}
-            ),
-        ]
-    )
-    def test_from_json(self, condition, execution, expected_condition, expected_ex_status):
-        status = {}
-        if condition is not None:
-            status = {**status, **condition}
-        if execution is not None:
-            status = {**status, **execution}
+    # @pytest.mark.parametrize(
+    #     "condition,execution,expected_condition,expected_ex_status",
+    #     [
+    #         (   # Nothing -> nothing
+    #             None,
+    #             None,
+    #             {},
+    #             {}
+    #         ),
+    #         (   # Nothing -> nothing
+    #             {},
+    #             {},
+    #             {},
+    #             {}
+    #         ),
+    #         (   # Empty conditions
+    #             {"conditions": []},
+    #             {},
+    #             {},
+    #             {}
+    #         ),
+    #         (   # Ready status -> ready status
+    #             {"conditions": [{"type": "Ready", "dog": "cat"}]},
+    #             {},
+    #             {"type": "Ready", "dog": "cat"},
+    #             {}
+    #         ),
+    #         (   # Ready status and execution -> ready status and execution
+    #             {"conditions":[{"type": "Ready", "dog": "cat"}]},
+    #             {"latestCreatedExecution": {"puppy": "kitty"}},
+    #             {"type": "Ready", "dog": "cat"},
+    #             {"puppy": "kitty"}
+    #         ),
+    #         (   # Other status and execution -> nothing and execution
+    #             {"conditions": [{"type": "OtherThing", "dog": "cat"}]},
+    #             {"latestCreatedExecution": {"puppy": "kitty"}},
+    #             {},
+    #             {"puppy": "kitty"}
+    #         ),
+    #         (   # multiple status items -> ready status
+    #             {"conditions":[
+    #                 {"type": "OtherThing", "dog": "cat"},
+    #                 {"type": "Ready", "dog": "cat"}
+    #                 ]},
+    #             {"latestCreatedExecution": {"puppy": "kitty"}},
+    #             {"type": "Ready", "dog": "cat"},
+    #             {"puppy": "kitty"}
+    #         ),
+    #     ]
+    # )
+    # def test_from_json(self, condition, execution, expected_condition, expected_ex_status):
+    #     status = {}
+    #     if condition is not None:
+    #         status = {**status, **condition}
+    #     if execution is not None:
+    #         status = {**status, **execution}
 
-        job_dict = {
-            "metadata": {"name": "Test"},
-            "spec": {"MySpec": "spec"},
-            "status": status        
-        }
-        job = Job.from_json(job_dict)
+    #     job_dict = {
+    #         "metadata": {"name": "Test"},
+    #         "spec": {"MySpec": "spec"},
+    #         "status": status        
+    #     }
+    #     job = Job.from_json(job_dict)
 
-        assert job.metadata == job_dict["metadata"]
-        assert job.spec == job_dict["spec"]
-        assert job.name == job_dict["metadata"]["name"]
-        assert job.status == job_dict["status"]
-        assert job.ready_condition == expected_condition
-        assert job.execution_status == expected_ex_status
+    #     assert job.metadata == job_dict["metadata"]
+    #     assert job.spec == job_dict["spec"]
+    #     assert job.name == job_dict["metadata"]["name"]
+    #     assert job.status == job_dict["status"]
+    #     assert job.ready_condition == expected_condition
+    #     assert job.execution_status == expected_ex_status
+
+    def test_get(self, mock_client):
+        res = Job.get(
+            client=mock_client,
+            namespace="test-namespace",
+            job_name="test-name"
+        )
+
+        assert res.name == jobs_return_value["metadata"]["name"]
+        assert res.metadata == jobs_return_value["metadata"]
+        assert res.spec == jobs_return_value["spec"]
+        assert res.status == jobs_return_value["status"]
+        assert res.ready_condition == jobs_return_value["status"]["conditions"][0]
+        assert res.execution_status == jobs_return_value["status"]["latestCreatedExecution"]
 
 class TestExecution:
     def test_succeeded_responds_true(self):
