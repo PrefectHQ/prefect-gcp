@@ -1,5 +1,6 @@
 from http import client
 from importlib.metadata import metadata
+from unittest import mock
 import pytest
 from prefect_gcp.cloud_run_job import CloudRunJob 
 from prefect_gcp.cloud_run_job.gcp_cloud_run_job import CloudRunJobResult, Execution, Job
@@ -44,7 +45,6 @@ def mock_credentials(monkeypatch):
 def mock_client(monkeypatch, mock_credentials):
     def get_mock_client(*args, **kwargs):
         m = Mock(name="MockClient")
-        m.jobs().get().execute.return_value = jobs_return_value
         return m
 
     monkeypatch.setattr(
@@ -151,82 +151,37 @@ class TestJob:
             )
         assert job.has_execution_in_progress() == expected_value
 
-    # @pytest.mark.parametrize(
-    #     "condition,execution,expected_condition,expected_ex_status",
-    #     [
-    #         (   # Nothing -> nothing
-    #             None,
-    #             None,
-    #             {},
-    #             {}
-    #         ),
-    #         (   # Nothing -> nothing
-    #             {},
-    #             {},
-    #             {},
-    #             {}
-    #         ),
-    #         (   # Empty conditions
-    #             {"conditions": []},
-    #             {},
-    #             {},
-    #             {}
-    #         ),
-    #         (   # Ready status -> ready status
-    #             {"conditions": [{"type": "Ready", "dog": "cat"}]},
-    #             {},
-    #             {"type": "Ready", "dog": "cat"},
-    #             {}
-    #         ),
-    #         (   # Ready status and execution -> ready status and execution
-    #             {"conditions":[{"type": "Ready", "dog": "cat"}]},
-    #             {"latestCreatedExecution": {"puppy": "kitty"}},
-    #             {"type": "Ready", "dog": "cat"},
-    #             {"puppy": "kitty"}
-    #         ),
-    #         (   # Other status and execution -> nothing and execution
-    #             {"conditions": [{"type": "OtherThing", "dog": "cat"}]},
-    #             {"latestCreatedExecution": {"puppy": "kitty"}},
-    #             {},
-    #             {"puppy": "kitty"}
-    #         ),
-    #         (   # multiple status items -> ready status
-    #             {"conditions":[
-    #                 {"type": "OtherThing", "dog": "cat"},
-    #                 {"type": "Ready", "dog": "cat"}
-    #                 ]},
-    #             {"latestCreatedExecution": {"puppy": "kitty"}},
-    #             {"type": "Ready", "dog": "cat"},
-    #             {"puppy": "kitty"}
-    #         ),
-    #     ]
-    # )
-    # def test_from_json(self, condition, execution, expected_condition, expected_ex_status):
-    #     status = {}
-    #     if condition is not None:
-    #         status = {**status, **condition}
-    #     if execution is not None:
-    #         status = {**status, **execution}
+    def test_get_calls_correct_methods(self, mock_client):
+        """
+        Desired behavior: should call jobs().get().execute() with correct
+        job name and namespace
+        """
+        mock_client.jobs().get().execute.return_value = jobs_return_value
+        Job.get(
+            client=mock_client,
+            namespace="my-project-id",
+            job_name="my-job-name"
+        )
+        desired_calls = [
+            "call.jobs()", # Used to setup mock return
+            "call.jobs().get()", # Used to setup mock return
+            "call.jobs()",
+            "call.jobs().get(name='namespaces/my-project-id/jobs/my-job-name')",
+            "call.jobs().get().execute()"
+        ]
+        actual_calls = list_mock_calls(mock_client=mock_client)
+        assert actual_calls == desired_calls
 
-    #     job_dict = {
-    #         "metadata": {"name": "Test"},
-    #         "spec": {"MySpec": "spec"},
-    #         "status": status        
-    #     }
-    #     job = Job.from_json(job_dict)
-
-    #     assert job.metadata == job_dict["metadata"]
-    #     assert job.spec == job_dict["spec"]
-    #     assert job.name == job_dict["metadata"]["name"]
-    #     assert job.status == job_dict["status"]
-    #     assert job.ready_condition == expected_condition
-    #     assert job.execution_status == expected_ex_status
-
-    def test_get(self, mock_client):
+    def test_return_value_for_get(self, mock_client):
+        """
+        Desired behavior: should a jobs object populated with values from
+        `jobs_return_value` test object
+        """
+        mock_client.jobs().get().execute.return_value = jobs_return_value
         res = Job.get(
             client=mock_client,
-            namespace="test-namespace",
-            job_name="test-name"
+            namespace="my-project-id",
+            job_name="my-job-name"
         )
 
         assert res.name == jobs_return_value["metadata"]["name"]
@@ -236,6 +191,59 @@ class TestJob:
         assert res.ready_condition == jobs_return_value["status"]["conditions"][0]
         assert res.execution_status == jobs_return_value["status"]["latestCreatedExecution"]
 
+    def test_delete_job(self, mock_client):
+        """
+        Desired behavior: should call jobs().delete().execute() with correct
+        job name and namespace        
+        """
+        Job.delete(
+            client=mock_client, 
+            namespace='my-project-id',
+            job_name='my-job-name'
+            )
+        desired_calls = [
+            "call.jobs()",
+            "call.jobs().delete(name='namespaces/my-project-id/jobs/my-job-name')",
+            "call.jobs().delete().execute()"
+        ]
+        actual_calls = list_mock_calls(mock_client=mock_client)
+        assert actual_calls == desired_calls
+
+    def test_run_job(self, mock_client):
+        """
+        Desired behavior: should call jobs().run().execute() with correct
+        job name and namespace        
+        """
+        Job.run(
+            client=mock_client, 
+            namespace='my-project-id',
+            job_name='my-job-name'
+            )
+        desired_calls = [
+            "call.jobs()",
+            "call.jobs().run(name='namespaces/my-project-id/jobs/my-job-name')",
+            "call.jobs().run().execute()"
+        ]
+        actual_calls = list_mock_calls(mock_client=mock_client)
+        assert actual_calls == desired_calls
+
+    def test_create_job(self, mock_client):
+        """
+        Desired behavior: should call jobs().create().execute() with correct
+        namespace and body
+        """
+        Job.create(
+            client=mock_client, 
+            namespace='my-project-id',
+            body={"dog": "cat"}
+            )
+        desired_calls = [
+            "call.jobs()",
+            "call.jobs().create(parent='namespaces/my-project-id', body={'dog': 'cat'})",
+            "call.jobs().create().execute()"
+        ]
+        actual_calls = list_mock_calls(mock_client=mock_client)
+        assert actual_calls == desired_calls
 class TestExecution:
     def test_succeeded_responds_true(self):
         execution = Execution(
@@ -440,12 +448,6 @@ class TestCloudRunJobGCPInteraction:
 
         mock_client.create.assert_called_with(parent='namespaces/my-project-id', body='Test')
 
-    def test_delete_job(self, mock_client, cloud_run_job):
-        cloud_run_job._project_id = 'my-project-id'
-        cloud_run_job._job_name = 'my-job-name'
-        cloud_run_job._delete_job(jobs_client=mock_client)
-
-        mock_client.delete.assert_called_with(name='namespaces/my-project-id/jobs/my-job-name')
 
     def test_submit_job_for_execution(self, mock_client, cloud_run_job):
         cloud_run_job._project_id = 'my-project-id'
