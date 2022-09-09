@@ -247,23 +247,17 @@ class CloudRunJob(Infrastructure):
         """Create a unique and valid job name."""
 
         if self._job_name is None:
+            # get `repo` from `gcr.io/<project_name>/repo/other`
             components = self.image.split("/")
-            # gcr.io/<project_name>/repo/whatever
             image_name = components[2]
+            # only alphanumeric and '-' allowed for a job name
             modified_image_name = image_name.replace((":"), "-").replace(
                 ("."), "-"
-            )  # only alphanumeric and '-' allowed
-            # TODO check that modified image name itself is not 50 chars
-            # UUID has a fixed length, jsut truncate image name to 50 - UUID len
-            # check uuid4().hex() -> potentially shorter
-            # TODO look at GCP job naming conventions
-            name = f"{modified_image_name}-{uuid4()}"
-            # if len(name) > 50: # Consider Deleting
-            #     self.logger.warning(
-            #         "Job names must be 50 or fewer characters in length. Shortening "
-            #         f"job name from {name} to {name[:50]}."
-            #     )
-            #     name = name[:50]
+            )  
+            # make 50 char limit for final job name, which will be '<name>-<uuid>'
+            if len(modified_image_name) > 17:
+                modified_image_name = modified_image_name[:17]
+            name = f"{modified_image_name}-{uuid4().hex}"
             self._job_name = name
 
         return self._job_name
