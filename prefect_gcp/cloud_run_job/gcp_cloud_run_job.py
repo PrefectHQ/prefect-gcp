@@ -306,9 +306,6 @@ class CloudRunJob(Infrastructure):
             },
         }
 
-        # TODO try and get rid of this
-        execution_template_spec_metadata = {"annotations": {}}
-
         # env and command here
         containers = [self._add_container_settings({"image": self.image})]
 
@@ -318,7 +315,6 @@ class CloudRunJob(Infrastructure):
             "metadata": jobs_metadata,
             "spec": {  # JobSpec
                 "template": {  # ExecutionTemplateSpec
-                    "metadata": execution_template_spec_metadata,
                     "spec": {  # ExecutionSpec
                         "template": {  # TaskTemplateSpec
                             "spec": {"containers": containers}  # TaskSpec
