@@ -204,12 +204,20 @@ class CloudRunJob(Infrastructure):
             "based on the rules specified at https://cloud.google.com/run/docs/configuring/cpu#setting-jobs ."
         ),
     )
-    memory: Optional[str] = Field(
+    memory: Optional[int] = Field(
         description=(
-            "The amount of compute allocated to the Cloud Run Job. The string must be valid "
-            "based on the rules specified at https://cloud.google.com/run/docs/configuring/memory-limits#setting-jobs ."
+            "The amount of compute allocated to the Cloud Run Job."
         )
     )
+    memory_units: Optional[
+        Literal["G, Gi, M, Mi"]
+     ] = Field(
+            description=(
+                "The unit of memory. See https://cloud.google.com/run/docs/configuring/memory-limits#setting "
+                "for additional details."
+            )
+
+        )
     args: Optional[list[str]] = Field(
         description=(
             "Arguments to be passed to your Cloud Run Job's entrypoint command."
@@ -221,9 +229,13 @@ class CloudRunJob(Infrastructure):
     )
 
     # Cleanup behavior
-    keep_job_after_completion: Optional[
-        bool
-    ] = True  # TODO make keep_job and add title Field
+    keep_job: Optional[bool] = Field(
+        default=False,
+        title="Keep Job After Completion",
+        description=(
+            "Whether to keep or delete the completed Cloud Run Job from GCP."
+        )
+    ) 
 
     # For private use
     _job_name: str = None
