@@ -154,30 +154,21 @@ class Execution(BaseModel):
 
         return False
 
-    @staticmethod
-    def _get_execution(client: Resource, namespace:str, execution_name:str):
+    @classmethod
+    def get(cls, client, namespace, execution_name):
         request = client.executions().get(
             # name=f"namespaces/{job_execution.metadata['namespace']}/executions/{job_execution.metadata['name']}"
             name=f"namespaces/{namespace}/executions/{execution_name}"
         )
         response = request.execute()
-        return response
-
-    @classmethod
-    def get(cls, client, namespace, execution_name):
-        execution = cls._get_execution(
-            client=client, 
-            namespace=namespace, 
-            execution_name=execution_name
-        )
 
         return cls(
-            name=execution["metadata"]["name"],
-            namespace=execution["metadata"]["namespace"],
-            metadata=execution["metadata"],
-            spec=execution["spec"],
-            status=execution["status"],
-            log_uri=execution["status"]["logUri"],
+            name=response["metadata"]["name"],
+            namespace=response["metadata"]["namespace"],
+            metadata=response["metadata"],
+            spec=response["spec"],
+            status=response["status"],
+            log_uri=response["status"]["logUri"],
         )
 
 

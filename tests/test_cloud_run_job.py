@@ -17,7 +17,7 @@ executions_return_value={
         "name": "test-name",
         "namespace": "test-namespace"
     },
-    "spec": "my-spec",
+    "spec": {"MySpec": "spec"},
     "status": {"logUri": "test-log-uri"}
 }
 
@@ -152,8 +152,7 @@ class TestJob:
         assert job.has_execution_in_progress() == expected_value
 
     def test_get_calls_correct_methods(self, mock_client):
-        """
-        Desired behavior: should call jobs().get().execute() with correct
+        """Desired behavior: should call jobs().get().execute() with correct
         job name and namespace
         """
         mock_client.jobs().get().execute.return_value = jobs_return_value
@@ -173,8 +172,7 @@ class TestJob:
         assert actual_calls == desired_calls
 
     def test_return_value_for_get(self, mock_client):
-        """
-        Desired behavior: should a jobs object populated with values from
+        """Desired behavior: should return a Job object populated with values from
         `jobs_return_value` test object
         """
         mock_client.jobs().get().execute.return_value = jobs_return_value
@@ -244,8 +242,14 @@ class TestJob:
         ]
         actual_calls = list_mock_calls(mock_client=mock_client)
         assert actual_calls == desired_calls
+
+
 class TestExecution:
     def test_succeeded_responds_true(self):
+        """Desired behavior: `succeeded()` should return true if execution.status
+        contains a list element that is a dict with a key "type" and a value of 
+        "Completed" and a key "status" and a value of "True"
+        """
         execution = Execution(
             name="Test",
             namespace="test-namespace",
@@ -262,10 +266,18 @@ class TestExecution:
             [],
             [{"type": "Dog", "status": "True"}],
             [{"type": "Completed", "status": "False"}],
+            [{"type": "Completed", "status": "Dog"}],
 
         ]
     )
     def test_succeeded_responds_false(self, conditions):
+        """Desired behavior: `succeeded()` should return False if execution.status
+        lacks a list element that is a dict with a key "type" and a value of 
+        "Completed" and a key "status" and a value of "True". 
+
+        This could be a situation where there is no element containing the key, or
+        the element with the key has a status that is not "True".
+        """
         execution = Execution(
             name="Test",
             namespace="test-namespace",
@@ -284,6 +296,9 @@ class TestExecution:
         ]
     )
     def test_is_running(self, status, expected_value):
+        """Desired behavior: `is_running()` should return True if there if
+        execution.status lack a key "completionTime", otherwise return False
+        """
         execution = Execution(
             name="Test",
             namespace="test-namespace",
@@ -305,6 +320,10 @@ class TestExecution:
         ]
     )
     def test_condition_after_completion_returns_correct_condition(self, conditions, expected_value):
+        """Desired behavior: `condition_after_completion()` should return the list 
+        element from execution.status that contains a dict with a key "type" and a value of 
+        "Completed" if it exists, else None
+        """
         execution = Execution(
             name="Test",
             namespace="test-namespace",
@@ -315,21 +334,44 @@ class TestExecution:
         )
         assert execution.condition_after_completion() == expected_value
 
-    def test_get(self, mock_client):
-        """Uses response defined in `mock_executions_call`"""
+    def test_return_value_for_get(self, mock_client):
+        """Desired behavior: should return an Execution object populated with values from
+        `executions_return_value` test object
+        """        
+        mock_client.executions().get().execute.return_value = executions_return_value
         res = Execution.get(
             client=mock_client, 
-            namespace="test-namespace",
-            execution_name="test-name"
+            namespace="my-project-id",
+            execution_name="test-execution-name"
         )
 
-        assert res.name == "test-name"
-        assert res.namespace == "test-namespace"
-        assert res.metadata == {"name": "test-name", "namespace": "test-namespace"}
-        assert res.spec == "my-spec"
-        assert res.status == {"logUri": "test-log-uri"}
-        assert res.log_uri == "test-log-uri"
+        assert res.name == executions_return_value["metadata"]["name"]
+        assert res.namespace == executions_return_value["metadata"]["namespace"]
+        assert res.metadata == executions_return_value["metadata"]
+        assert res.spec == executions_return_value["spec"]
+        assert res.status == executions_return_value["status"]
+        assert res.log_uri == executions_return_value["status"]["logUri"]
 
+    def test_get_calls_correct_methods(self, mock_client):
+        """
+        Desired behavior: should call executions().get().execute() with correct
+        job name and namespace
+        """
+        mock_client.executions().get().execute.return_value = executions_return_value
+        Execution.get(
+            client=mock_client,
+            namespace="my-project-id",
+            execution_name="my-execution-name"
+        )
+        desired_calls = [
+            "call.executions()", # Used to setup mock return
+            "call.executions().get()", # Used to setup mock return
+            "call.executions()",
+            "call.executions().get(name='namespaces/my-project-id/executions/my-execution-name')",
+            "call.executions().get().execute()"
+        ]
+        actual_calls = list_mock_calls(mock_client=mock_client)
+        assert actual_calls == desired_calls
 
 @pytest.fixture
 def cloud_run_job():
