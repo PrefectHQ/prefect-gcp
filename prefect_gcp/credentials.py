@@ -84,7 +84,8 @@ class GcpCredentials(Block):
 
     service_account_file: Optional[Path] = None
     service_account_info: Optional[Union[Dict[str, str], Json]] = None
-    _project: Optional[str] = None
+    project: Optional[str] = None
+    _project_id: Optional[str] = None
 
     @root_validator
     def provide_one_service_account_source(cls, values):
@@ -111,13 +112,13 @@ class GcpCredentials(Block):
         return file
 
     @property
-    def project(self):
-        if self._project is None:
-            self._project = self.get_project_id()
-        return self._project
-
-    def get_project_id(self):
-        return self.get_credentials_from_service_account().project_id
+    def project_id(self):
+        if self._project_id is None:
+            if self.project:
+                self._project_id = self.project
+            else:
+                self._project_id = self.get_credentials_from_service_account().project_id
+        return self._project_id
 
     def get_credentials_from_service_account(self) -> Union[Credentials, None]:
         """
