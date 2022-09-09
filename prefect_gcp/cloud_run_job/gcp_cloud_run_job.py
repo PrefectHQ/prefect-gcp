@@ -220,7 +220,16 @@ class CloudRunJob(Infrastructure):
                     self.logger.info(
                         f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run."
                     )
-                    self._delete_job(client=client)
+                    try:
+                        return Job.delete(
+                            client=client,
+                            namespace=self.credentials.project_id,
+                            job_name=self.job_name
+                            )
+                    except Exception as exc:
+                        self.logger.exception(
+                            f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
+                        )
                 raise exc
 
             try:
@@ -289,13 +298,20 @@ class CloudRunJob(Infrastructure):
             f"Job Run logs can be found on GCP at: {job_execution.log_uri}"
         )
 
-        if (
-            not self.keep_job
-        ):  # Check and see if this should be its own function
+        if not self.keep_job:  
             self.logger.info(
                 f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run..."
             )
-            self._delete_job(client=client)
+            try:
+                return Job.delete(
+                    client=client,
+                    namespace=self.credentials.project_id,
+                    job_name=self.job_name
+                    )
+            except Exception as exc:
+                self.logger.exception(
+                    f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
+                )
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
@@ -354,7 +370,11 @@ class CloudRunJob(Infrastructure):
     def _wait_for_job_creation(self, client: Resource, poll_interval: int = 5):
         """Give created job time to register"""
         # TODO make async to not hog event loop
-        job = self._get_job(client=client)
+        job = Job.get(
+            client=client,
+            namespace=self.credentials.project_id,
+            job_name=self.job_name
+        )
 
         while not job.is_ready():
             ready_condition = (
@@ -366,28 +386,10 @@ class CloudRunJob(Infrastructure):
                 f"Job is not yet ready... Current condition: {ready_condition}"
             )
             time.sleep(poll_interval)
-            job = self._get_job(client=client)
-
-    def _get_job(self, client):
-        """Convenience method for getting a job."""
-        return Job.get(
-            client=client,
-            namespace=self.credentials.project_id,
-            job_name=self.job_name
-        )
-    
-    def _delete_job(self, client):
-        """Convenience method for deleting a job.
-        """
-        try:
-            return Job.delete(
+            job = Job.get(
                 client=client,
                 namespace=self.credentials.project_id,
                 job_name=self.job_name
-                )
-        except Exception as exc:
-            self.logger.exception(
-                f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
             )
 
     def _get_client(self) -> Resource:
@@ -400,7 +402,6 @@ class CloudRunJob(Infrastructure):
         return discovery.build(
             "run", "v1", client_options=options, credentials=gcp_creds
         ).namespaces()
-
 
     # CONTAINER SETTINGS
     def _add_container_settings(self, d: dict) -> dict:
