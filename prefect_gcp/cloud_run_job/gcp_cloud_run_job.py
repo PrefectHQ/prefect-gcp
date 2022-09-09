@@ -202,73 +202,91 @@ class CloudRunJob(Infrastructure):
 
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
-        # with self._get_jobs_client() as jobs_client:
         with self._get_client() as client:
-            try:
-                self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-                Job.create(client=client, namespace=self.credentials.project_id, body=self._jobs_body())
-            except googleapiclient.errors.HttpError as exc:
-                self._create_job_error(exc)
+            await run_sync_in_worker_thread(
+                self._create_job_and_wait_for_registration,
+                client
+            )
 
-            try:
-                self._wait_for_job_creation(client=client)
-            except Exception as exc:
-                self.logger.exception(
-                    f"Encountered an exception while waiting for job run creation"
-                )
-                if not self.keep_job:
-                    self.logger.info(
-                        f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run."
-                    )
-                    try:
-                        return Job.delete(
-                            client=client,
-                            namespace=self.credentials.project_id,
-                            job_name=self.job_name
-                            )
-                    except Exception as exc:
-                        self.logger.exception(
-                            f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
-                        )
-                raise exc
+            job_execution = await run_sync_in_worker_thread(
+                self._begin_job_execution,
+                client
+            )
 
-            try:
-                self.logger.info(
-                    f"Submitting Cloud Run Job {self.job_name} for execution."
-                )
-                submission = Job.run(
-                    client=client, 
-                    namespace=self.credentials.project_id, 
-                    job_name=self.job_name
-                )
-
-                job_execution = Execution.get(
-                    client=self._get_client(),
-                    namespace=submission["metadata"]["namespace"],
-                    execution_name=submission["metadata"]["name"]
-                )
-
-                command = (
-                    " ".join(self.command)
-                    if self.command
-                    else "'default container command'"
-                )
-
-                self.logger.info(
-                    f"Cloud Run Job {self.job_name}: Running command '{command}'"
-                )
-            except Exception as exc:
-                self._job_run_submission_error(exc)
-
-            if task_status:  # TODO why is this here?
+            if task_status:  
                 task_status.started(self.job_name)
 
-            return await run_sync_in_worker_thread(
+            result = await run_sync_in_worker_thread(
                 self._watch_job_execution_and_get_result,
                 client,
                 job_execution,
                 5,
             )
+
+            return result
+
+    def _create_job_and_wait_for_registration(self, client: Resource, timeout: int = None) -> None:
+        """Create a new job wait for it to finish registering."""
+        try:
+            self.logger.info(f"Creating Cloud Run Job {self.job_name}")
+            Job.create(client=client, namespace=self.credentials.project_id, body=self._jobs_body())
+        except googleapiclient.errors.HttpError as exc:
+            self._create_job_error(exc)
+
+        try:
+            self._wait_for_job_creation(client=client)
+        except Exception as exc:
+            self.logger.exception(
+                f"Encountered an exception while waiting for job run creation"
+            )
+            if not self.keep_job:
+                self.logger.info(
+                    f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run."
+                )
+                try:
+                    return Job.delete(
+                        client=client,
+                        namespace=self.credentials.project_id,
+                        job_name=self.job_name
+                        )
+                except Exception as exc:
+                    self.logger.exception(
+                        f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
+                    )
+            raise exc
+
+    def _begin_job_execution(self, client: Resource) -> Execution:
+        """Submit a job run for execution and return the execution object."""
+        try:
+            self.logger.info(
+                f"Submitting Cloud Run Job {self.job_name} for execution."
+            )
+            submission = Job.run(
+                client=client, 
+                namespace=self.credentials.project_id, 
+                job_name=self.job_name
+            )
+
+            job_execution = Execution.get(
+                client=self._get_client(),
+                namespace=submission["metadata"]["namespace"],
+                execution_name=submission["metadata"]["name"]
+            )
+
+            command = (
+                " ".join(self.command)
+                if self.command
+                else "'default container command'"
+            )
+
+            self.logger.info(
+                f"Cloud Run Job {self.job_name}: Running command '{command}'"
+            )
+        except Exception as exc:
+            self._job_run_submission_error(exc)
+
+        return job_execution
+        
 
     def _watch_job_execution_and_get_result(
         self, client: Resource, execution: Execution, poll_interval: int
@@ -353,8 +371,8 @@ class CloudRunJob(Infrastructure):
         return json.dumps(body, indent=2)
 
     def _watch_job_execution(
-        self, client, job_execution: Execution, poll_interval=5
-    ):  # TODO look up Michael's timeout
+        self, client, job_execution: Execution, poll_interval: int=5
+    ):  
         """Update job_execution status until it is no longer running."""
         while job_execution.is_running():
             time.sleep(poll_interval)
