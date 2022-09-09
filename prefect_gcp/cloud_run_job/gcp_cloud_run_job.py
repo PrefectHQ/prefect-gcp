@@ -108,7 +108,14 @@ class CloudRunJob(Infrastructure):
             "Whether to keep or delete the completed Cloud Run Job from GCP."
         )
     ) 
-
+    timeout: Optional[int] = Field(
+        default=None,
+        title="Job Timeout",
+        description=(
+            "The length of time that Prefect will wait for a Cloud Run Job to complete "
+            "before raising an exception."
+        )
+    )
     # For private use
     _job_name: str = None
     _execution: Optional[Execution] = None
@@ -234,7 +241,7 @@ class CloudRunJob(Infrastructure):
             self._create_job_error(exc)
 
         try:
-            self._wait_for_job_creation(client=client)
+            self._wait_for_job_creation(client=client, timeout=timeout)
         except Exception as exc:
             self.logger.exception(
                 f"Encountered an exception while waiting for job run creation"
@@ -287,14 +294,16 @@ class CloudRunJob(Infrastructure):
 
         return job_execution
         
-
     def _watch_job_execution_and_get_result(
         self, client: Resource, execution: Execution, poll_interval: int
     ) -> CloudRunJobResult:
         """Wait for execution to complete and then return result."""
         try:
             job_execution = self._watch_job_execution(
-                client=client, job_execution=execution, poll_interval=poll_interval
+                client=client, 
+                job_execution=execution, 
+                timeout=self.timeout,
+                poll_interval=poll_interval
             )
         except Exception as exc:
             self.logger.exception(
@@ -371,10 +380,18 @@ class CloudRunJob(Infrastructure):
         return json.dumps(body, indent=2)
 
     def _watch_job_execution(
-        self, client, job_execution: Execution, poll_interval: int=5
+        self, client, job_execution: Execution, timeout: int, poll_interval: int=5
     ):  
-        """Update job_execution status until it is no longer running."""
+        """Update job_execution status until it is no longer running or timeout is reached."""
+        t0 = time.time()
         while job_execution.is_running():
+            elapsed_time = time.time() - t0
+            if timeout is not None and elapsed_time > timeout:
+                raise RuntimeError(
+                    f"Timed out after {elapsed_time}s while waiting for Cloud Run Job "
+                    "execution to complete. Your job may still be running on GCP."
+                )
+
             time.sleep(poll_interval)
 
             job_execution = Execution.get(
@@ -386,8 +403,7 @@ class CloudRunJob(Infrastructure):
         return job_execution
 
     def _wait_for_job_creation(self, client: Resource, poll_interval: int = 5):
-        """Give created job time to register"""
-        # TODO make async to not hog event loop
+        """Give created job time to register."""
         job = Job.get(
             client=client,
             namespace=self.credentials.project_id,
