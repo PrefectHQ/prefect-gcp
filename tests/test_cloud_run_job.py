@@ -1,15 +1,12 @@
-from http import client
 from importlib.metadata import metadata
-from unittest import mock
 import pytest
 from prefect_gcp.cloud_run_job import CloudRunJob 
-from prefect_gcp.cloud_run_job.gcp_cloud_run_job import CloudRunJobResult, Execution, Job
+from prefect_gcp.cloud_run_job.gcp_cloud_run_job import CloudRunJobResult
+from prefect_gcp.cloud_run_job._utils import Job, Execution
 from prefect_gcp.credentials import GcpCredentials
 from prefect.settings import temporary_settings, PREFECT_API_URL, PREFECT_API_KEY, PREFECT_PROFILES_PATH
 from googleapiclient.http import HttpMock
-from googleapiclient import discovery
 from unittest.mock import Mock
-import prefect_gcp
 
 
 executions_return_value={
@@ -440,16 +437,21 @@ class TestCloudRunJobContainerSettings:
         
     def test_resources_added_correctly(self, cloud_run_job):
         cpu = "1234"
-        memory = "abc"
+        memory = 12
+        memory_unit = "G"
         cloud_run_job.cpu = cpu
         cloud_run_job.memory = memory
+        cloud_run_job.memory_unit = memory_unit
         base_setting = {}
         result = cloud_run_job._add_container_settings(base_setting)
-
         assert result["resources"] == {
             "limits": {
                 "cpu": cpu,
-                "memory": memory
+                "memory": str(memory)+memory_unit
+            },
+            "requests": {
+                "cpu": cpu,
+                "memory": str(memory)+memory_unit
             }
         }
 
@@ -466,7 +468,6 @@ class TestCloudRunJobContainerSettings:
         assert result["args"] == args
 
 
-
 class TestCloudRunJobGCPInteraction:
 
     def test_get_client_uses_correct_endpoint(self, monkeypatch, mock_credentials, cloud_run_job):
@@ -479,16 +480,6 @@ class TestCloudRunJobGCPInteraction:
 
         desired_endpoint = f"https://{cloud_run_job.region}-run.googleapis.com"
         assert mock.call_args[1]["client_options"].api_endpoint == desired_endpoint
-
-    def test_get_jobs_client(self, mock_client, cloud_run_job):
-        cloud_run_job._get_jobs_client() 
-        assert list_mock_calls(mock_client) == ["call()", "call().jobs()"]
-
-    def test_create_job(self, mock_client, cloud_run_job):
-        cloud_run_job._project_id = 'my-project-id'
-        cloud_run_job._create_job(jobs_client=mock_client, body="Test")
-
-        mock_client.create.assert_called_with(parent='namespaces/my-project-id', body='Test')
 
 
     def test_submit_job_for_execution(self, mock_client, cloud_run_job):
@@ -504,7 +495,6 @@ class TestCloudRunJobGCPInteraction:
         cloud_run_job._get_job(jobs_client=mock_client)
 
         mock_client.get.assert_called_with(name='namespaces/my-project-id/jobs/my-job-name')
-
 
 
 class TestCloudRunJobExecution:

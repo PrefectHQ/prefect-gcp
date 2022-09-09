@@ -23,7 +23,7 @@ from ast import Delete
 from typing import Literal, Optional
 from unicodedata import name
 from uuid import uuid4
-
+from copy import deepcopy
 import googleapiclient
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
@@ -81,7 +81,7 @@ class CloudRunJob(Infrastructure):
             "The amount of compute allocated to the Cloud Run Job."
         )
     )
-    memory_units: Optional[
+    memory_unit: Optional[
         Literal["G", "Gi", "M", "Mi"]
      ] = Field(
             description=(
@@ -137,8 +137,8 @@ class CloudRunJob(Infrastructure):
     @property
     def memory_string(self):
         """Returns the string expected for memory resources argument."""
-        if self.memory and self.memory_units:
-            return str(self.memory)+self.memory_units
+        if self.memory and self.memory_unit:
+            return str(self.memory)+self.memory_unit
         return None
 
     @validator("image")
@@ -411,37 +411,39 @@ class CloudRunJob(Infrastructure):
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         """
-        # TODO copy dictionaries instead of mutating input
-        # TODO update from single d
-        d = self._add_env(d)
-        d = self._add_resources(d)
-        d = self._add_command(d)
-        d = self._add_args(d)
+        d_copy = deepcopy(d)
+        d_copy.update(self._add_env(d_copy))
+        d_copy.update(self._add_resources(d_copy))
+        d_copy.update(self._add_command(d_copy))
+        d_copy.update(self._add_args(d_copy))
 
-        return d
+        return d_copy
 
     def _add_args(self, d: dict) -> dict:
         """Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         """
+        d_copy = deepcopy(d)
         if self.args:
-            d["args"] = self.args
+            d_copy["args"] = self.args
 
-        return d
+        return d_copy
 
     def _add_command(self, d: dict) -> dict:
         """Set the command that a container will run for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         """
-        d["command"] = self.command
+        d_copy = deepcopy(d)
+        d_copy["command"] = self.command
 
-        return d
+        return d_copy
 
     def _add_resources(self, d: dict) -> dict:
         """Set specified resources limits for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         See also: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         """
+        d_copy = deepcopy(d)
         resources = {"limits": {}, "requests": {}}
 
         if self.cpu is not None:
@@ -452,9 +454,9 @@ class CloudRunJob(Infrastructure):
             resources["requests"]["memory"] = self.memory_string
 
         if resources["requests"]:
-            d["resources"] = resources
+            d_copy["resources"] = resources
 
-        return d
+        return d_copy
 
     def _add_env(self, d: dict) -> dict:
         """Add environment variables for a Cloud Run Job.
@@ -465,7 +467,8 @@ class CloudRunJob(Infrastructure):
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar for
         how environment variables are specified for Cloud Run Jobs.
         """
+        d_copy = deepcopy(d)
         env = {**self._base_environment(), **self.env}
         cloud_run_job_env = [{"name": k, "value": v} for k, v in env.items()]
-        d["env"] = cloud_run_job_env
-        return d
+        d_copy["env"] = cloud_run_job_env
+        return d_copy
