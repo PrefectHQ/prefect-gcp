@@ -32,7 +32,7 @@ from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, root_validator
 
 from google.oauth2.service_account import Credentials
 from pydantic import Json, root_validator, validator
@@ -242,13 +242,6 @@ class CloudRunJob(Infrastructure):
     _execution: Optional[Execution] = None
     _project_id: str = None
 
-    @property  # TODO Project ID shouldn't be public - get it from the credentials
-    def project_id(self):
-        if self._project_id is None:
-            self._project_id = self.credentials.get_project_id()
-
-        return self._project_id
-
     @property
     def job_name(self):
         """Create a unique and valid job name."""
@@ -289,32 +282,20 @@ class CloudRunJob(Infrastructure):
         """
         return str(value * 1000) + "m"
 
-    @validator("memory")
-    def check_valid_memory(cls, value):
+    @root_validator
+    def check_valid_memory(cls, values):
         """Make sure memory conforms to expected values for API.
         See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
         """
-        _, size, unit = re.split(
-            "(\d+)", value
-        )  # TODO make units a separate field with a dropdown (prefer Pydantic constrained type (possibly enum if that fails))
-        valid_units = [
-            "G",
-            "Gi",
-            "M",
-            "Mi",
-        ]  # Literal is another option if constrained type doesn't work for some reason
-        unit = unit.capitalize()  # Constrained int does some cool stuff
-        if unit not in valid_units:
+        if (
+            (values.get("memory") is not None and values.get("memory_units") is None) or
+            (values.get("memory_units") is not None and values.get("memory") is None)
+        ):
             raise ValueError(
-                f"Memory units must be one of {valid_units}. See docs for more details: "
-                "https://cloud.google.com/run/docs/configuring/memory-limits#setting"
-            )
-        if not size.isnumeric():
-            raise ValueError(
-                "Memory must be specified in the format <integer><unit> as "
-                "specified at https://cloud.google.com/run/docs/configuring/memory-limits#setting"
-            )
-        return size + unit
+                "A memory value and unit must both be supplied to specify a memory value"
+                "other than the default memory value."
+                )
+        return values
 
     def _create_job_error(self, exc):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""
@@ -322,7 +303,7 @@ class CloudRunJob(Infrastructure):
         if exc.status_code == 404:
             raise RuntimeError(
                 f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
-                f"the correct region for your Cloud Run Job and that {self.project_id} is the "
+                f"the correct region for your Cloud Run Job and that {self.credentials.project_id} is the "
                 "correct GCP project. If your project ID is not correct, you are using a Credentials "
                 "block with permissions for the wrong project."
             ) from exc
@@ -337,7 +318,7 @@ class CloudRunJob(Infrastructure):
             if re.findall(pat1, str(exc)):
                 raise RuntimeError(
                     f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
-                    f"the correct region for your Cloud Run Job and that '{self.project_id}' is the "
+                    f"the correct region for your Cloud Run Job and that '{self.credentials.project_id}' is the "
                     "correct GCP project. If your project ID is not correct, you are using a Credentials "
                     "block with permissions for the wrong project."
                 ) from exc
@@ -352,7 +333,7 @@ class CloudRunJob(Infrastructure):
         with self._get_client() as client:
             try:
                 self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-                Job.create(client=client, namespace=self.project_id, body=self._jobs_body())
+                Job.create(client=client, namespace=self.credentials.project_id, body=self._jobs_body())
             except googleapiclient.errors.HttpError as exc:
                 self._create_job_error(exc)
 
@@ -362,7 +343,7 @@ class CloudRunJob(Infrastructure):
                 self.logger.exception(
                     f"Encountered an exception while waiting for job run creation"
                 )
-                if not self.keep_job_after_completion:
+                if not self.keep_job:
                     self.logger.info(
                         f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run."
                     )
@@ -375,7 +356,7 @@ class CloudRunJob(Infrastructure):
                 )
                 submission = Job.run(
                     client=client, 
-                    namespace=self.project_id, 
+                    namespace=self.credentials.project_id, 
                     job_name=self.job_name
                 )
 
@@ -438,7 +419,7 @@ class CloudRunJob(Infrastructure):
         )
 
         if (
-            not self.keep_job_after_completion
+            not self.keep_job
         ):  # Check and see if this should be its own function
             self.logger.info(
                 f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run..."
@@ -524,7 +505,7 @@ class CloudRunJob(Infrastructure):
         """Convenience method for getting a job."""
         return Job.get(
             client=client,
-            namespace=self.project_id,
+            namespace=self.credentials.project_id,
             job_name=self.job_name
         )
     
@@ -534,7 +515,7 @@ class CloudRunJob(Infrastructure):
         try:
             return Job.delete(
                 client=client,
-                namespace=self.project_id,
+                namespace=self.credentials.project_id,
                 job_name=self.job_name
                 )
         except Exception as exc:
