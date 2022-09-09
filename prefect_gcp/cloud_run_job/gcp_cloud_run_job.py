@@ -82,7 +82,7 @@ class CloudRunJob(Infrastructure):
         )
     )
     memory_units: Optional[
-        Literal["G, Gi, M, Mi"]
+        Literal["G", "Gi", "M", "Mi"]
      ] = Field(
             description=(
                 "The unit of memory. See https://cloud.google.com/run/docs/configuring/memory-limits#setting "
@@ -134,6 +134,13 @@ class CloudRunJob(Infrastructure):
 
         return self._job_name
 
+    @property
+    def memory_string(self):
+        """Returns the string expected for memory resources argument."""
+        if self.memory and self.memory_units:
+            return str(self.memory)+self.memory_units
+        return None
+
     @validator("image")
     def remove_image_spaces(cls, value):
         """Deal with spaces in image names."""
@@ -158,7 +165,7 @@ class CloudRunJob(Infrastructure):
             (values.get("memory_units") is not None and values.get("memory") is None)
         ):
             raise ValueError(
-                "A memory value and unit must both be supplied to specify a memory value"
+                "A memory value and unit must both be supplied to specify a memory value "
                 "other than the default memory value."
                 )
         return values
@@ -231,8 +238,6 @@ class CloudRunJob(Infrastructure):
                     namespace=submission["metadata"]["namespace"],
                     execution_name=submission["metadata"]["name"]
                 )
-                # TODO refactor Excution and Job client methods
-                # _utils.py inside of cloud_run_job file
 
                 command = (
                     " ".join(self.command)
@@ -246,7 +251,7 @@ class CloudRunJob(Infrastructure):
             except Exception as exc:
                 self._job_run_submission_error(exc)
 
-            if task_status:  # TODO
+            if task_status:  # TODO why is this here?
                 task_status.started(self.job_name)
 
             return await run_sync_in_worker_thread(
@@ -442,9 +447,9 @@ class CloudRunJob(Infrastructure):
         if self.cpu is not None:
             resources["limits"]["cpu"] = self.cpu
             resources["requests"]["cpu"] = self.cpu
-        if self.memory is not None:
-            resources["limits"]["memory"] = self.memory
-            resources["requests"]["memory"] = self.memory
+        if self.memory_string is not None:
+            resources["limits"]["memory"] = self.memory_string
+            resources["requests"]["memory"] = self.memory_string
 
         if resources["requests"]:
             d["resources"] = resources
