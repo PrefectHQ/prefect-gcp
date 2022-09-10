@@ -119,7 +119,6 @@ class CloudRunJob(Infrastructure):
     # For private use
     _job_name: str = None
     _execution: Optional[Execution] = None
-    _project_id: str = None
 
     @property
     def job_name(self):
@@ -214,7 +213,6 @@ class CloudRunJob(Infrastructure):
                 self._create_job_and_wait_for_registration,
                 client
             )
-
             job_execution = await run_sync_in_worker_thread(
                 self._begin_job_execution,
                 client
@@ -229,10 +227,9 @@ class CloudRunJob(Infrastructure):
                 job_execution,
                 5,
             )
-
             return result
 
-    def _create_job_and_wait_for_registration(self, client: Resource, timeout: int = None) -> None:
+    def _create_job_and_wait_for_registration(self, client: Resource) -> None:
         """Create a new job wait for it to finish registering."""
         try:
             self.logger.info(f"Creating Cloud Run Job {self.job_name}")
@@ -241,7 +238,7 @@ class CloudRunJob(Infrastructure):
             self._create_job_error(exc)
 
         try:
-            self._wait_for_job_creation(client=client, timeout=timeout)
+            self._wait_for_job_creation(client=client)
         except Exception as exc:
             self.logger.exception(
                 f"Encountered an exception while waiting for job run creation"
@@ -330,7 +327,7 @@ class CloudRunJob(Infrastructure):
                 f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run..."
             )
             try:
-                return Job.delete(
+                Job.delete(
                     client=client,
                     namespace=self.credentials.project_id,
                     job_name=self.job_name
