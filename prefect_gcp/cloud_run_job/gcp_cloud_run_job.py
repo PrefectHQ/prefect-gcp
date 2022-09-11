@@ -1,18 +1,28 @@
 """
+<span class="badge-api experimental"/>
+
+Integrations with Google Cloud Run Job.
+
+Note this module is experimental. The intefaces within may change without notice.
+
 Examples:
-    Run a job using Google Cloud Run Jobs
-    >>> CloudRunJob(
-    >>>     image="gcr.io/my-project/my-image",
-    >>>     region="us-east1",
-    >>>     credentials=my_gcp_credentials
-    >>> ).run()
-    Run a job that runs the command `echo hello world` using Google Cloud Run Jobs
-    >>> CloudRunJob(
-    >>>     image="gcr.io/my-project/my-image",
-    >>>     region="us-east1",
-    >>>     credentials=my_gcp_credentials
-    >>>     command=["echo", "hello world"]
-    >>> ).run()
+    Run a job using Google Cloud Run Jobs:
+    ```python
+    CloudRunJob(
+        image="gcr.io/my-project/my-image",
+        region="us-east1",
+        credentials=my_gcp_credentials
+    ).run()
+    ```
+    Run a job that runs the command `echo hello world` using Google Cloud Run Jobs:
+    ```python
+    CloudRunJob(
+        image="gcr.io/my-project/my-image",
+        region="us-east1",
+        credentials=my_gcp_credentials
+        command=["echo", "hello world"]
+    ).run()
+    ```
 """
 from __future__ import annotations
 
