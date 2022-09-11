@@ -20,24 +20,24 @@ import json
 import re
 import time
 from ast import Delete
+from copy import deepcopy
 from typing import Literal, Optional
 from unicodedata import name
 from uuid import uuid4
-from copy import deepcopy
+
+import google.auth.transport.requests
 import googleapiclient
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
+from google.oauth2.service_account import Credentials
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, Json, root_validator, validator
 
-from google.oauth2.service_account import Credentials
-from pydantic import Json, root_validator, validator
-import google.auth.transport.requests
+from prefect_gcp.cloud_run_job._utils import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.cloud_run_job._utils import Job, Execution
 
 
 class CloudRunJobResult(InfrastructureResult):
@@ -77,19 +77,14 @@ class CloudRunJob(Infrastructure):
         ),
     )
     memory: Optional[int] = Field(
+        description=("The amount of compute allocated to the Cloud Run Job.")
+    )
+    memory_unit: Optional[Literal["G", "Gi", "M", "Mi"]] = Field(
         description=(
-            "The amount of compute allocated to the Cloud Run Job."
+            "The unit of memory. See https://cloud.google.com/run/docs/configuring/memory-limits#setting "
+            "for additional details."
         )
     )
-    memory_unit: Optional[
-        Literal["G", "Gi", "M", "Mi"]
-     ] = Field(
-            description=(
-                "The unit of memory. See https://cloud.google.com/run/docs/configuring/memory-limits#setting "
-                "for additional details."
-            )
-
-        )
     args: Optional[list[str]] = Field(
         description=(
             "Arguments to be passed to your Cloud Run Job's entrypoint command."
@@ -104,17 +99,15 @@ class CloudRunJob(Infrastructure):
     keep_job: Optional[bool] = Field(
         default=False,
         title="Keep Job After Completion",
-        description=(
-            "Whether to keep or delete the completed Cloud Run Job from GCP."
-        )
-    ) 
+        description=("Whether to keep or delete the completed Cloud Run Job from GCP."),
+    )
     timeout: Optional[int] = Field(
         default=None,
         title="Job Timeout",
         description=(
             "The length of time that Prefect will wait for a Cloud Run Job to complete "
             "before raising an exception."
-        )
+        ),
     )
     # For private use
     _job_name: str = None
@@ -129,9 +122,7 @@ class CloudRunJob(Infrastructure):
             components = self.image.split("/")
             image_name = components[2]
             # only alphanumeric and '-' allowed for a job name
-            modified_image_name = image_name.replace((":"), "-").replace(
-                ("."), "-"
-            )  
+            modified_image_name = image_name.replace((":"), "-").replace(("."), "-")
             # make 50 char limit for final job name, which will be '<name>-<uuid>'
             if len(modified_image_name) > 17:
                 modified_image_name = modified_image_name[:17]
@@ -144,7 +135,7 @@ class CloudRunJob(Infrastructure):
     def memory_string(self):
         """Returns the string expected for memory resources argument."""
         if self.memory and self.memory_unit:
-            return str(self.memory)+self.memory_unit
+            return str(self.memory) + self.memory_unit
         return None
 
     @validator("image")
@@ -167,13 +158,12 @@ class CloudRunJob(Infrastructure):
         See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
         """
         if (
-            (values.get("memory") is not None and values.get("memory_units") is None) or
-            (values.get("memory_units") is not None and values.get("memory") is None)
-        ):
+            values.get("memory") is not None and values.get("memory_units") is None
+        ) or (values.get("memory_units") is not None and values.get("memory") is None):
             raise ValueError(
                 "A memory value and unit must both be supplied to specify a memory value "
                 "other than the default memory value."
-                )
+            )
         return values
 
     def _create_job_error(self, exc):
@@ -208,17 +198,16 @@ class CloudRunJob(Infrastructure):
 
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
+        """Run a flow on a Google Cloud Run Job."""
         with self._get_client() as client:
             await run_sync_in_worker_thread(
-                self._create_job_and_wait_for_registration,
-                client
+                self._create_job_and_wait_for_registration, client
             )
             job_execution = await run_sync_in_worker_thread(
-                self._begin_job_execution,
-                client
+                self._begin_job_execution, client
             )
 
-            if task_status:  
+            if task_status:
                 task_status.started(self.job_name)
 
             result = await run_sync_in_worker_thread(
@@ -233,7 +222,11 @@ class CloudRunJob(Infrastructure):
         """Create a new job wait for it to finish registering."""
         try:
             self.logger.info(f"Creating Cloud Run Job {self.job_name}")
-            Job.create(client=client, namespace=self.credentials.project_id, body=self._jobs_body())
+            Job.create(
+                client=client,
+                namespace=self.credentials.project_id,
+                body=self._jobs_body(),
+            )
         except googleapiclient.errors.HttpError as exc:
             self._create_job_error(exc)
 
@@ -248,11 +241,11 @@ class CloudRunJob(Infrastructure):
                     f"Deleting Cloud Run Job {self.job_name} from Google Cloud Run."
                 )
                 try:
-                    return Job.delete(
+                    Job.delete(
                         client=client,
                         namespace=self.credentials.project_id,
-                        job_name=self.job_name
-                        )
+                        job_name=self.job_name,
+                    )
                 except Exception as exc:
                     self.logger.exception(
                         f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
@@ -262,19 +255,17 @@ class CloudRunJob(Infrastructure):
     def _begin_job_execution(self, client: Resource) -> Execution:
         """Submit a job run for execution and return the execution object."""
         try:
-            self.logger.info(
-                f"Submitting Cloud Run Job {self.job_name} for execution."
-            )
+            self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
             submission = Job.run(
-                client=client, 
-                namespace=self.credentials.project_id, 
-                job_name=self.job_name
+                client=client,
+                namespace=self.credentials.project_id,
+                job_name=self.job_name,
             )
 
             job_execution = Execution.get(
                 client=self._get_client(),
                 namespace=submission["metadata"]["namespace"],
-                execution_name=submission["metadata"]["name"]
+                execution_name=submission["metadata"]["name"],
             )
 
             command = (
@@ -290,17 +281,17 @@ class CloudRunJob(Infrastructure):
             self._job_run_submission_error(exc)
 
         return job_execution
-        
+
     def _watch_job_execution_and_get_result(
         self, client: Resource, execution: Execution, poll_interval: int
     ) -> CloudRunJobResult:
         """Wait for execution to complete and then return result."""
         try:
             job_execution = self._watch_job_execution(
-                client=client, 
-                job_execution=execution, 
+                client=client,
+                job_execution=execution,
                 timeout=self.timeout,
-                poll_interval=poll_interval
+                poll_interval=poll_interval,
             )
         except Exception as exc:
             self.logger.exception(
@@ -322,7 +313,7 @@ class CloudRunJob(Infrastructure):
             f"Job Run logs can be found on GCP at: {job_execution.log_uri}"
         )
 
-        if not self.keep_job:  
+        if not self.keep_job:
             self.logger.info(
                 f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run..."
             )
@@ -330,8 +321,8 @@ class CloudRunJob(Infrastructure):
                 Job.delete(
                     client=client,
                     namespace=self.credentials.project_id,
-                    job_name=self.job_name
-                    )
+                    job_name=self.job_name,
+                )
             except Exception as exc:
                 self.logger.exception(
                     f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
@@ -377,8 +368,8 @@ class CloudRunJob(Infrastructure):
         return json.dumps(body, indent=2)
 
     def _watch_job_execution(
-        self, client, job_execution: Execution, timeout: int, poll_interval: int=5
-    ):  
+        self, client, job_execution: Execution, timeout: int, poll_interval: int = 5
+    ):
         """Update job_execution status until it is no longer running or timeout is reached."""
         t0 = time.time()
         while job_execution.is_running():
@@ -394,7 +385,7 @@ class CloudRunJob(Infrastructure):
             job_execution = Execution.get(
                 client=client,
                 namespace=job_execution.namespace,
-                execution_name=job_execution.name
+                execution_name=job_execution.name,
             )
 
         return job_execution
@@ -402,9 +393,7 @@ class CloudRunJob(Infrastructure):
     def _wait_for_job_creation(self, client: Resource, poll_interval: int = 5):
         """Give created job time to register."""
         job = Job.get(
-            client=client,
-            namespace=self.credentials.project_id,
-            job_name=self.job_name
+            client=client, namespace=self.credentials.project_id, job_name=self.job_name
         )
 
         while not job.is_ready():
@@ -420,7 +409,7 @@ class CloudRunJob(Infrastructure):
             job = Job.get(
                 client=client,
                 namespace=self.credentials.project_id,
-                job_name=self.job_name
+                job_name=self.job_name,
             )
 
     def _get_client(self) -> Resource:
