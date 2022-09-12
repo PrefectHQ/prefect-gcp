@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from google.cloud.bigquery import SchemaField
+from google.cloud.bigquery import SchemaField, ExternalConfig
 from prefect import flow
 
 from prefect_gcp.bigquery import (
@@ -62,6 +62,26 @@ def test_bigquery_create_table(gcp_credentials):
     assert test_flow() == "table"
 
 
+@pytest.mark.parametrize("external_config", [None, ExternalConfig(source_format="PARQUET")])
+def test_bigquery_create_table_external(gcp_credentials, external_config):
+    @flow
+    def test_flow():
+        table = bigquery_create_table(
+            "dataset",
+            "table",
+            gcp_credentials,
+            clustering_fields=["text"],
+            external_config=external_config,
+        )
+        return table
+
+    if external_config is None:
+        with pytest.raises(ValueError):
+            test_flow()
+    else:
+        assert test_flow() == "table"
+
+
 def test_bigquery_insert_stream(gcp_credentials):
 
     records = [
@@ -102,9 +122,6 @@ def test_bigquery_load_cloud_storage(gcp_credentials):
 
 
 def test_bigquery_load_file(gcp_credentials):
-
-    path = os.path.abspath(__file__)
-
     @flow
     def test_flow():
         schema = [
