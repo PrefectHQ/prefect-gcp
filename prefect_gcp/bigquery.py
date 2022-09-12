@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from anyio import to_thread
 from google.cloud.bigquery import (
+    ExternalConfig,
     LoadJob,
     LoadJobConfig,
     QueryJobConfig,
@@ -157,16 +158,16 @@ async def bigquery_query(
 async def bigquery_create_table(
     dataset: str,
     table: str,
-    schema: List[SchemaField],
     gcp_credentials: "GcpCredentials",
+    schema: Optional[List[SchemaField]] = None,
     clustering_fields: List[str] = None,
     time_partitioning: TimePartitioning = None,
     project: Optional[str] = None,
     location: str = "US",
+    external_config: Optional[ExternalConfig] = None,
 ) -> str:
     """
     Creates table in BigQuery.
-
     Args:
         dataset: Name of a dataset in that the table will be created.
         table: Name of a table to create.
@@ -177,18 +178,16 @@ async def bigquery_create_table(
             of the newly created table
         project: Project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
-        location: location of the dataset that will be written to.
-
+        location: The location of the dataset that will be written to.
+        external_config: The [external data source](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_table#nested_external_data_configuration).  # noqa
     Returns:
         Table name.
-
     Example:
         ```python
         from prefect import flow
         from prefect_gcp import GcpCredentials
         from prefect_gcp.bigquery import bigquery_create_table
         from google.cloud.bigquery import SchemaField
-
         @flow
         def example_bigquery_create_table_flow():
             gcp_credentials = GcpCredentials(project="project")
@@ -204,12 +203,14 @@ async def bigquery_create_table(
                 gcp_credentials=gcp_credentials
             )
             return result
-
         example_bigquery_create_table_flow()
         ```
     """
     logger = get_run_logger()
     logger.info("Creating %s.%s", dataset, table)
+
+    if not external_config and not schema:
+        raise ValueError("Either a schema or an external config must be provided.")
 
     client = gcp_credentials.get_bigquery_client(project=project, location=location)
     try:
@@ -228,6 +229,10 @@ async def bigquery_create_table(
     except NotFound:
         logger.debug("Table %s not found, creating", table)
         table_obj = Table(table_ref, schema=schema)
+
+        # external data configuration
+        if external_config:
+            table_obj.external_data_configuration = external_config
 
         # cluster for optimal data sorting/access
         if clustering_fields:
