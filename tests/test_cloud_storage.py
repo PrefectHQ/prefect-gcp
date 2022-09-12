@@ -30,15 +30,20 @@ def test_cloud_storage_create_bucket(gcp_credentials):
     assert test_flow() == "expected"
 
 
-@pytest.mark.parametrize("path", ["/path/somewhere/", Path("/path/somewhere/")])
-def test_cloud_storage_download_blob_to_file(path, gcp_credentials):
+@pytest.mark.parametrize("path", ["file.txt", Path("file.txt")])
+def test_cloud_storage_download_blob_to_file(tmp_path, path, gcp_credentials):
+    input_path = tmp_path / path
+    if isinstance(path, str):
+        input_path = str(input_path)
+
     @flow
     def test_flow():
         return cloud_storage_download_blob_to_file(
-            "bucket", "blob", path, gcp_credentials, timeout=10
+            "bucket", "blob", input_path, gcp_credentials, timeout=10
         )
 
-    assert test_flow() == path
+    assert test_flow() == input_path
+    assert Path(input_path).exists()
 
 
 def test_cloud_storage_download_blob_as_bytes(gcp_credentials):
@@ -111,36 +116,46 @@ def test_cloud_storage_copy_blob(dest_blob, gcp_credentials):
 
 
 class TestGcsBucket:
-    @pytest.fixture()
-    def gcs_bucket(self, gcp_credentials, tmp_path):
+    @pytest.fixture(params=["", "base_folder"])
+    def gcs_bucket(self, gcp_credentials, request):
         return GcsBucket(
-            bucket="bucket", gcp_credentials=gcp_credentials, basepath=str(tmp_path)
+            bucket="bucket",
+            gcp_credentials=gcp_credentials,
+            bucket_folder=request.param,
         )
+
+    def test_bucket_folder_suffix(self, gcs_bucket):
+        bucket_folder = gcs_bucket.bucket_folder
+        if bucket_folder:
+            assert bucket_folder.endswith("/")
+        else:
+            assert bucket_folder == ""
 
     @pytest.mark.parametrize("path", [None, "subpath"])
     def test_resolve_path(self, gcs_bucket, path):
         actual = gcs_bucket._resolve_path(path)
-        basepath = gcs_bucket.basepath
+        bucket_folder = gcs_bucket.bucket_folder
         if path is None:
             dirname, filename = os.path.split(actual)
-            assert dirname == basepath
+            assert dirname == bucket_folder.rstrip("/")
             assert UUID(filename, version=4)
         else:
-            expected = str(Path(basepath) / path)
+            expected = str(Path(bucket_folder) / path)
             assert actual == expected
 
     def test_read_path(self, gcs_bucket):
         assert gcs_bucket.read_path("blob") == b"bytes"
 
     def test_write_path(self, gcs_bucket):
-        basepath = gcs_bucket.basepath
-        if not basepath.endswith("/"):
-            basepath += "/"
-        assert gcs_bucket.write_path("blob", b"bytes_data") == f"{basepath}blob"
+        bucket_folder = gcs_bucket.bucket_folder
+        assert gcs_bucket.write_path("blob", b"bytes_data") == f"{bucket_folder}blob"
 
-    @pytest.mark.parametrize("from_path", [None, "from_path"])
+    @pytest.mark.parametrize("from_path", [None, "base_folder"])
     @pytest.mark.parametrize("local_path", [None, "local_path"])
-    def test_get_directory(self, gcs_bucket, from_path, local_path):
+    def test_get_directory(self, gcs_bucket, tmp_path, from_path, local_path):
+        os.chdir(tmp_path)
+
+        local_path = None
         assert (
             gcs_bucket.get_directory(from_path=from_path, local_path=local_path) is None
         )
@@ -148,9 +163,10 @@ class TestGcsBucket:
             local_path = os.path.abspath(".")
 
         if from_path is None:
-            from_path = gcs_bucket.basepath
+            from_path = gcs_bucket.bucket_folder
 
-        assert os.path.exists(os.path.join(local_path, os.path.dirname(from_path)))
+        file_path = os.path.join(local_path, from_path)
+        assert os.path.exists(file_path)
 
     @pytest.mark.parametrize("to_path", [None, "to_path"])
     @pytest.mark.parametrize("ignore", [True, False])

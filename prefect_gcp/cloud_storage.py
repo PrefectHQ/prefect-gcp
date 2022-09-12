@@ -7,10 +7,11 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 from uuid import uuid4
 
 from prefect import get_run_logger, task
-from prefect.filesystems import ReadableFileSystem, WritableFileSystem
+from prefect.filesystems import WritableDeploymentStorage, WritableFileSystem
 from prefect.logging import disable_run_logger
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from prefect.utilities.filesystem import filter_files
+from pydantic import Field, validator
 
 # cannot be type_checking only or else `fields = cls.schema()` raises
 # TypeError: issubclass() arg 1 must be a class
@@ -463,33 +464,51 @@ async def cloud_storage_copy_blob(
     return dest_blob
 
 
-class GcsBucket(ReadableFileSystem, WritableFileSystem):
+class GcsBucket(WritableDeploymentStorage, WritableFileSystem):
     """
     Block used to store data using GCP Cloud Storage Buckets.
 
     Attributes:
         bucket: Name of the bucket.
         gcp_credentials: The credentials to authenticate with GCP.
-        basepath: Used when you don't want to read/write at base level.
+        bucket_folder: A default path to a folder within the GCS bucket to use
+            for reading and writing objects.
 
     Example:
         Load stored GCP Cloud Storage Bucket:
         ```python
-        from prefect_gcp import GcpCloudStorageBucket
-        gcp_cloud_storage_bucket_block = GcpCloudStorageBucket.load("BLOCK_NAME")
+        from prefect_gcp import GcsBucket
+        gcp_cloud_storage_bucket_block = GcsBucket.load("BLOCK_NAME")
         ```
     """
 
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "GCS Bucket"
 
-    bucket: str
-    gcp_credentials: GcpCredentials
-    basepath: str = ""
+    bucket: str = Field(..., description="Name of the bucket.")
+    gcp_credentials: GcpCredentials = Field(
+        ..., description="The credentials to authenticate with GCP."
+    )
+    bucket_folder: str = Field(
+        default="",
+        description=(
+            "A default path to a folder within the GCS bucket to use "
+            "for reading and writing objects."
+        ),
+    )
+
+    @validator("bucket_folder", pre=True, always=True)
+    def _bucket_folder_suffix(cls, value):
+        """
+        Ensures that the bucket folder is suffixed with a forward slash.
+        """
+        if value != "" and not value.endswith("/"):
+            value = f"{value}/"
+        return value
 
     def _resolve_path(self, path: str) -> str:
         """
-        A helper function used in write_path to join `self.basepath` and `path`.
+        A helper function used in write_path to join `self.bucket_folder` and `path`.
 
         Args:
             path: Name of the key, e.g. "file1". Each object in your
@@ -500,9 +519,9 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         """
         path = path or str(uuid4())
 
-        # If basepath provided, it means we won't write to the root dir of
+        # If bucket_folder provided, it means we won't write to the root dir of
         # the bucket. So we need to add it on the front of the path.
-        path = os.path.join(self.basepath, path) if self.basepath else path
+        path = os.path.join(self.bucket_folder, path) if self.bucket_folder else path
         return path
 
     @sync_compatible
@@ -511,17 +530,17 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
     ) -> None:
         """
         Copies a folder from the configured GCS bucket to a local directory.
-        Defaults to copying the entire contents of the block's basepath to the current
-        working directory.
+        Defaults to copying the entire contents of the block's bucket_folder
+        to the current working directory.
 
         Args:
             from_path: Path in GCS bucket to download from. Defaults to the block's
-                configured basepath.
+                configured bucket_folder.
             local_path: Local path to download GCS bucket contents to.
                 Defaults to the current working directory.
         """
         from_path = (
-            self.basepath if from_path is None else self._resolve_path(from_path)
+            self.bucket_folder if from_path is None else self._resolve_path(from_path)
         )
 
         if local_path is None:
@@ -532,7 +551,10 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         project = self.gcp_credentials.project
         client = self.gcp_credentials.get_cloud_storage_client(project=project)
 
-        for blob in client.list_blobs(self.bucket):
+        blobs = await run_sync_in_worker_thread(
+            client.list_blobs, self.bucket, prefix=from_path
+        )
+        for blob in blobs:
             blob_path = blob.name
             if blob_path[-1] == "/":
                 # object is a folder and will be created if it contains any objects
@@ -560,12 +582,12 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         given folder.
 
         Defaults to uploading the entire contents the current working directory to the
-        block's basepath.
+        block's bucket_folder.
 
         Args:
             local_path: Path to local directory to upload from.
             to_path: Path in GCS bucket to upload to. Defaults to block's configured
-                basepath.
+                bucket_folder.
             ignore_file: Path to file containing gitignore style expressions for
                 filepaths to ignore.
 
@@ -577,7 +599,7 @@ class GcsBucket(ReadableFileSystem, WritableFileSystem):
         else:
             local_path = os.path.expanduser(local_path)
 
-        to_path = self.basepath if to_path is None else self._resolve_path(to_path)
+        to_path = self.bucket_folder if to_path is None else self._resolve_path(to_path)
 
         included_files = None
         if ignore_file:
