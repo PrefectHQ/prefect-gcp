@@ -179,7 +179,7 @@ async def bigquery_create_table(
         project: Project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
         location: The location of the dataset that will be written to.
-        external_config: The [external data source](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_table#nested_external_data_configuration).
+        external_config: The [external data source](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_table#nested_external_data_configuration).  # noqa
     Returns:
         Table name.
     Example:
