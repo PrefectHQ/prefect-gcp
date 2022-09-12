@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from google.cloud.bigquery import SchemaField, ExternalConfig
+from google.cloud.bigquery import ExternalConfig, SchemaField
 from prefect import flow
 
 from prefect_gcp.bigquery import (
@@ -53,8 +53,8 @@ def test_bigquery_create_table(gcp_credentials):
         table = bigquery_create_table(
             "dataset",
             "table",
-            schema,
             gcp_credentials,
+            schema,
             clustering_fields=["text"],
         )
         return table
