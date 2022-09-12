@@ -122,6 +122,9 @@ def test_bigquery_load_cloud_storage(gcp_credentials):
 
 
 def test_bigquery_load_file(gcp_credentials):
+    
+    path = os.path.abspath(__file__)
+
     @flow
     def test_flow():
         schema = [
