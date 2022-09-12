@@ -76,7 +76,7 @@ def test_bigquery_create_table_external(gcp_credentials, external_config):
         return table
 
     if external_config is None:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Either a schema or an external"):
             test_flow()
     else:
         assert test_flow() == "table"
@@ -122,7 +122,7 @@ def test_bigquery_load_cloud_storage(gcp_credentials):
 
 
 def test_bigquery_load_file(gcp_credentials):
-    
+
     path = os.path.abspath(__file__)
 
     @flow
@@ -141,3 +141,4 @@ def test_bigquery_load_file(gcp_credentials):
     assert result.output == "file"
     assert result._client is None
     assert result._completion_lock is None
+    
