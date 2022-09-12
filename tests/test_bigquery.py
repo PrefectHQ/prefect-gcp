@@ -62,7 +62,9 @@ def test_bigquery_create_table(gcp_credentials):
     assert test_flow() == "table"
 
 
-@pytest.mark.parametrize("external_config", [None, ExternalConfig(source_format="PARQUET")])
+@pytest.mark.parametrize(
+    "external_config", [None, ExternalConfig(source_format="PARQUET")]
+)
 def test_bigquery_create_table_external(gcp_credentials, external_config):
     @flow
     def test_flow():
@@ -141,4 +143,3 @@ def test_bigquery_load_file(gcp_credentials):
     assert result.output == "file"
     assert result._client is None
     assert result._completion_lock is None
-    

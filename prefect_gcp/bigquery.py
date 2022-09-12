@@ -164,7 +164,7 @@ async def bigquery_create_table(
     time_partitioning: TimePartitioning = None,
     project: Optional[str] = None,
     location: str = "US",
-    external_config: Optional[ExternalConfig] = None
+    external_config: Optional[ExternalConfig] = None,
 ) -> str:
     """
     Creates table in BigQuery.
@@ -209,7 +209,7 @@ async def bigquery_create_table(
     logger = get_run_logger()
     logger.info("Creating %s.%s", dataset, table)
 
-    if not external_config and not schema: 
+    if not external_config and not schema:
         raise ValueError("Either a schema or an external config must be provided.")
 
     client = gcp_credentials.get_bigquery_client(project=project, location=location)
