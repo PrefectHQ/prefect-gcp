@@ -1,5 +1,21 @@
 # prefect-gcp
 
+<p align="center">
+    <a href="https://pypi.python.org/pypi/prefect-gcp/" alt="PyPI version">
+        <img alt="PyPI" src="https://img.shields.io/pypi/v/prefect-gcp?color=0052FF&labelColor=090422"></a>
+    <a href="https://github.com/prefecthq/prefect-gcp/" alt="Stars">
+        <img src="https://img.shields.io/github/stars/prefecthq/prefect-gcp?color=0052FF&labelColor=090422" /></a>
+    <a href="https://pepy.tech/badge/prefect-gcp/" alt="Downloads">
+        <img src="https://img.shields.io/pypi/dm/prefect-gcp?color=0052FF&labelColor=090422" /></a>
+    <a href="https://github.com/prefecthq/prefect-gcp/pulse" alt="Activity">
+        <img src="https://img.shields.io/github/commit-activity/m/prefecthq/prefect-gcp?color=0052FF&labelColor=090422" /></a>
+    <br>
+    <a href="https://prefect-community.slack.com" alt="Slack">
+        <img src="https://img.shields.io/badge/slack-join_community-red.svg?color=0052FF&labelColor=090422&logo=slack" /></a>
+    <a href="https://discourse.prefect.io/" alt="Discourse">
+        <img src="https://img.shields.io/badge/discourse-browse_forum-red.svg?color=0052FF&labelColor=090422&logo=discourse" /></a>
+</p>
+
 ## Welcome!
 
 `prefect-gcp` is a collection of prebuilt Prefect tasks that can be used to quickly construct Prefect flows.
