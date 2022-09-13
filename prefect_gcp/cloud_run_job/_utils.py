@@ -4,7 +4,10 @@ from pydantic import BaseModel
 
 
 class Job(BaseModel):
-    """Utility class to call GCP `jobs` API and interact with the returned objects."""
+    """
+    Utility class to call GCP `jobs` API and
+    interact with the returned objects.
+    """
 
     metadata: dict
     spec: dict
@@ -14,7 +17,10 @@ class Job(BaseModel):
     execution_status: dict
 
     def _is_missing_container(self):
-        """Check if Job status is not ready because the specified container cannot be found."""
+        """
+        Check if Job status is not ready because
+        the specified container cannot be found.
+        """
         if (
             self.ready_condition.get("status") == "False"
             and self.ready_condition.get("reason") == "ContainerMissing"
@@ -91,7 +97,10 @@ class Job(BaseModel):
 
 
 class Execution(BaseModel):
-    """Utility class to call GCP `executions` API and interact with the returned objects."""
+    """
+    Utility class to call GCP `executions` API and
+    interact with the returned objects.
+    """
 
     name: str
     namespace: str
@@ -120,7 +129,10 @@ class Execution(BaseModel):
 
     @classmethod
     def get(cls, client: Resource, namespace: str, execution_name: str):
-        """Make a get request to the GCP executions API and return an Execution instance."""
+        """
+        Make a get request to the GCP executions API
+        and return an Execution instance.
+        """
         request = client.executions().get(
             name=f"namespaces/{namespace}/executions/{execution_name}"
         )

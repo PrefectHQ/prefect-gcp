@@ -46,10 +46,12 @@ def test_get_credentials_from_service_account_file(
     service_account_file, oauth2_credentials
 ):
     """Expected behavior:
-    - `service_account_file` is typed as a path, so we expect either input
+    `service_account_file` is typed as a path, so we expect either input
     to be a PosixPath.
-    - In our conftest, we define a fixture `oauth2_credentials` that patches
-    GCP's Credential methods to return its input. We expect our `get_credentials_from_service_account`
+
+    In our conftest, we define a fixture `oauth2_credentials` that patches
+    GCP's Credential methods to return its input.
+    We expect our `get_credentials_from_service_account`
     method to call GCP's method with the path we pass in.
     """
     credentials = GcpCredentials(
