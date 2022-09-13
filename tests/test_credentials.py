@@ -8,10 +8,19 @@ from prefect.blocks.core import Block
 
 from prefect_gcp import GcpCredentials
 
+
+def _get_first_file_in_root():
+    for path in os.listdir(os.path.expanduser("~")):
+        if os.path.isfile(os.path.join(os.path.expanduser("~"), path)):
+            return os.path.join("~", path)
+
+
 SERVICE_ACCOUNT_FILES = [
     Path(__file__).parent.absolute() / "test_credentials.py",
 ]
 SERVICE_ACCOUNT_FILES.append(str(SERVICE_ACCOUNT_FILES[0]))
+SERVICE_ACCOUNT_FILES.append(_get_first_file_in_root())
+SERVICE_ACCOUNT_FILES.append(os.path.expanduser(_get_first_file_in_root()))
 
 
 @pytest.fixture()
