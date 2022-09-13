@@ -35,16 +35,14 @@ from typing import Literal, Optional
 from unicodedata import name
 from uuid import uuid4
 
-import google.auth.transport.requests
 import googleapiclient
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
-from google.oauth2.service_account import Credentials
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field, Json, root_validator, validator
+from pydantic import Field, root_validator, validator
 
 from prefect_gcp.cloud_run_job._utils import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
@@ -68,6 +66,7 @@ class CloudRunJob(Infrastructure):
         "cloud-run-job", description="The slug for this task type."
     )
     image: str = Field(
+        title="Image Name",
         description=(
             "The image to use for a new Cloud Run Job. This value must "
             "refer to an image within either Google Container Registry "
@@ -87,13 +86,15 @@ class CloudRunJob(Infrastructure):
         ),
     )
     memory: Optional[int] = Field(
-        description=("The amount of compute allocated to the Cloud Run Job.")
+        title="Memory",
+        description=("The amount of memory allocated to the Cloud Run Job."),
     )
     memory_unit: Optional[Literal["G", "Gi", "M", "Mi"]] = Field(
+        title="Memory Units",
         description=(
             "The unit of memory. See https://cloud.google.com/run/docs/configuring/memory-limits#setting "
             "for additional details."
-        )
+        ),
     )
     args: Optional[list[str]] = Field(
         description=(
@@ -109,7 +110,7 @@ class CloudRunJob(Infrastructure):
     keep_job: Optional[bool] = Field(
         default=False,
         title="Keep Job After Completion",
-        description=("Whether to keep or delete the completed Cloud Run Job from GCP."),
+        description=("Keep the completed Cloud Run Job on Google Cloud Platform."),
     )
     timeout: Optional[int] = Field(
         default=None,
@@ -208,7 +209,7 @@ class CloudRunJob(Infrastructure):
 
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
-        """Run a flow on a Google Cloud Run Job."""
+        """Run the configured job on a Google Cloud Run Job."""
         with self._get_client() as client:
             await run_sync_in_worker_thread(
                 self._create_job_and_wait_for_registration, client
@@ -273,7 +274,7 @@ class CloudRunJob(Infrastructure):
             )
 
             job_execution = Execution.get(
-                client=self._get_client(),
+                client=client,
                 namespace=submission["metadata"]["namespace"],
                 execution_name=submission["metadata"]["name"],
             )
@@ -285,7 +286,7 @@ class CloudRunJob(Infrastructure):
             )
 
             self.logger.info(
-                f"Cloud Run Job {self.job_name}: Running command '{command}'"
+                f"Cloud Run Job {self.job_name!r}: Running command '{command!r}'"
             )
         except Exception as exc:
             self._job_run_submission_error(exc)
@@ -305,7 +306,7 @@ class CloudRunJob(Infrastructure):
             )
         except Exception as exc:
             self.logger.exception(
-                f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name}':\n{exc!r}"
+                f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name!r}':\n{exc!r}"
             )
             raise
 

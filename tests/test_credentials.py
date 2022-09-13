@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path, PosixPath
 from unittest.mock import Mock
 
@@ -44,10 +45,10 @@ def service_account_info(request):
 def test_get_credentials_from_service_account_file(
     service_account_file, oauth2_credentials
 ):
-    """Expected behavior: 
-    - `service_account_file` is typed as a path, so we expect either input 
-    to be a PosixPath. 
-    - In our conftest, we define a fixture `oauth2_credentials` that patches 
+    """Expected behavior:
+    - `service_account_file` is typed as a path, so we expect either input
+    to be a PosixPath.
+    - In our conftest, we define a fixture `oauth2_credentials` that patches
     GCP's Credential methods to return its input. We expect our `get_credentials_from_service_account`
     method to call GCP's method with the path we pass in.
     """
@@ -115,11 +116,11 @@ def test_get_cloud_storage_client(
 
     test_flow()
 
+
 @pytest.mark.parametrize("override_project", [None, "override_project"])
-def test_project_id(
-    override_project, service_account_info, monkeypatch
-    ):
-    MOCK_PROJECT_VALUE = 'my-project-id'
+def test_project_id(override_project, service_account_info, monkeypatch):
+    MOCK_PROJECT_VALUE = "my-project-id"
+
     def return_mock_credentials(*args, **kwargs):
         m = Mock()
         m.project_id = MOCK_PROJECT_VALUE
@@ -127,7 +128,7 @@ def test_project_id(
 
     monkeypatch.setattr(
         "prefect_gcp.credentials.GcpCredentials.get_credentials_from_service_account",
-        return_mock_credentials
+        return_mock_credentials,
     )
     credentials = GcpCredentials(
         service_account_info=service_account_info,

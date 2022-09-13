@@ -6,9 +6,9 @@ import os
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
 from pydantic import Json, root_validator, validator
-import google.auth.transport.requests
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -89,27 +89,33 @@ class GcpCredentials(Block):
 
     @root_validator
     def provide_one_service_account_source(cls, values):
-        if values.get("service_account_info") is not None and values.get("service_account_file") is not None:
+        """Ensure that only a service account file or service account info ias provided.
+        """
+        if (
+            values.get("service_account_info") is not None
+            and values.get("service_account_file") is not None
+        ):
             raise ValueError(
                 "Only one of service_account_info or service_account_file "
                 "can be specified at once"
             )
-        if values.get("service_account_info") is None and values.get("service_account_file") is None:
+        if (
+            values.get("service_account_info") is None
+            and values.get("service_account_file") is None
+        ):
             raise ValueError(
                 "You must provide either service_account_info or service_account_file "
                 "to create a GcpCredentails block."
             )
         return values
 
-    @validator('service_account_file')
-    def check_service_account_file_exists(cls, file):
-        if not os.path.exists(file):
+    @validator("service_account_file")
+    def check_service_account_file(cls, file):
+        """Get full path of provided file and make sure that it exists."""
+        service_account_file = Path(file).expanduser()
+        if not service_account_file.exists():
             raise ValueError("The provided path to the service account is invalid")
-        elif isinstance(file, Path):
-            service_account_file = file.expanduser()
-        else:
-            service_account_file = os.path.expanduser(file)
-        return file
+        return service_account_file
 
     @property
     def project_id(self):
@@ -117,7 +123,9 @@ class GcpCredentials(Block):
             if self.project:
                 self._project_id = self.project
             else:
-                self._project_id = self.get_credentials_from_service_account().project_id
+                self._project_id = (
+                    self.get_credentials_from_service_account().project_id
+                )
         return self._project_id
 
     def get_credentials_from_service_account(self) -> Union[Credentials, None]:
@@ -126,22 +134,20 @@ class GcpCredentials(Block):
         service_account_file or service_account_info.
         """
         if self.service_account_file:
-            credentials = Credentials.from_service_account_file(self.service_account_file, scopes=['https://www.googleapis.com/auth/cloud-platform'])
+            credentials = Credentials.from_service_account_file(
+                self.service_account_file,
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
         elif self.service_account_info:
-            credentials = Credentials.from_service_account_info(self.service_account_info, scopes=['https://www.googleapis.com/auth/cloud-platform'])
+            credentials = Credentials.from_service_account_info(
+                self.service_account_info,
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
         else:
             return None
         return credentials
 
-    def get_service_account_value(self) -> Json:
-        if self.service_account_file:
-            with open(self.service_account_file, "r") as f:
-                value = json.load(f)
-        else:
-            value = self.service_account_info
-        
-        return value
-        
+
     def get_access_token(self):
         """
         See: https://stackoverflow.com/a/69107745
