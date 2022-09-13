@@ -1,5 +1,6 @@
 import json
-from pathlib import Path
+from pathlib import Path, PosixPath
+from unittest.mock import Mock
 
 import pytest
 from prefect import flow, task
@@ -34,40 +35,49 @@ def service_account_info(request):
 def test_get_credentials_from_service_account_file(
     service_account_file, oauth2_credentials
 ):
-    credentials = GcpCredentials._get_credentials_from_service_account(
+    """Expected behavior: 
+    - `service_account_file` is typed as a path, so we expect either input 
+    to be a PosixPath. 
+    - In our conftest, we define a fixture `oauth2_credentials` that patches 
+    GCP's Credential methods to return its input. We expect our `get_credentials_from_service_account`
+    method to call GCP's method with the path we pass in.
+    """
+    credentials = GcpCredentials(
         service_account_file=service_account_file
-    )
-    assert credentials == service_account_file
+    ).get_credentials_from_service_account()
+    assert isinstance(credentials, PosixPath)
+    assert str(credentials) == str(service_account_file)
 
 
 def test_get_credentials_from_service_account_info(
     service_account_info_dict, oauth2_credentials
 ):
-    credentials = GcpCredentials._get_credentials_from_service_account(
+    credentials = GcpCredentials(
         service_account_info=service_account_info_dict
-    )
+    ).get_credentials_from_service_account()
     assert credentials == service_account_info_dict
 
 
-def test_get_credentials_from_service_account_none(oauth2_credentials):
-    assert GcpCredentials._get_credentials_from_service_account() is None
+def test_errors_without_credential_file_or_info():
+    with pytest.raises(ValueError):
+        GcpCredentials().get_credentials_from_service_account()
 
 
 def test_get_credentials_from_service_account_file_error(oauth2_credentials):
     with pytest.raises(ValueError):
-        GcpCredentials._get_credentials_from_service_account(
+        GcpCredentials(
             service_account_file="~/doesnt/exist"
-        )
+        ).get_credentials_from_service_account()
 
 
 def test_get_credentials_from_service_account_both_error(
     service_account_info_dict, oauth2_credentials
 ):
     with pytest.raises(ValueError):
-        GcpCredentials._get_credentials_from_service_account(
+        GcpCredentials(
             service_account_file=SERVICE_ACCOUNT_FILES[0],
             service_account_info=service_account_info_dict,
-        )
+        ).get_credentials_from_service_account()
 
 
 @pytest.mark.parametrize("override_project", [None, "override_project"])
@@ -95,6 +105,29 @@ def test_get_cloud_storage_client(
         return True
 
     test_flow()
+
+@pytest.mark.parametrize("override_project", [None, "override_project"])
+def test_project_id(
+    override_project, service_account_info, monkeypatch
+    ):
+    MOCK_PROJECT_VALUE = 'my-project-id'
+    def return_mock_credentials(*args, **kwargs):
+        m = Mock()
+        m.project_id = MOCK_PROJECT_VALUE
+        return m
+
+    monkeypatch.setattr(
+        "prefect_gcp.credentials.GcpCredentials.get_credentials_from_service_account",
+        return_mock_credentials
+    )
+    credentials = GcpCredentials(
+        service_account_info=service_account_info,
+        project=override_project,
+    )
+    if override_project:
+        assert credentials.project_id == override_project
+    else:
+        assert credentials.project_id == MOCK_PROJECT_VALUE
 
 
 class MockTargetConfigs(Block):
