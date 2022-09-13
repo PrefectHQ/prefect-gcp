@@ -8,8 +8,7 @@ from prefect.settings import (
     temporary_settings,
 )
 
-from prefect_gcp.cloud_run_job import CloudRunJob, CloudRunJobResult
-from prefect_gcp.cloud_run_job._utils import Execution, Job
+from prefect_gcp.cloud_run_job import CloudRunJob, CloudRunJobResult, Execution, Job
 from prefect_gcp.credentials import GcpCredentials
 
 executions_return_value = {
