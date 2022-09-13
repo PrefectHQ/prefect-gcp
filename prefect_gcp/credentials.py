@@ -98,19 +98,14 @@ class GcpCredentials(Block):
                 "Only one of service_account_info or service_account_file "
                 "can be specified at once"
             )
-        if (
-            values.get("service_account_info") is None
-            and values.get("service_account_file") is None
-        ):
-            raise ValueError(
-                "You must provide either service_account_info or service_account_file "
-                "to create a GcpCredentails block."
-            )
         return values
 
     @validator("service_account_file")
     def check_service_account_file(cls, file):
         """Get full path of provided file and make sure that it exists."""
+        if not file:
+            return file
+
         service_account_file = Path(file).expanduser()
         if not service_account_file.exists():
             raise ValueError("The provided path to the service account is invalid")
@@ -203,10 +198,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
         """
-        credentials = self.get_credentials_from_service_account(
-            service_account_file=self.service_account_file,
-            service_account_info=self.service_account_info,
-        )
+        credentials = self.get_credentials_from_service_account()
 
         # override class project if method project is provided
         project = project or self.project
@@ -261,10 +253,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
         """
-        credentials = self.get_credentials_from_service_account(
-            service_account_file=self.service_account_file,
-            service_account_info=self.service_account_info,
-        )
+        credentials = self.get_credentials_from_service_account()
 
         # override class project if method project is provided
         project = project or self.project
@@ -317,10 +306,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
         """
-        credentials = self.get_credentials_from_service_account(
-            service_account_file=self.service_account_file,
-            service_account_info=self.service_account_info,
-        )
+        credentials = self.get_credentials_from_service_account()
 
         # doesn't accept project; must pass in project in tasks
         secret_manager_client = SecretManagerServiceClient(credentials=credentials)

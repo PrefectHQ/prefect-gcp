@@ -8,9 +8,8 @@ from prefect.settings import (
     temporary_settings,
 )
 
-from prefect_gcp.cloud_run_job import CloudRunJob
+from prefect_gcp.cloud_run_job import CloudRunJob, CloudRunJobResult
 from prefect_gcp.cloud_run_job._utils import Execution, Job
-from prefect_gcp.cloud_run_job.gcp_cloud_run_job import CloudRunJobResult
 from prefect_gcp.credentials import GcpCredentials
 
 executions_return_value = {
@@ -33,7 +32,7 @@ jobs_return_value = {
 def mock_credentials(monkeypatch):
     mock_credentials = Mock(name="Credentials")
     monkeypatch.setattr(
-        "prefect_gcp.cloud_run_job.gcp_cloud_run_job.GcpCredentials.get_credentials_from_service_account",  # noqa
+        "prefect_gcp.cloud_run_job.GcpCredentials.get_credentials_from_service_account",  # noqa
         mock_credentials,
     )
 
@@ -57,7 +56,7 @@ def mock_client(monkeypatch, mock_credentials):
         return m
 
     monkeypatch.setattr(
-        "prefect_gcp.cloud_run_job.gcp_cloud_run_job.CloudRunJob._get_client",
+        "prefect_gcp.cloud_run_job.CloudRunJob._get_client",
         get_mock_client,
     )
 
@@ -518,9 +517,7 @@ class TestCloudRunJobContainerSettings:
 def test_get_client_uses_correct_endpoint(monkeypatch, mock_credentials, cloud_run_job):
     """Expected behavior: desired endpoint is called."""
     mock = Mock()
-    monkeypatch.setattr(
-        "prefect_gcp.cloud_run_job.gcp_cloud_run_job.discovery.build", mock
-    )
+    monkeypatch.setattr("prefect_gcp.cloud_run_job.discovery.build", mock)
     cloud_run_job._get_client()
     desired_endpoint = f"https://{cloud_run_job.region}-run.googleapis.com"
     assert mock.call_args[1]["client_options"].api_endpoint == desired_endpoint
@@ -656,9 +653,7 @@ class TestCloudRunJobRun:
         def raise_exception(*args, **kwargs):
             raise Exception("This is an intentional exception")
 
-        monkeypatch.setattr(
-            "prefect_gcp.cloud_run_job.gcp_cloud_run_job.Job.get", raise_exception
-        )
+        monkeypatch.setattr("prefect_gcp.cloud_run_job.Job.get", raise_exception)
 
         with pytest.raises(Exception):
             cloud_run_job.run()
@@ -713,9 +708,7 @@ class TestCloudRunJobRun:
         def raise_exception(*args, **kwargs):
             raise Exception("This is an intentional exception")
 
-        monkeypatch.setattr(
-            "prefect_gcp.cloud_run_job.gcp_cloud_run_job.Execution.get", raise_exception
-        )
+        monkeypatch.setattr("prefect_gcp.cloud_run_job.Execution.get", raise_exception)
 
         with pytest.raises(Exception):
             cloud_run_job.run()

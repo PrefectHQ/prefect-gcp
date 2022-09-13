@@ -58,7 +58,7 @@ def test_get_credentials_from_service_account_file(
         service_account_file=service_account_file
     ).get_credentials_from_service_account()
     assert isinstance(credentials, PosixPath)
-    assert str(credentials) == str(service_account_file)
+    assert credentials == Path(service_account_file).expanduser()
 
 
 def test_get_credentials_from_service_account_info(
@@ -68,11 +68,6 @@ def test_get_credentials_from_service_account_info(
         service_account_info=service_account_info_dict
     ).get_credentials_from_service_account()
     assert credentials == service_account_info_dict
-
-
-def test_errors_without_credential_file_or_info():
-    with pytest.raises(ValueError):
-        GcpCredentials().get_credentials_from_service_account()
 
 
 def test_get_credentials_from_service_account_file_error(oauth2_credentials):
@@ -151,7 +146,10 @@ class MockTargetConfigs(Block):
         Returns:
             A configs JSON.
         """
-        return self.credentials.dict()
+        configs = self.credentials.dict()
+        for key in Block().dict():
+            configs.pop(key, None)
+        return configs
 
 
 class MockCliProfile(Block):
