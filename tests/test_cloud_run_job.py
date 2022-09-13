@@ -246,15 +246,20 @@ class TestJob:
         namespace and body
         """
         Job.create(client=mock_client, namespace="my-project-id", body={"dog": "cat"})
-        desired_calls = [
-            (
-                "call.jobs().create(parent='namespaces/my-project-id', body={'dog':"
-                " 'cat'})"
-            ),
+        desired_calls_v1 = [
+            "call.jobs().create(parent='namespaces/my-project-id', body={'dog': 'cat'})",  # noqa
+            "call.jobs().create().execute()",
+        ]
+        # ordering is non-deterministic
+        desired_calls_v2 = [
+            "call.jobs().create(body={'dog': 'cat'}, parent='namespaces/my-project-id')",  # noqa
             "call.jobs().create().execute()",
         ]
         actual_calls = list_mock_calls(mock_client=mock_client)
-        assert actual_calls == desired_calls
+        try:
+            assert actual_calls == desired_calls_v1
+        except AssertionError:
+            assert actual_calls == desired_calls_v2
 
 
 class TestExecution:
