@@ -33,7 +33,13 @@ import json
 import re
 import time
 from copy import deepcopy
-from typing import Literal, Optional
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
+from typing import Optional
 from uuid import uuid4
 
 import googleapiclient
@@ -54,7 +60,8 @@ class CloudRunJobResult(InfrastructureResult):
 
 
 class CloudRunJob(Infrastructure):
-    """Infrastructure block used to run GCP Cloud Run Jobs.
+    """
+    Infrastructure block used to run GCP Cloud Run Jobs.
 
     Project name information is provided by the Credentials object, and should always
     be correct as long as the Credentials object is for the correct project.
@@ -74,7 +81,6 @@ class CloudRunJob(Infrastructure):
             "or Google Artifact Registry."
         ),
     )
-
     region: str
     credentials: GcpCredentials
 
@@ -151,13 +157,13 @@ class CloudRunJob(Infrastructure):
         return None
 
     @validator("image")
-    def remove_image_spaces(cls, value):
+    def _remove_image_spaces(cls, value):
         """Deal with spaces in image names."""
         if value is not None:
             return value.strip()
 
     @validator("cpu")
-    def convert_cpu_to_k8s_quantity(cls, value):
+    def _convert_cpu_to_k8s_quantity(cls, value):
         """Set CPU integer to the format expected by API.
         See: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         See also: https://cloud.google.com/run/docs/configuring/cpu#setting-jobs
@@ -165,7 +171,7 @@ class CloudRunJob(Infrastructure):
         return str(value * 1000) + "m"
 
     @root_validator
-    def check_valid_memory(cls, values):
+    def _check_valid_memory(cls, values):
         """Make sure memory conforms to expected values for API.
         See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
         """  # noqa
