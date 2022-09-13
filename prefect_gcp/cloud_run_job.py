@@ -38,7 +38,7 @@ try:
 except ImportError:
     from typing_extensions import Literal
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 import googleapiclient
@@ -248,7 +248,7 @@ class CloudRunJob(Infrastructure):
             "for additional details."
         ),
     )
-    args: Optional[list[str]] = Field(
+    args: Optional[List[str]] = Field(
         description="Arguments to be passed to your Cloud Run Job's entrypoint command."
     )
     env: Dict[str, str] = Field(
