@@ -1,2 +1,2 @@
-prefect>=2.0b9
+prefect>=2.0.0
 google-api-python-client>=2.20.0
