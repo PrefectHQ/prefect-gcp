@@ -1,1 +1,1 @@
-from .gcp_cloud_run_job import CloudRunJob
+from .gcp_cloud_run_job import CloudRunJob  # noqa

@@ -1,8 +1,6 @@
 """Module handling GCP credentials"""
 
 import functools
-import json
-import os
 from pathlib import Path
 from typing import Dict, Optional, Union
 
@@ -89,7 +87,8 @@ class GcpCredentials(Block):
 
     @root_validator
     def provide_one_service_account_source(cls, values):
-        """Ensure that only a service account file or service account info ias provided.
+        """
+        Ensure that only a service account file or service account info ias provided.
         """
         if (
             values.get("service_account_info") is not None
@@ -147,12 +146,11 @@ class GcpCredentials(Block):
             return None
         return credentials
 
-
     def get_access_token(self):
         """
         See: https://stackoverflow.com/a/69107745
-        also: https://www.jhanley.com/google-cloud-creating-oauth-access-tokens-for-rest-api-calls/
-        """
+        Also: https://www.jhanley.com/google-cloud-creating-oauth-access-tokens-for-rest-api-calls/
+        """  # noqa
         request = google.auth.transport.requests.Request()
         credentials = self.get_credentials_from_service_account()
         credentials.refresh(request)

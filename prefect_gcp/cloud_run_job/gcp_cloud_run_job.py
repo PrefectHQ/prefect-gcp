@@ -6,6 +6,7 @@ Integrations with Google Cloud Run Job.
 Note this module is experimental. The intefaces within may change without notice.
 
 Examples:
+
     Run a job using Google Cloud Run Jobs:
     ```python
     CloudRunJob(
@@ -14,6 +15,7 @@ Examples:
         credentials=my_gcp_credentials
     ).run()
     ```
+
     Run a job that runs the command `echo hello world` using Google Cloud Run Jobs:
     ```python
     CloudRunJob(
@@ -23,16 +25,15 @@ Examples:
         command=["echo", "hello world"]
     ).run()
     ```
+
 """
 from __future__ import annotations
 
 import json
 import re
 import time
-from ast import Delete
 from copy import deepcopy
 from typing import Literal, Optional
-from unicodedata import name
 from uuid import uuid4
 
 import googleapiclient
@@ -81,25 +82,25 @@ class CloudRunJob(Infrastructure):
     cpu: Optional[int] = Field(
         title="CPU",
         description=(
-            "The amount of compute allocated to the Cloud Run Job. The int must be valid "
-            "based on the rules specified at https://cloud.google.com/run/docs/configuring/cpu#setting-jobs ."
+            "The amount of compute allocated to the Cloud Run Job. "
+            "The int must be valid based on the rules specified at "
+            "https://cloud.google.com/run/docs/configuring/cpu#setting-jobs ."
         ),
     )
     memory: Optional[int] = Field(
         title="Memory",
-        description=("The amount of memory allocated to the Cloud Run Job."),
+        description="The amount of memory allocated to the Cloud Run Job.",
     )
     memory_unit: Optional[Literal["G", "Gi", "M", "Mi"]] = Field(
         title="Memory Units",
         description=(
-            "The unit of memory. See https://cloud.google.com/run/docs/configuring/memory-limits#setting "
+            "The unit of memory. See "
+            "https://cloud.google.com/run/docs/configuring/memory-limits#setting "
             "for additional details."
         ),
     )
     args: Optional[list[str]] = Field(
-        description=(
-            "Arguments to be passed to your Cloud Run Job's entrypoint command."
-        )
+        description="Arguments to be passed to your Cloud Run Job's entrypoint command."
     )
     env: dict[str, str] = Field(
         default_factory=dict,
@@ -110,7 +111,7 @@ class CloudRunJob(Infrastructure):
     keep_job: Optional[bool] = Field(
         default=False,
         title="Keep Job After Completion",
-        description=("Keep the completed Cloud Run Job on Google Cloud Platform."),
+        description="Keep the completed Cloud Run Job on Google Cloud Platform.",
     )
     timeout: Optional[int] = Field(
         default=None,
@@ -133,7 +134,7 @@ class CloudRunJob(Infrastructure):
             components = self.image.split("/")
             image_name = components[2]
             # only alphanumeric and '-' allowed for a job name
-            modified_image_name = image_name.replace((":"), "-").replace(("."), "-")
+            modified_image_name = image_name.replace(":", "-").replace(".", "-")
             # make 50 char limit for final job name, which will be '<name>-<uuid>'
             if len(modified_image_name) > 17:
                 modified_image_name = modified_image_name[:17]
@@ -160,32 +161,34 @@ class CloudRunJob(Infrastructure):
         """Set CPU integer to the format expected by API.
         See: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         See also: https://cloud.google.com/run/docs/configuring/cpu#setting-jobs
-        """
+        """  # noqa
         return str(value * 1000) + "m"
 
     @root_validator
     def check_valid_memory(cls, values):
         """Make sure memory conforms to expected values for API.
         See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
-        """
+        """  # noqa
         if (
             values.get("memory") is not None and values.get("memory_units") is None
         ) or (values.get("memory_units") is not None and values.get("memory") is None):
             raise ValueError(
-                "A memory value and unit must both be supplied to specify a memory value "
-                "other than the default memory value."
+                "A memory value and unit must both be supplied to specify a memory"
+                " value other than the default memory value."
             )
         return values
 
     def _create_job_error(self, exc):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""
-        # TODO consider lookup table instead of the if/else, also check for documented errors
+        # TODO consider lookup table instead of the if/else,
+        # also check for documented errors
         if exc.status_code == 404:
             raise RuntimeError(
-                f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
-                f"the correct region for your Cloud Run Job and that {self.credentials.project_id} is the "
-                "correct GCP project. If your project ID is not correct, you are using a Credentials "
-                "block with permissions for the wrong project."
+                f"Failed to find resources at {exc.uri}. Confirm that region"
+                f" '{self.region}' is the correct region for your Cloud Run Job and"
+                f" that {self.credentials.project_id} is the correct GCP project. If"
+                " your project ID is not correct, you are using a Credentials block"
+                " with permissions for the wrong project."
             ) from exc
 
         raise exc
@@ -194,12 +197,18 @@ class CloudRunJob(Infrastructure):
         """Provides a nicer error for 404s when submitting job runs."""
         if exc.status_code == 404:
             pat1 = r"The requested URL [^ ]+ was not found on this server"
-            pat2 = r"Resource '[^ ]+' of kind 'JOB' in region '[\w\-0-9]+' in project '[\w\-0-9]+' does not exist"
+            # pat2 = (
+            #     r"Resource '[^ ]+' of kind 'JOB' in region '[\w\-0-9]+' "
+            #     r"in project '[\w\-0-9]+' does not exist"
+            # )
             if re.findall(pat1, str(exc)):
                 raise RuntimeError(
-                    f"Failed to find resources at {exc.uri}. Confirm that region '{self.region}' is "
-                    f"the correct region for your Cloud Run Job and that '{self.credentials.project_id}' is the "
-                    "correct GCP project. If your project ID is not correct, you are using a Credentials "
+                    f"Failed to find resources at {exc.uri}. "
+                    "Confirm that region '{self.region}' is "
+                    "the correct region for your Cloud Run Job "
+                    "and that '{self.credentials.project_id}' is the "
+                    "correct GCP project. If your project ID is not "
+                    "correct, you are using a Credentials "
                     "block with permissions for the wrong project."
                 ) from exc
             else:
@@ -245,7 +254,7 @@ class CloudRunJob(Infrastructure):
             self._wait_for_job_creation(client=client)
         except Exception as exc:
             self.logger.exception(
-                f"Encountered an exception while waiting for job run creation"
+                "Encountered an exception while waiting for job run creation"
             )
             if not self.keep_job:
                 self.logger.info(
@@ -259,7 +268,8 @@ class CloudRunJob(Infrastructure):
                     )
                 except Exception as exc:
                     self.logger.exception(
-                        f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
+                        "Received an unexpected exception while attempting to delete"
+                        f" Cloud Run Job.'{self.job_name}':\n{exc!r}"
                     )
             raise exc
 
@@ -306,7 +316,8 @@ class CloudRunJob(Infrastructure):
             )
         except Exception as exc:
             self.logger.exception(
-                f"Received an unexpected exception while monitoring Cloud Run Job '{self.job_name!r}':\n{exc!r}"
+                "Received an unexpected exception while monitoring Cloud Run Job"
+                f" '{self.job_name!r}':\n{exc!r}"
             )
             raise
 
@@ -326,7 +337,8 @@ class CloudRunJob(Infrastructure):
 
         if not self.keep_job:
             self.logger.info(
-                f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud Run..."
+                f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud"
+                " Run..."
             )
             try:
                 Job.delete(
@@ -336,7 +348,8 @@ class CloudRunJob(Infrastructure):
                 )
             except Exception as exc:
                 self.logger.exception(
-                    f"Received an unexpected exception while attempting to delete Cloud Run Job.'{self.job_name}':\n{exc!r}"
+                    "Received an unexpected exception while attempting to delete Cloud"
+                    f" Run Job.'{self.job_name}':\n{exc!r}"
                 )
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
@@ -348,7 +361,7 @@ class CloudRunJob(Infrastructure):
         jobs_metadata = {
             "name": self.job_name,
             "annotations": {
-                # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation
+                # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
                 "run.googleapis.com/launch-stage": "BETA"
             },
         }
@@ -381,7 +394,9 @@ class CloudRunJob(Infrastructure):
     def _watch_job_execution(
         self, client, job_execution: Execution, timeout: int, poll_interval: int = 5
     ):
-        """Update job_execution status until it is no longer running or timeout is reached."""
+        """
+        Update job_execution status until it is no longer running or timeout is reached.
+        """
         t0 = time.time()
         while job_execution.is_running():
             elapsed_time = time.time() - t0
@@ -442,7 +457,7 @@ class CloudRunJob(Infrastructure):
         and cpu and memory limits.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
-        """
+        """  # noqa
         d_copy = deepcopy(d)
         d_copy.update(self._add_env(d_copy))
         d_copy.update(self._add_resources(d_copy))
@@ -454,7 +469,7 @@ class CloudRunJob(Infrastructure):
     def _add_args(self, d: dict) -> dict:
         """Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        """
+        """  # noqa
         d_copy = deepcopy(d)
         if self.args:
             d_copy["args"] = self.args
@@ -464,7 +479,7 @@ class CloudRunJob(Infrastructure):
     def _add_command(self, d: dict) -> dict:
         """Set the command that a container will run for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        """
+        """  # noqa
         d_copy = deepcopy(d)
         d_copy["command"] = self.command
 
@@ -474,7 +489,7 @@ class CloudRunJob(Infrastructure):
         """Set specified resources limits for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         See also: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        """
+        """  # noqa
         d_copy = deepcopy(d)
         resources = {"limits": {}, "requests": {}}
 
@@ -498,7 +513,7 @@ class CloudRunJob(Infrastructure):
 
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar for
         how environment variables are specified for Cloud Run Jobs.
-        """
+        """  # noqa
         d_copy = deepcopy(d)
         env = {**self._base_environment(), **self.env}
         cloud_run_job_env = [{"name": k, "value": v} for k, v in env.items()]
