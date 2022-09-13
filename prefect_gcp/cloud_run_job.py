@@ -32,14 +32,13 @@ from __future__ import annotations
 import json
 import re
 import time
-from copy import deepcopy
 
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
-from typing import Optional
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 import googleapiclient
@@ -252,7 +251,7 @@ class CloudRunJob(Infrastructure):
     args: Optional[list[str]] = Field(
         description="Arguments to be passed to your Cloud Run Job's entrypoint command."
     )
-    env: dict[str, str] = Field(
+    env: Dict[str, str] = Field(
         default_factory=dict,
         description="Environment variables to be passed to your Cloud Run Job.",
     )
@@ -600,7 +599,7 @@ class CloudRunJob(Infrastructure):
         ).namespaces()
 
     # CONTAINER SETTINGS
-    def _add_container_settings(self, d: dict) -> dict:
+    def _add_container_settings(self, base_settings: Dict[str, Any]) -> Dict[str, Any]:
         """
         Add settings related to containers for Cloud Run Jobs to a dictionary.
         Includes environment variables, entrypoint command, entrypoint arguments,
@@ -608,39 +607,30 @@ class CloudRunJob(Infrastructure):
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         """  # noqa
-        d_copy = deepcopy(d)
-        d_copy.update(self._add_env(d_copy))
-        d_copy.update(self._add_resources(d_copy))
-        d_copy.update(self._add_command(d_copy))
-        d_copy.update(self._add_args(d_copy))
+        container_settings = base_settings.copy()
+        container_settings.update(self._add_env())
+        container_settings.update(self._add_resources())
+        container_settings.update(self._add_command())
+        container_settings.update(self._add_args())
+        return container_settings
 
-        return d_copy
-
-    def _add_args(self, d: dict) -> dict:
+    def _add_args(self) -> dict:
         """Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         """  # noqa
-        d_copy = deepcopy(d)
-        if self.args:
-            d_copy["args"] = self.args
+        return {"args": self.args} if self.args else {}
 
-        return d_copy
-
-    def _add_command(self, d: dict) -> dict:
+    def _add_command(self) -> dict:
         """Set the command that a container will run for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container
         """  # noqa
-        d_copy = deepcopy(d)
-        d_copy["command"] = self.command
+        return {"command": self.command}
 
-        return d_copy
-
-    def _add_resources(self, d: dict) -> dict:
+    def _add_resources(self) -> dict:
         """Set specified resources limits for a Cloud Run Job.
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
         See also: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         """  # noqa
-        d_copy = deepcopy(d)
         resources = {"limits": {}, "requests": {}}
 
         if self.cpu is not None:
@@ -650,12 +640,9 @@ class CloudRunJob(Infrastructure):
             resources["limits"]["memory"] = self.memory_string
             resources["requests"]["memory"] = self.memory_string
 
-        if resources["requests"]:
-            d_copy["resources"] = resources
+        return {"resources": resources} if resources["requests"] else {}
 
-        return d_copy
-
-    def _add_env(self, d: dict) -> dict:
+    def _add_env(self) -> dict:
         """Add environment variables for a Cloud Run Job.
 
         Method `self._base_environment()` gets necessary Prefect environment variables
@@ -664,8 +651,6 @@ class CloudRunJob(Infrastructure):
         See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar for
         how environment variables are specified for Cloud Run Jobs.
         """  # noqa
-        d_copy = deepcopy(d)
         env = {**self._base_environment(), **self.env}
         cloud_run_job_env = [{"name": k, "value": v} for k, v in env.items()]
-        d_copy["env"] = cloud_run_job_env
-        return d_copy
+        return {"env": cloud_run_job_env}
