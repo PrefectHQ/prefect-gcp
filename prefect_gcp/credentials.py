@@ -1,4 +1,4 @@
-"""Module handling GCP credentials"""
+"""Module handling GCP credentials."""
 
 import functools
 from pathlib import Path
@@ -29,6 +29,7 @@ from prefect.blocks.core import Block
 def _raise_help_msg(key: str):
     """
     Raises a helpful error message.
+
     Args:
         key: the key to access HELP_URLS
     """
@@ -69,6 +70,7 @@ class GcpCredentials(Block):
     Attributes:
         service_account_file: Path to the service account JSON keyfile.
         service_account_info: The contents of the keyfile as a dict or JSON string.
+
     Example:
         Load stored GCP credentials:
         ```python
@@ -86,7 +88,7 @@ class GcpCredentials(Block):
     _project_id: Optional[str] = None
 
     @root_validator
-    def provide_one_service_account_source(cls, values):
+    def _provide_one_service_account_source(cls, values):
         """
         Ensure that only a service account file or service account info ias provided.
         """
@@ -101,7 +103,7 @@ class GcpCredentials(Block):
         return values
 
     @validator("service_account_file")
-    def check_service_account_file(cls, file):
+    def _check_service_account_file(cls, file):
         """Get full path of provided file and make sure that it exists."""
         if not file:
             return file
@@ -157,9 +159,15 @@ class GcpCredentials(Block):
         self, project: Optional[str] = None
     ) -> "StorageClient":
         """
+        Gets an authenticated Cloud Storage client.
+
         Args:
             project: Name of the project to use; overrides the base
                 class's project if provided.
+
+        Returns:
+            An authenticated Cloud Storage client.
+
         Examples:
             Gets a GCP Cloud Storage client from a path.
             ```python
@@ -210,10 +218,16 @@ class GcpCredentials(Block):
         self, project: str = None, location: str = None
     ) -> "BigQueryClient":
         """
+        Gets an authenticated BigQuery client.
+
         Args:
             project: Name of the project to use; overrides the base
                 class's project if provided.
             location: Location to use.
+
+        Returns:
+            An authenticated BigQuery client.
+
         Examples:
             Gets a GCP BigQuery client from a path.
             ```python
@@ -265,9 +279,11 @@ class GcpCredentials(Block):
     @_raise_help_msg("secret_manager")
     def get_secret_manager_client(self) -> "SecretManagerServiceClient":
         """
-        Args:
-            project: Name of the project to use; overrides the base
-                class's project if provided.
+        Gets an authenticated Secret Manager Service client.
+
+        Returns:
+            An authenticated Secret Manager Service client.
+
         Examples:
             Gets a GCP Secret Manager client from a path.
             ```python

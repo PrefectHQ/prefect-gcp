@@ -61,3 +61,4 @@ nav:
     - Cloud Storage: cloud_storage.md
     - BigQuery: bigquery.md
     - Secret Manager: secret_manager.md
+    - Cloud Run Job: cloud_run_job.md

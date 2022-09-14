@@ -546,7 +546,7 @@ class CloudRunJob(Infrastructure):
         return body
 
     def preview(self) -> str:
-        """Generate a preview of the job definition that will be sent to GCP." """
+        """Generate a preview of the job definition that will be sent to GCP."""
         body = self._jobs_body()
 
         return json.dumps(body, indent=2)
