@@ -217,6 +217,7 @@ class CloudRunJob(Infrastructure):
         "cloud-run-job", description="The slug for this task type."
     )
     image: str = Field(
+        ...,
         title="Image Name",
         description=(
             "The image to use for a new Cloud Run Job. This value must "
@@ -224,11 +225,16 @@ class CloudRunJob(Infrastructure):
             "or Google Artifact Registry."
         ),
     )
-    region: str
-    credentials: GcpCredentials
+    region: str = Field(..., description="The region where the Cloud Run Job resides.")
+    credentials: GcpCredentials = Field(
+        ...,
+        title="GCP Credentials",
+        description="The credentials to use to authenticate with GCP.",
+    )
 
     # Job settings
     cpu: Optional[int] = Field(
+        default=None,
         title="CPU",
         description=(
             "The amount of compute allocated to the Cloud Run Job. "
@@ -237,10 +243,12 @@ class CloudRunJob(Infrastructure):
         ),
     )
     memory: Optional[int] = Field(
+        default=None,
         title="Memory",
         description="The amount of memory allocated to the Cloud Run Job.",
     )
     memory_unit: Optional[Literal["G", "Gi", "M", "Mi"]] = Field(
+        default=None,
         title="Memory Units",
         description=(
             "The unit of memory. See "
@@ -249,7 +257,10 @@ class CloudRunJob(Infrastructure):
         ),
     )
     args: Optional[List[str]] = Field(
-        description="Arguments to be passed to your Cloud Run Job's entrypoint command."
+        default=None,
+        description=(
+            "Arguments to be passed to your Cloud Run Job's entrypoint command."
+        ),
     )
     env: Dict[str, str] = Field(
         default_factory=dict,
@@ -400,7 +411,7 @@ class CloudRunJob(Infrastructure):
             self._create_job_error(exc)
 
         try:
-            self._wait_for_job_creation(client=client)
+            self._wait_for_job_creation(client=client, timeout=self.timeout)
         except Exception as exc:
             self.logger.exception(
                 "Encountered an exception while waiting for job run creation"
@@ -548,6 +559,12 @@ class CloudRunJob(Infrastructure):
         """
         t0 = time.time()
         while job_execution.is_running():
+            job_execution = Execution.get(
+                client=client,
+                namespace=job_execution.namespace,
+                execution_name=job_execution.name,
+            )
+
             elapsed_time = time.time() - t0
             if timeout is not None and elapsed_time > timeout:
                 raise RuntimeError(
@@ -557,20 +574,17 @@ class CloudRunJob(Infrastructure):
 
             time.sleep(poll_interval)
 
-            job_execution = Execution.get(
-                client=client,
-                namespace=job_execution.namespace,
-                execution_name=job_execution.name,
-            )
-
         return job_execution
 
-    def _wait_for_job_creation(self, client: Resource, poll_interval: int = 5):
+    def _wait_for_job_creation(
+        self, client: Resource, timeout: int, poll_interval: int = 5
+    ):
         """Give created job time to register."""
         job = Job.get(
             client=client, namespace=self.credentials.project_id, job_name=self.job_name
         )
 
+        t0 = time.time()
         while not job.is_ready():
             ready_condition = (
                 job.ready_condition
@@ -580,12 +594,20 @@ class CloudRunJob(Infrastructure):
             self.logger.info(
                 f"Job is not yet ready... Current condition: {ready_condition}"
             )
-            time.sleep(poll_interval)
             job = Job.get(
                 client=client,
                 namespace=self.credentials.project_id,
                 job_name=self.job_name,
             )
+
+            elapsed_time = time.time() - t0
+            if timeout is not None and elapsed_time > timeout:
+                raise RuntimeError(
+                    f"Timed out after {elapsed_time}s while waiting for Cloud Run Job "
+                    "execution to complete. Your job may still be running on GCP."
+                )
+
+            time.sleep(poll_interval)
 
     def _get_client(self) -> Resource:
         """Get the base client needed for interacting with GCP APIs."""
