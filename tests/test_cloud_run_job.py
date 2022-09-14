@@ -405,6 +405,9 @@ def cloud_run_job():
 
 
 def remove_orion_url_from_env(env):
+    """
+    For convenience since the testing database URL is non-deterministic.
+    """
     return [
         env_var
         for env_var in env
@@ -598,9 +601,6 @@ class TestCloudRunJobRun:
         calls = list_mock_calls(mock_client, 3)
 
         for call, expected_call in zip(calls, expected_calls):
-            print(call[:100])
-            print(expected_call[:100])
-            print("\n")
             assert call.startswith(expected_call)
 
     def test_happy_path_result(self, mock_client, cloud_run_job):

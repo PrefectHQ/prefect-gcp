@@ -479,7 +479,7 @@ class CloudRunJob(Infrastructure):
                 "Received an unexpected exception while monitoring Cloud Run Job"
                 f" '{self.job_name!r}':\n{exc!r}"
             )
-            raise
+            raise exc
 
         if job_execution.succeeded():
             status_code = 0
@@ -511,6 +511,7 @@ class CloudRunJob(Infrastructure):
                     "Received an unexpected exception while attempting to delete Cloud"
                     f" Run Job.'{self.job_name}':\n{exc!r}"
                 )
+                raise exc
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
@@ -548,7 +549,14 @@ class CloudRunJob(Infrastructure):
     def preview(self) -> str:
         """Generate a preview of the job definition that will be sent to GCP."""
         body = self._jobs_body()
-
+        container_settings = body["spec"]["template"]["spec"]["template"]["spec"][
+            "containers"
+        ][0]["env"]
+        body["spec"]["template"]["spec"]["template"]["spec"]["containers"][0]["env"] = [
+            container_setting
+            for container_setting in container_settings
+            if container_setting["name"] != "PREFECT_API_KEY"
+        ]
         return json.dumps(body, indent=2)
 
     def _watch_job_execution(
