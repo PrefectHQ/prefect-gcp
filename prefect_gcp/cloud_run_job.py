@@ -204,14 +204,20 @@ class CloudRunJobResult(InfrastructureResult):
 
 class CloudRunJob(Infrastructure):
     """
+    <span class="badge-api experimental"/>
+
     Infrastructure block used to run GCP Cloud Run Jobs.
 
     Project name information is provided by the Credentials object, and should always
     be correct as long as the Credentials object is for the correct project.
+
+    Note this block is experimental. The interface may change without notice.
     """
 
+    _block_type_slug = "cloud-run-job"
+    _block_type_name = "GCP Cloud Run Job"
+    _description = "Infrastructure block used to run GCP Cloud Run Jobs. Note this block is experimental. The interface may change without notice."  # noqa
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
-    _block_type_name = "Cloud Run Job"
 
     type: Literal["cloud-run-job"] = Field(
         "cloud-run-job", description="The slug for this task type."
