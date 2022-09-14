@@ -450,13 +450,11 @@ class CloudRunJob(Infrastructure):
             )
 
             command = (
-                " ".join(self.command)
-                if self.command
-                else "'default container command'"
+                " ".join(self.command) if self.command else "default container command"
             )
 
             self.logger.info(
-                f"Cloud Run Job {self.job_name!r}: Running command '{command!r}'"
+                f"Cloud Run Job {self.job_name!r}: Running command {command!r}"
             )
         except Exception as exc:
             self._job_run_submission_error(exc)
