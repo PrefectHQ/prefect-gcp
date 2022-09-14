@@ -471,14 +471,6 @@ class TestCloudRunJobContainerSettings:
                 {"name": "TestVar", "value": "It's Working"},
             ]
 
-    # def test_default_command_is_correct(self, cloud_run_job):
-    #     default_cmd = ["python", "-m", "prefect.engine"]
-    #     assert cloud_run_job.command == default_cmd
-
-    #     base_setting = {}
-    #     result = cloud_run_job._add_container_settings(base_setting)
-    #     assert result["command"] == default_cmd
-
     def test_command_overrides_default(self, cloud_run_job):
         cmd = ["echo", "howdy!"]
         cloud_run_job.command = cmd
