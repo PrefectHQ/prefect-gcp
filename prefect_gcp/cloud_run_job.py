@@ -232,11 +232,7 @@ class CloudRunJob(Infrastructure):
         ),
     )
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
-    credentials: GcpCredentials = Field(
-        ...,
-        title="GCP Credentials",
-        description="The credentials to use to authenticate with GCP.",
-    )
+    credentials: GcpCredentials  # cannot be Field; else it shows as Json
 
     # Job settings
     cpu: Optional[int] = Field(
