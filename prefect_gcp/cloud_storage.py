@@ -487,7 +487,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem):
 
     bucket: str = Field(..., description="Name of the bucket.")
     gcp_credentials: GcpCredentials = Field(
-        ..., description="The credentials to authenticate with GCP."
+        default_factory=GcpCredentials, description="The credentials to authenticate with GCP."
     )
     bucket_folder: str = Field(
         default="",
