@@ -39,7 +39,8 @@ setup(
     extras_require=extras_require,
     entry_points={
         "prefect.collections": [
-            "GcpCredentials = prefect_gcp.credentials",
+            "prefect_gcp = prefect_gcp",
+            "prefect_gcp_cloud_storage = prefect_gcp.cloud_storage",
         ]
     },
     classifiers=[

@@ -1,8 +1,11 @@
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 from google.cloud.exceptions import NotFound
 from prefect.testing.utilities import prefect_test_harness
+
+from prefect_gcp.credentials import GcpCredentials
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -19,6 +22,11 @@ def oauth2_credentials(monkeypatch):
     monkeypatch.setattr("prefect_gcp.credentials.Credentials", CredentialsMock)
 
 
+class Blob:
+    def __init__(self, name):
+        self.name = name
+
+
 class CloudStorageClient:
     def __init__(self, credentials=None, project=None):
         self.credentials = credentials
@@ -30,9 +38,23 @@ class CloudStorageClient:
     def get_bucket(self, bucket):
         blob_obj = MagicMock()
         blob_obj.download_as_bytes.return_value = b"bytes"
+        blob_obj.download_to_filename.side_effect = lambda path, **kwargs: Path(
+            path
+        ).write_text("abcdef")
         bucket_obj = MagicMock(bucket=bucket)
         bucket_obj.blob.side_effect = lambda blob, **kwds: blob_obj
         return bucket_obj
+
+    def list_blobs(self, bucket, prefix=None):
+        blob_obj = Blob(name="blob.txt")
+        blob_directory = Blob(name="directory/")
+        nested_blob_obj = Blob(name="base_folder/nested_blob.txt")
+        double_nested_blob_obj = Blob(name="base_folder/base_folder/nested_blob.txt")
+        blobs = [blob_obj, blob_directory, nested_blob_obj, double_nested_blob_obj]
+        for blob in blobs:
+            if prefix and not blob.name.startswith(prefix):
+                blobs.remove(blob)
+        return blobs
 
 
 @pytest.fixture
@@ -126,8 +148,12 @@ class SecretManagerClient:
 
 @pytest.fixture
 def gcp_credentials():
-    gcp_credentials_mock = MagicMock(project="gcp_credentials_project")
-    gcp_credentials_mock.get_cloud_storage_client.return_value = CloudStorageClient()
-    gcp_credentials_mock.get_bigquery_client.return_value = BigQueryClient()
-    gcp_credentials_mock.get_secret_manager_client.return_value = SecretManagerClient()
+    gcp_credentials_mock = GcpCredentials(project="gcp_credentials_project")
+    gcp_credentials_mock.get_cloud_storage_client = (
+        lambda *args, **kwargs: CloudStorageClient()
+    )
+    gcp_credentials_mock.get_bigquery_client = lambda *args, **kwargs: BigQueryClient()
+    gcp_credentials_mock.get_secret_manager_client = (
+        lambda *args, **kwargs: SecretManagerClient()
+    )
     return gcp_credentials_mock

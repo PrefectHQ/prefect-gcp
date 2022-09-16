@@ -116,7 +116,10 @@ class MockTargetConfigs(Block):
         Returns:
             A configs JSON.
         """
-        return self.credentials.dict()
+        configs = self.credentials.dict()
+        for key in Block().dict():
+            configs.pop(key, None)
+        return configs
 
 
 class MockCliProfile(Block):
