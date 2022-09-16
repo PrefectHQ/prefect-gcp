@@ -41,6 +41,7 @@ setup(
         "prefect.collections": [
             "prefect_gcp = prefect_gcp",
             "prefect_gcp_cloud_run_job = prefect_gcp.cloud_run_job",
+            "prefect_gcp_cloud_storage = prefect_gcp.cloud_storage",
         ]
     },
     classifiers=[
