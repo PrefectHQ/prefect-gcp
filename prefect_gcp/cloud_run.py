@@ -124,22 +124,22 @@ class Job(BaseModel):
             execution_status=cls._get_execution_status(response),
         )
 
-    @classmethod
-    def create(cls, client: Resource, namespace: str, body: dict):
+    @staticmethod
+    def create(client: Resource, namespace: str, body: dict):
         """Make a create request to the GCP jobs API."""
         request = client.jobs().create(parent=f"namespaces/{namespace}", body=body)
         response = request.execute()
         return response
 
-    @classmethod
-    def delete(cls, client: Resource, namespace: str, job_name: str):
+    @staticmethod
+    def delete(client: Resource, namespace: str, job_name: str):
         """Make a delete request to the GCP jobs API."""
         request = client.jobs().delete(name=f"namespaces/{namespace}/jobs/{job_name}")
         response = request.execute()
         return response
 
-    @classmethod
-    def run(cls, client: Resource, namespace: str, job_name: str):
+    @staticmethod
+    def run(client: Resource, namespace: str, job_name: str):
         """Make a run request to the GCP jobs API."""
         request = client.jobs().run(name=f"namespaces/{namespace}/jobs/{job_name}")
         response = request.execute()
@@ -352,7 +352,6 @@ class CloudRunJob(Infrastructure):
                 " your project ID is not correct, you are using a Credentials block"
                 " with permissions for the wrong project."
             ) from exc
-
         raise exc
 
     def _job_run_submission_error(self, exc):
@@ -414,7 +413,7 @@ class CloudRunJob(Infrastructure):
 
         try:
             self._wait_for_job_creation(client=client, timeout=self.timeout)
-        except Exception as exc:
+        except Exception:
             self.logger.exception(
                 "Encountered an exception while waiting for job run creation"
             )
@@ -428,17 +427,19 @@ class CloudRunJob(Infrastructure):
                         namespace=self.credentials.project_id,
                         job_name=self.job_name,
                     )
-                except Exception as exc:
+                except Exception:
                     self.logger.exception(
                         "Received an unexpected exception while attempting to delete"
-                        f" Cloud Run Job.'{self.job_name}':\n{exc!r}"
+                        f" Cloud Run Job {self.job_name!r}"
                     )
-            raise exc
+            raise
 
     def _begin_job_execution(self, client: Resource) -> Execution:
         """Submit a job run for execution and return the execution object."""
         try:
-            self.logger.info(f"Submitting Cloud Run Job {self.job_name} for execution.")
+            self.logger.info(
+                f"Submitting Cloud Run Job {self.job_name!r} for execution."
+            )
             submission = Job.run(
                 client=client,
                 namespace=self.credentials.project_id,
@@ -474,12 +475,12 @@ class CloudRunJob(Infrastructure):
                 timeout=self.timeout,
                 poll_interval=poll_interval,
             )
-        except Exception as exc:
+        except Exception:
             self.logger.exception(
-                "Received an unexpected exception while monitoring Cloud Run Job"
-                f" '{self.job_name!r}':\n{exc!r}"
+                "Received an unexpected exception while monitoring Cloud Run Job "
+                f"{self.job_name!r}"
             )
-            raise exc
+            raise
 
         if job_execution.succeeded():
             status_code = 0
@@ -497,7 +498,7 @@ class CloudRunJob(Infrastructure):
 
         if not self.keep_job:
             self.logger.info(
-                f"Deleting completed Cloud Run Job {self.job_name} from Google Cloud"
+                f"Deleting completed Cloud Run Job {self.job_name!r} from Google Cloud"
                 " Run..."
             )
             try:
@@ -506,12 +507,11 @@ class CloudRunJob(Infrastructure):
                     namespace=self.credentials.project_id,
                     job_name=self.job_name,
                 )
-            except Exception as exc:
+            except Exception:
                 self.logger.exception(
                     "Received an unexpected exception while attempting to delete Cloud"
-                    f" Run Job.'{self.job_name}':\n{exc!r}"
+                    f" Run Job {self.job_name}"
                 )
-                raise exc
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
@@ -682,5 +682,5 @@ class CloudRunJob(Infrastructure):
         how environment variables are specified for Cloud Run Jobs.
         """  # noqa
         env = {**self._base_environment(), **self.env}
-        cloud_run_job_env = [{"name": k, "value": v} for k, v in env.items()]
-        return {"env": cloud_run_job_env}
+        cloud_run_env = [{"name": k, "value": v} for k, v in env.items()]
+        return {"env": cloud_run_env}

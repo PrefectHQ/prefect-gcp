@@ -1,1 +1,1 @@
-::: prefect_gcp.cloud_run_job
+::: prefect_gcp.cloud_run
