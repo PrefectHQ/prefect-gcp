@@ -24,6 +24,7 @@ except ModuleNotFoundError:
     pass
 
 from prefect.blocks.core import Block
+from prefect.utilities.asyncutils import run_sync_in_worker_thread
 
 
 def _raise_help_msg(key: str):
@@ -113,8 +114,7 @@ class GcpCredentials(Block):
             raise ValueError("The provided path to the service account is invalid")
         return service_account_file
 
-    @property
-    def project_id(self):
+    def block_initialization(self):
         if self._project_id is None:
             if self.project:
                 self._project_id = self.project
@@ -122,7 +122,6 @@ class GcpCredentials(Block):
                 self._project_id = (
                     self.get_credentials_from_service_account().project_id
                 )
-        return self._project_id
 
     def get_credentials_from_service_account(self) -> Union[Credentials, None]:
         """
@@ -143,14 +142,14 @@ class GcpCredentials(Block):
             return None
         return credentials
 
-    def get_access_token(self):
+    async def get_access_token(self):
         """
         See: https://stackoverflow.com/a/69107745
         Also: https://www.jhanley.com/google-cloud-creating-oauth-access-tokens-for-rest-api-calls/
         """  # noqa
         request = google.auth.transport.requests.Request()
         credentials = self.get_credentials_from_service_account()
-        credentials.refresh(request)
+        await run_sync_in_worker_thread(credentials.refresh, request)
 
         return credentials.token
 
