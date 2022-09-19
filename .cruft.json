@@ -1,14 +1,15 @@
 {
   "template": "https://github.com/PrefectHQ/prefect-collection-template",
-  "commit": "b88e862da5f7803ec9418cdab9d151b8610f67c5",
+  "commit": "c0ea1b51ff5cf11aca3e64168d1025c6bcab4bca",
+  "checkout": null,
   "context": {
     "cookiecutter": {
       "full_name": "Prefect Technologies, Inc.",
       "email": "help@prefect.io",
       "github_organization": "PrefectHQ",
-      "collection_name": "prefect-gcp",
-      "collection_slug": "prefect_gcp",
-      "collection_short_description": "Prefect integrations with Google Cloud Platform.",
+      "collection_name": "prefect-great-expectations",
+      "collection_slug": "prefect_great_expectations",
+      "collection_short_description": "Prefect Collection containing integrations for interacting with Great Expectations",
       "_copy_without_render": [
         ".github/workflows/*.yml"
       ],
