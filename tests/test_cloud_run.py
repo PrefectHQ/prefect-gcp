@@ -396,11 +396,13 @@ class TestExecution:
 
 
 @pytest.fixture
-def cloud_run():
+def cloud_run_job():
     return CloudRunJob(
         image="gcr.io//not-a/real-image",
         region="middle-earth2",
-        credentials=GcpCredentials(service_account_info='{"hello":"world"}'),
+        credentials=GcpCredentials(
+            service_account_info={"hello": "world"}, project="my-project"
+        ),
     )
 
 
@@ -416,7 +418,7 @@ def remove_orion_url_from_env(env):
 
 
 class TestCloudRunJobContainerSettings:
-    def test_captures_prefect_env(self, cloud_run):
+    def test_captures_prefect_env(self, cloud_run_job):
         base_setting = {}
         with temporary_settings(
             updates={
@@ -425,16 +427,16 @@ class TestCloudRunJobContainerSettings:
                 PREFECT_PROFILES_PATH: "Woof",
             }
         ):
-            result = cloud_run._add_container_settings(base_setting)
+            result = cloud_run_job._add_container_settings(base_setting)
             assert remove_orion_url_from_env(result["env"]) == [
                 {"name": "PREFECT_API_URL", "value": "Puppy"},
                 {"name": "PREFECT_API_KEY", "value": "Dog"},
                 {"name": "PREFECT_PROFILES_PATH", "value": "Woof"},
             ]
 
-    def test_adds_job_env(self, cloud_run):
+    def test_adds_job_env(self, cloud_run_job):
         base_setting = {}
-        cloud_run.env = {"TestVar": "It's Working"}
+        cloud_run_job.env = {"TestVar": "It's Working"}
 
         with temporary_settings(
             updates={
@@ -443,7 +445,7 @@ class TestCloudRunJobContainerSettings:
                 PREFECT_PROFILES_PATH: "Woof",
             }
         ):
-            result = cloud_run._add_container_settings(base_setting)
+            result = cloud_run_job._add_container_settings(base_setting)
             assert remove_orion_url_from_env(result["env"]) == [
                 {"name": "PREFECT_API_URL", "value": "Puppy"},
                 {"name": "PREFECT_API_KEY", "value": "Dog"},
@@ -451,9 +453,9 @@ class TestCloudRunJobContainerSettings:
                 {"name": "TestVar", "value": "It's Working"},
             ]
 
-    def test_job_env_overrides_base_env(self, cloud_run):
+    def test_job_env_overrides_base_env(self, cloud_run_job):
         base_setting = {}
-        cloud_run.env = {
+        cloud_run_job.env = {
             "TestVar": "It's Working",
             "PREFECT_API_KEY": "Cat",
             "PREFECT_API_URL": "Kitty",
@@ -466,7 +468,7 @@ class TestCloudRunJobContainerSettings:
                 PREFECT_PROFILES_PATH: "Woof",
             }
         ):
-            result = cloud_run._add_container_settings(base_setting)
+            result = cloud_run_job._add_container_settings(base_setting)
             assert remove_orion_url_from_env(result["env"]) == [
                 {"name": "PREFECT_API_URL", "value": "Kitty"},
                 {"name": "PREFECT_API_KEY", "value": "Cat"},
@@ -474,51 +476,51 @@ class TestCloudRunJobContainerSettings:
                 {"name": "TestVar", "value": "It's Working"},
             ]
 
-    def test_command_overrides_default(self, cloud_run):
+    def test_command_overrides_default(self, cloud_run_job):
         cmd = ["echo", "howdy!"]
-        cloud_run.command = cmd
+        cloud_run_job.command = cmd
         base_setting = {}
-        result = cloud_run._add_container_settings(base_setting)
+        result = cloud_run_job._add_container_settings(base_setting)
         assert result["command"] == cmd
 
-    def test_resources_skipped_by_default(self, cloud_run):
+    def test_resources_skipped_by_default(self, cloud_run_job):
         base_setting = {}
-        result = cloud_run._add_container_settings(base_setting)
+        result = cloud_run_job._add_container_settings(base_setting)
         assert result.get("resources") is None
 
-    def test_resources_added_correctly(self, cloud_run):
+    def test_resources_added_correctly(self, cloud_run_job):
         cpu = "1234"
         memory = 12
         memory_unit = "G"
-        cloud_run.cpu = cpu
-        cloud_run.memory = memory
-        cloud_run.memory_unit = memory_unit
+        cloud_run_job.cpu = cpu
+        cloud_run_job.memory = memory
+        cloud_run_job.memory_unit = memory_unit
         base_setting = {}
-        result = cloud_run._add_container_settings(base_setting)
+        result = cloud_run_job._add_container_settings(base_setting)
         assert result["resources"] == {
             "limits": {"cpu": cpu, "memory": str(memory) + memory_unit},
             "requests": {"cpu": cpu, "memory": str(memory) + memory_unit},
         }
 
-    def test_args_skipped_by_default(self, cloud_run):
+    def test_args_skipped_by_default(self, cloud_run_job):
         base_setting = {}
-        result = cloud_run._add_container_settings(base_setting)
+        result = cloud_run_job._add_container_settings(base_setting)
         assert result.get("args") is None
 
-    def test_args_added_correctly(self, cloud_run):
+    def test_args_added_correctly(self, cloud_run_job):
         args = ["a", "b"]
-        cloud_run.args = args
+        cloud_run_job.args = args
         base_setting = {}
-        result = cloud_run._add_container_settings(base_setting)
+        result = cloud_run_job._add_container_settings(base_setting)
         assert result["args"] == args
 
 
-def test_get_client_uses_correct_endpoint(monkeypatch, mock_credentials, cloud_run):
+def test_get_client_uses_correct_endpoint(monkeypatch, mock_credentials, cloud_run_job):
     """Expected behavior: desired endpoint is called."""
     mock = Mock()
     monkeypatch.setattr("prefect_gcp.cloud_run.discovery.build", mock)
-    cloud_run._get_client()
-    desired_endpoint = f"https://{cloud_run.region}-run.googleapis.com"
+    cloud_run_job._get_client()
+    desired_endpoint = f"https://{cloud_run_job.region}-run.googleapis.com"
     assert mock.call_args[1]["client_options"].api_endpoint == desired_endpoint
 
 
@@ -581,7 +583,7 @@ class TestCloudRunJobRun:
         ],
     )
     def test_happy_path_api_calls_made_correctly(
-        self, mock_client, cloud_run, keep_job, expected_calls
+        self, mock_client, cloud_run_job, keep_job, expected_calls
     ):
         """Expected behavior:
         Happy path:
@@ -591,27 +593,27 @@ class TestCloudRunJobRun:
         - A call to Executions.get and execute (see the status of the Execution)
         - A call to Job.delete and execute if `keep_job` False, otherwise no call
         """
-        cloud_run.keep_job = keep_job
+        cloud_run_job.keep_job = keep_job
         mock_client.jobs().get().execute.return_value = self.job_ready
         mock_client.jobs().run().execute.return_value = self.job_ready
         mock_client.executions().get().execute.return_value = (
             self.execution_complete_and_succeeded
         )
-        cloud_run.run()
+        cloud_run_job.run()
         calls = list_mock_calls(mock_client, 3)
 
         for call, expected_call in zip(calls, expected_calls):
             assert call.startswith(expected_call)
 
-    def test_happy_path_result(self, mock_client, cloud_run):
+    def test_happy_path_result(self, mock_client, cloud_run_job):
         """Expected behavior: returns a CloudrunJobResult with status_code 0"""
-        cloud_run.keep_job = True
+        cloud_run_job.keep_job = True
         mock_client.jobs().get().execute.return_value = self.job_ready
         mock_client.jobs().run().execute.return_value = self.job_ready
         mock_client.executions().get().execute.return_value = (
             self.execution_complete_and_succeeded
         )
-        res = cloud_run.run()
+        res = cloud_run_job.run()
         assert isinstance(res, CloudRunJobResult)
         assert res.status_code == 0
 
@@ -637,13 +639,13 @@ class TestCloudRunJobRun:
         ],
     )
     def test_behavior_called_when_job_get_fails(
-        self, monkeypatch, mock_client, cloud_run, keep_job, expected_calls
+        self, monkeypatch, mock_client, cloud_run_job, keep_job, expected_calls
     ):
         """Expected behavior:
         When job create is called, but there is a subsequent exception on a get,
         there should be a delete call for that job if `keep_job` is False
         """
-        cloud_run.keep_job = keep_job
+        cloud_run_job.keep_job = keep_job
 
         # Getting job will raise error
         def raise_exception(*args, **kwargs):
@@ -652,7 +654,7 @@ class TestCloudRunJobRun:
         monkeypatch.setattr("prefect_gcp.cloud_run.Job.get", raise_exception)
 
         with pytest.raises(Exception):
-            cloud_run.run()
+            cloud_run_job.run()
         calls = list_mock_calls(mock_client, 0)
 
         for call, expected_call in zip(calls, expected_calls):
@@ -689,14 +691,14 @@ class TestCloudRunJobRun:
         ],
     )
     def test_behavior_called_when_execution_get_fails(
-        self, monkeypatch, mock_client, cloud_run, keep_job, expected_calls
+        self, monkeypatch, mock_client, cloud_run_job, keep_job, expected_calls
     ):
         """Expected behavior:
         Job creation is called successfully, the job is found when `get` is called,
         job `run` is called, but the execution fails, there should be a delete
         call for that job if `keep_job` is False, and an exception should be raised.
         """
-        cloud_run.keep_job = keep_job
+        cloud_run_job.keep_job = keep_job
         mock_client.jobs().get().execute.return_value = self.job_ready
         mock_client.jobs().run().execute.return_value = self.job_ready
 
@@ -707,7 +709,7 @@ class TestCloudRunJobRun:
         monkeypatch.setattr("prefect_gcp.cloud_run.Execution.get", raise_exception)
 
         with pytest.raises(Exception):
-            cloud_run.run()
+            cloud_run_job.run()
         calls = list_mock_calls(mock_client, 2)
         # breakpoint()
         for call, expected_call in zip(calls, expected_calls):

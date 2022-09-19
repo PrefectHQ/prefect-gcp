@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path, PosixPath
-from unittest.mock import Mock
 
 import pytest
 from prefect import flow, task
@@ -55,7 +54,7 @@ def test_get_credentials_from_service_account_file(
     method to call GCP's method with the path we pass in.
     """
     credentials = GcpCredentials(
-        service_account_file=service_account_file
+        service_account_file=service_account_file, project="my-project"
     ).get_credentials_from_service_account()
     assert isinstance(credentials, PosixPath)
     assert credentials == Path(service_account_file).expanduser()
@@ -65,7 +64,7 @@ def test_get_credentials_from_service_account_info(
     service_account_info_dict, oauth2_credentials
 ):
     credentials = GcpCredentials(
-        service_account_info=service_account_info_dict
+        service_account_info=service_account_info_dict, project="my-project"
     ).get_credentials_from_service_account()
     assert credentials == service_account_info_dict
 
@@ -114,29 +113,6 @@ def test_get_cloud_storage_client(
     test_flow()
 
 
-@pytest.mark.parametrize("override_project", [None, "override_project"])
-def test_project_id(override_project, service_account_info, monkeypatch):
-    MOCK_PROJECT_VALUE = "my-project-id"
-
-    def return_mock_credentials(*args, **kwargs):
-        m = Mock()
-        m.project_id = MOCK_PROJECT_VALUE
-        return m
-
-    monkeypatch.setattr(
-        "prefect_gcp.credentials.GcpCredentials.get_credentials_from_service_account",
-        return_mock_credentials,
-    )
-    credentials = GcpCredentials(
-        service_account_info=service_account_info,
-        project=override_project,
-    )
-    if override_project:
-        assert credentials.project_id == override_project
-    else:
-        assert credentials.project_id == MOCK_PROJECT_VALUE
-
-
 class MockTargetConfigs(Block):
     credentials: GcpCredentials
 
@@ -171,7 +147,9 @@ def test_credentials_is_able_to_serialize_back(service_account_info):
 
     @flow
     def test_flow():
-        gcp_credentials = GcpCredentials(service_account_info=service_account_info)
+        gcp_credentials = GcpCredentials(
+            service_account_info=service_account_info, project="my-project"
+        )
         mock_target_configs = MockTargetConfigs(credentials=gcp_credentials)
         mock_cli_profile = MockCliProfile(target_configs=mock_target_configs)
         task_result = test_task(mock_cli_profile)
@@ -181,7 +159,7 @@ def test_credentials_is_able_to_serialize_back(service_account_info):
         "name": {
             "outputs": {
                 "target": {
-                    "project": None,
+                    "project": "my-project",
                     "service_account_file": None,
                     "service_account_info": {"key": "abc", "pass": "pass"},
                 }

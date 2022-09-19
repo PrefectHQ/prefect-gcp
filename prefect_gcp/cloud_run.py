@@ -348,9 +348,9 @@ class CloudRunJob(Infrastructure):
             raise RuntimeError(
                 f"Failed to find resources at {exc.uri}. Confirm that region"
                 f" '{self.region}' is the correct region for your Cloud Run Job and"
-                f" that {self.credentials.project_id} is the correct GCP project. If"
-                " your project ID is not correct, you are using a Credentials block"
-                " with permissions for the wrong project."
+                f" that {self.credentials.project} is the correct GCP project. If"
+                f" your project ID is not correct, you are using a Credentials block"
+                f" with permissions for the wrong project."
             ) from exc
         raise exc
 
@@ -365,12 +365,12 @@ class CloudRunJob(Infrastructure):
             if re.findall(pat1, str(exc)):
                 raise RuntimeError(
                     f"Failed to find resources at {exc.uri}. "
-                    "Confirm that region '{self.region}' is "
-                    "the correct region for your Cloud Run Job "
-                    "and that '{self.credentials.project_id}' is the "
-                    "correct GCP project. If your project ID is not "
-                    "correct, you are using a Credentials "
-                    "block with permissions for the wrong project."
+                    f"Confirm that region '{self.region}' is "
+                    f"the correct region for your Cloud Run Job "
+                    f"and that '{self.credentials.project}' is the "
+                    f"correct GCP project. If your project ID is not "
+                    f"correct, you are using a Credentials "
+                    f"block with permissions for the wrong project."
                 ) from exc
             else:
                 raise exc
@@ -405,7 +405,7 @@ class CloudRunJob(Infrastructure):
             self.logger.info(f"Creating Cloud Run Job {self.job_name}")
             Job.create(
                 client=client,
-                namespace=self.credentials.project_id,
+                namespace=self.credentials.project,
                 body=self._jobs_body(),
             )
         except googleapiclient.errors.HttpError as exc:
@@ -424,7 +424,7 @@ class CloudRunJob(Infrastructure):
                 try:
                     Job.delete(
                         client=client,
-                        namespace=self.credentials.project_id,
+                        namespace=self.credentials.project,
                         job_name=self.job_name,
                     )
                 except Exception:
@@ -442,7 +442,7 @@ class CloudRunJob(Infrastructure):
             )
             submission = Job.run(
                 client=client,
-                namespace=self.credentials.project_id,
+                namespace=self.credentials.project,
                 job_name=self.job_name,
             )
 
@@ -504,7 +504,7 @@ class CloudRunJob(Infrastructure):
             try:
                 Job.delete(
                     client=client,
-                    namespace=self.credentials.project_id,
+                    namespace=self.credentials.project,
                     job_name=self.job_name,
                 )
             except Exception:
@@ -589,7 +589,7 @@ class CloudRunJob(Infrastructure):
     ):
         """Give created job time to register."""
         job = Job.get(
-            client=client, namespace=self.credentials.project_id, job_name=self.job_name
+            client=client, namespace=self.credentials.project, job_name=self.job_name
         )
 
         t0 = time.time()
@@ -604,7 +604,7 @@ class CloudRunJob(Infrastructure):
             )
             job = Job.get(
                 client=client,
-                namespace=self.credentials.project_id,
+                namespace=self.credentials.project,
                 job_name=self.job_name,
             )
 
