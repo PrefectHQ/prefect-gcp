@@ -1,11 +1,12 @@
-"""Module handling GCP credentials"""
+"""Module handling GCP credentials."""
 
 import functools
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
-from pydantic import Json
+from pydantic import Json, root_validator, validator
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -23,11 +24,13 @@ except ModuleNotFoundError:
     pass
 
 from prefect.blocks.core import Block
+from prefect.utilities.asyncutils import run_sync_in_worker_thread
 
 
 def _raise_help_msg(key: str):
     """
     Raises a helpful error message.
+
     Args:
         key: the key to access HELP_URLS
     """
@@ -68,7 +71,6 @@ class GcpCredentials(Block):
     Attributes:
         service_account_file: Path to the service account JSON keyfile.
         service_account_info: The contents of the keyfile as a dict or JSON string.
-        project: Name of the project to use.
 
     Example:
         Load stored GCP credentials:
@@ -85,53 +87,94 @@ class GcpCredentials(Block):
     service_account_info: Optional[Union[Dict[str, str], Json]] = None
     project: Optional[str] = None
 
-    @staticmethod
-    def _get_credentials_from_service_account(
-        service_account_file: Optional[str] = None,
-        service_account_info: Optional[Dict[str, str]] = None,
-    ) -> Credentials:
+    @root_validator
+    def _provide_one_service_account_source(cls, values):
         """
-        Helper method to serialize credentials by using either
-        service_account_file or service_account_info.
+        Ensure that only a service account file or service account info ias provided.
         """
-        if service_account_info and service_account_file:
+        if (
+            values.get("service_account_info") is not None
+            and values.get("service_account_file") is not None
+        ):
             raise ValueError(
                 "Only one of service_account_info or service_account_file "
                 "can be specified at once"
             )
-        elif service_account_file:
-            service_account_file = Path(service_account_file).expanduser()
-            if not service_account_file.exists():
-                raise ValueError("The provided path to the service account is invalid")
-            credentials = Credentials.from_service_account_file(service_account_file)
-        elif service_account_info:
-            credentials = Credentials.from_service_account_info(service_account_info)
+        return values
+
+    @validator("service_account_file")
+    def _check_service_account_file(cls, file):
+        """Get full path of provided file and make sure that it exists."""
+        if not file:
+            return file
+
+        service_account_file = Path(file).expanduser()
+        if not service_account_file.exists():
+            raise ValueError("The provided path to the service account is invalid")
+        return service_account_file
+
+    def block_initialization(self):
+        if self.project is None and (
+            self.service_account_file or self.service_account_info
+        ):
+            credentials = self.get_credentials_from_service_account()
+            self.project = credentials.project
+
+    def get_credentials_from_service_account(self) -> Union[Credentials, None]:
+        """
+        Helper method to serialize credentials by using either
+        service_account_file or service_account_info.
+        """
+        if self.service_account_file:
+            credentials = Credentials.from_service_account_file(
+                self.service_account_file,
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
+        elif self.service_account_info:
+            credentials = Credentials.from_service_account_info(
+                self.service_account_info,
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
         else:
             return None
         return credentials
+
+    async def get_access_token(self):
+        """
+        See: https://stackoverflow.com/a/69107745
+        Also: https://www.jhanley.com/google-cloud-creating-oauth-access-tokens-for-rest-api-calls/
+        """  # noqa
+        request = google.auth.transport.requests.Request()
+        credentials = self.get_credentials_from_service_account()
+        await run_sync_in_worker_thread(credentials.refresh, request)
+
+        return credentials.token
 
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
         self, project: Optional[str] = None
     ) -> "StorageClient":
         """
+        Gets an authenticated Cloud Storage client.
+
         Args:
             project: Name of the project to use; overrides the base
                 class's project if provided.
+
+        Returns:
+            An authenticated Cloud Storage client.
 
         Examples:
             Gets a GCP Cloud Storage client from a path.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
                     service_account_file=service_account_file
                 ).get_cloud_storage_client()
-
             example_get_client_flow()
             ```
 
@@ -139,7 +182,6 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_info = {
@@ -157,14 +199,10 @@ class GcpCredentials(Block):
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_cloud_storage_client()
-
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
-            service_account_file=self.service_account_file,
-            service_account_info=self.service_account_info,
-        )
+        credentials = self.get_credentials_from_service_account()
 
         # override class project if method project is provided
         project = project or self.project
@@ -176,24 +214,27 @@ class GcpCredentials(Block):
         self, project: str = None, location: str = None
     ) -> "BigQueryClient":
         """
+        Gets an authenticated BigQuery client.
+
         Args:
             project: Name of the project to use; overrides the base
                 class's project if provided.
             location: Location to use.
+
+        Returns:
+            An authenticated BigQuery client.
 
         Examples:
             Gets a GCP BigQuery client from a path.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
                     service_account_file=service_account_file
                 ).get_bigquery_client()
-
             example_get_client_flow()
             ```
 
@@ -201,7 +242,6 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_info = {
@@ -223,10 +263,7 @@ class GcpCredentials(Block):
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
-            service_account_file=self.service_account_file,
-            service_account_info=self.service_account_info,
-        )
+        credentials = self.get_credentials_from_service_account()
 
         # override class project if method project is provided
         project = project or self.project
@@ -238,23 +275,22 @@ class GcpCredentials(Block):
     @_raise_help_msg("secret_manager")
     def get_secret_manager_client(self) -> "SecretManagerServiceClient":
         """
-        Args:
-            project: Name of the project to use; overrides the base
-                class's project if provided.
+        Gets an authenticated Secret Manager Service client.
+
+        Returns:
+            An authenticated Secret Manager Service client.
 
         Examples:
             Gets a GCP Secret Manager client from a path.
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
                 client = GcpCredentials(
                     service_account_file=service_account_file
                 ).get_secret_manager_client()
-
             example_get_client_flow()
             ```
 
@@ -262,7 +298,6 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
-
             @flow()
             def example_get_client_flow():
                 service_account_info = {
@@ -280,14 +315,10 @@ class GcpCredentials(Block):
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_secret_manager_client()
-
             example_get_client_flow()
             ```
         """
-        credentials = self._get_credentials_from_service_account(
-            service_account_file=self.service_account_file,
-            service_account_info=self.service_account_info,
-        )
+        credentials = self.get_credentials_from_service_account()
 
         # doesn't accept project; must pass in project in tasks
         secret_manager_client = SecretManagerServiceClient(credentials=credentials)

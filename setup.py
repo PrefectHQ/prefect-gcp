@@ -40,6 +40,7 @@ setup(
     entry_points={
         "prefect.collections": [
             "prefect_gcp = prefect_gcp",
+            "prefect_gcp_cloud_run = prefect_gcp.cloud_run",
             "prefect_gcp_cloud_storage = prefect_gcp.cloud_storage",
         ]
     },

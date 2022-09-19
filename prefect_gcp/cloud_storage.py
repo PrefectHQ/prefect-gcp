@@ -1,4 +1,4 @@
-"""Tasks for interacting with GCP Cloud Storage"""
+"""Tasks for interacting with GCP Cloud Storage."""
 
 import os
 from io import BytesIO
@@ -38,7 +38,7 @@ async def cloud_storage_create_bucket(
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
         location: Location of the bucket.
-        create_kwargs: Additional keyword arguments to pass to `client.create_bucket`.
+        **create_kwargs: Additional keyword arguments to pass to `client.create_bucket`.
 
     Returns:
         The bucket name.
@@ -100,8 +100,6 @@ async def cloud_storage_download_blob_as_bytes(
         bucket: Name of the bucket.
         blob: Name of the Cloud Storage blob.
         gcp_credentials: Credentials to use for authentication with GCP.
-        path: If provided, downloads the contents to the provided file path;
-            if the path is a directory, automatically joins the blob name.
         chunk_size (int, optional): The size of a chunk of data whenever
             iterating (in bytes). This must be a multiple of 256 KB
             per the API specification.
@@ -111,7 +109,7 @@ async def cloud_storage_download_blob_as_bytes(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
-        download_kwargs: Additional keyword arguments to pass to
+        **download_kwargs: Additional keyword arguments to pass to
             `Blob.download_as_bytes`.
 
     Returns:
@@ -178,7 +176,7 @@ async def cloud_storage_download_blob_to_file(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
-        download_kwargs: Additional keyword arguments to pass to
+        **download_kwargs: Additional keyword arguments to pass to
             `Blob.download_to_filename`.
 
     Returns:
@@ -255,7 +253,7 @@ async def cloud_storage_upload_blob_from_string(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
-        upload_kwargs: Additional keyword arguments to pass to
+        **upload_kwargs: Additional keyword arguments to pass to
             `Blob.upload_from_string`.
 
     Returns:
@@ -330,7 +328,7 @@ async def cloud_storage_upload_blob_from_file(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
-        upload_kwargs: Additional keyword arguments to pass to
+        **upload_kwargs: Additional keyword arguments to pass to
             `Blob.upload_from_file` or `Blob.upload_from_filename`.
 
     Returns:
@@ -407,7 +405,7 @@ async def cloud_storage_copy_blob(
             (connect_timeout, read_timeout).
         project: Name of the project to use; overrides the
             gcp_credentials project if provided.
-        copy_kwargs: Additional keyword arguments to pass to
+        **copy_kwargs: Additional keyword arguments to pass to
             `Bucket.copy_blob`.
 
     Returns:

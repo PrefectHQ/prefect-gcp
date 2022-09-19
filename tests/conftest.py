@@ -17,8 +17,8 @@ def prefect_db():
 @pytest.fixture
 def oauth2_credentials(monkeypatch):
     CredentialsMock = MagicMock()
-    CredentialsMock.from_service_account_info.side_effect = lambda json: json
-    CredentialsMock.from_service_account_file.side_effect = lambda file: file
+    CredentialsMock.from_service_account_info.side_effect = lambda json, scopes: json
+    CredentialsMock.from_service_account_file.side_effect = lambda file, scopes: file
     monkeypatch.setattr("prefect_gcp.credentials.Credentials", CredentialsMock)
 
 
