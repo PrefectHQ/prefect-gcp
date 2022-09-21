@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `infer_project` keyword in `GcpCredentials` - []()
+- `infer_project` keyword in `GcpCredentials` - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
 
 ### Changed
 
-- `project` is no longer automatically inferred from credentials without `infer_project` - []()
+- `project` is no longer automatically inferred from credentials without `infer_project` - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
 
 ### Deprecated
 
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Retrieving the `project_id` from service account if `project` is not specified - []()
+- Retrieving the `project_id` from service account if `project` is not specified - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
 
 ### Security
 
