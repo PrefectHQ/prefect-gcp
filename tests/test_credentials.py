@@ -25,7 +25,7 @@ SERVICE_ACCOUNT_FILES.append(os.path.expanduser(_get_first_file_in_root()))
 
 @pytest.fixture()
 def service_account_info_dict():
-    _service_account_info = {"key": "abc", "pass": "pass"}
+    _service_account_info = {"key": "abc", "pass": "pass", "project_id": "my_project"}
     return _service_account_info
 
 
@@ -54,7 +54,7 @@ def test_get_credentials_from_service_account_file(
     method to call GCP's method with the path we pass in.
     """
     credentials = GcpCredentials(
-        service_account_file=service_account_file, project="my-project"
+        service_account_file=service_account_file
     ).get_credentials_from_service_account()
     assert isinstance(credentials, PosixPath)
     assert credentials == Path(service_account_file).expanduser()
@@ -64,9 +64,10 @@ def test_get_credentials_from_service_account_info(
     service_account_info_dict, oauth2_credentials
 ):
     credentials = GcpCredentials(
-        service_account_info=service_account_info_dict, project="my-project"
+        service_account_info=service_account_info_dict
     ).get_credentials_from_service_account()
-    assert credentials == service_account_info_dict
+    for key, value in service_account_info_dict.items():
+        assert getattr(credentials, key) == value
 
 
 def test_get_credentials_from_service_account_file_error(oauth2_credentials):
@@ -86,6 +87,28 @@ def test_get_credentials_from_service_account_both_error(
         ).get_credentials_from_service_account()
 
 
+def test_cannot_infer_project_with_specified_project(
+    service_account_info_dict, oauth2_credentials
+):
+    with pytest.raises(ValueError):
+        GcpCredentials(
+            service_account_info=service_account_info_dict,
+            project="some_project",
+            infer_project=True,
+        )
+
+
+@pytest.mark.parametrize("infer_project", [True, False])
+def test_block_initialization(infer_project, service_account_info, oauth2_credentials):
+    gcp_credentials = GcpCredentials(
+        service_account_info=service_account_info, infer_project=infer_project
+    )
+    if infer_project:
+        assert gcp_credentials.project == "my_project"
+    else:
+        assert gcp_credentials.project is None
+
+
 @pytest.mark.parametrize("override_project", [None, "override_project"])
 def test_get_cloud_storage_client(
     override_project, service_account_info, oauth2_credentials, storage_client
@@ -102,7 +125,8 @@ def test_get_cloud_storage_client(
             expected = json.loads(service_account_info)
         else:
             expected = service_account_info
-        assert client.credentials == expected
+        for key, value in expected.items():
+            assert getattr(client.credentials, key) == value
 
         if override_project is None:
             assert client.project == project
@@ -125,6 +149,7 @@ class MockTargetConfigs(Block):
         configs = self.credentials.dict()
         for key in Block().dict():
             configs.pop(key, None)
+            configs.pop("infer_project")
         return configs
 
 
@@ -161,7 +186,11 @@ def test_credentials_is_able_to_serialize_back(service_account_info):
                 "target": {
                     "project": "my-project",
                     "service_account_file": None,
-                    "service_account_info": {"key": "abc", "pass": "pass"},
+                    "service_account_info": {
+                        "key": "abc",
+                        "pass": "pass",
+                        "project_id": "my_project",
+                    },
                 }
             }
         }
