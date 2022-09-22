@@ -66,7 +66,6 @@ def example_cloud_storage_download_blob_flow():
     gcp_credentials = GcpCredentials(
         service_account_file="/path/to/service/account/keyfile.json")
     contents = cloud_storage_download_blob_as_bytes("bucket", "blob", gcp_credentials)
-    contents= contents.decode()
     return contents
 
 example_cloud_storage_download_blob_flow()
