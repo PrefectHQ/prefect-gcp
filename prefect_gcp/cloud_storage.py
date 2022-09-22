@@ -337,7 +337,7 @@ async def cloud_storage_upload_blob_from_file(
 
     Example:
         Uploads blob to bucket.
-        ```
+        ```python
         from prefect import flow
         from prefect_gcp import GcpCredentials
         from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_file
