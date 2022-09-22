@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://prefecthq.github.io/prefect-gcp/cloud_storage/">
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.5.2">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.5.3">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.9f9400aa.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7a952b86.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
@@ -1825,13 +1825,14 @@ gcp_credentials project if provided.</p></td>
     <p>Downloads blob from bucket.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
 <span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_download_blob</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_download_blob_as_bytes</span>
 
 <span class="nd">@flow</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">example_cloud_storage_download_blob_flow</span><span class="p">():</span>
     <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
         <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
-    <span class="n">contents</span> <span class="o">=</span> <span class="n">cloud_storage_download_blob</span><span class="p">(</span><span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
+    <span class="n">contents</span> <span class="o">=</span> <span class="n">cloud_storage_download_blob_as_bytes</span><span class="p">(</span>
+        <span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">contents</span>
 
 <span class="n">example_cloud_storage_download_blob_flow</span><span class="p">()</span>
@@ -1877,13 +1878,14 @@ gcp_credentials project if provided.</p></td>
 <span class="sd">        ```python</span>
 <span class="sd">        from prefect import flow</span>
 <span class="sd">        from prefect_gcp import GcpCredentials</span>
-<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_download_blob</span>
+<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_download_blob_as_bytes</span>
 
 <span class="sd">        @flow()</span>
 <span class="sd">        def example_cloud_storage_download_blob_flow():</span>
 <span class="sd">            gcp_credentials = GcpCredentials(</span>
 <span class="sd">                service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)</span>
-<span class="sd">            contents = cloud_storage_download_blob(&quot;bucket&quot;, &quot;blob&quot;, gcp_credentials)</span>
+<span class="sd">            contents = cloud_storage_download_blob_as_bytes(</span>
+<span class="sd">                &quot;bucket&quot;, &quot;blob&quot;, gcp_credentials)</span>
 <span class="sd">            return contents</span>
 
 <span class="sd">        example_cloud_storage_download_blob_flow()</span>
@@ -2019,14 +2021,14 @@ gcp_credentials project if provided.</p></td>
     <p>Downloads blob from bucket.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
 <span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_download_blob</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_download_blob_to_file</span>
 
 <span class="nd">@flow</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">example_cloud_storage_download_blob_flow</span><span class="p">():</span>
     <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
         <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">cloud_storage_download_blob</span><span class="p">(</span>
-        <span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="s2">&quot;data_path&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">cloud_storage_download_blob_to_file</span><span class="p">(</span>
+        <span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="s2">&quot;file_path&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">path</span>
 
 <span class="n">example_cloud_storage_download_blob_flow</span><span class="p">()</span>
@@ -2075,14 +2077,14 @@ gcp_credentials project if provided.</p></td>
 <span class="sd">        ```python</span>
 <span class="sd">        from prefect import flow</span>
 <span class="sd">        from prefect_gcp import GcpCredentials</span>
-<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_download_blob</span>
+<span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_download_blob_to_file</span>
 
 <span class="sd">        @flow()</span>
 <span class="sd">        def example_cloud_storage_download_blob_flow():</span>
 <span class="sd">            gcp_credentials = GcpCredentials(</span>
 <span class="sd">                service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)</span>
-<span class="sd">            path = cloud_storage_download_blob(</span>
-<span class="sd">                &quot;bucket&quot;, &quot;blob&quot;, &quot;data_path&quot;, gcp_credentials)</span>
+<span class="sd">            path = cloud_storage_download_blob_to_file(</span>
+<span class="sd">                &quot;bucket&quot;, &quot;blob&quot;, &quot;file_path&quot;, gcp_credentials)</span>
 <span class="sd">            return path</span>
 
 <span class="sd">        example_cloud_storage_download_blob_flow()</span>
@@ -2231,19 +2233,19 @@ gcp_credentials project if provided.</p></td>
 </table>
 <p><strong>Examples:</strong></p>
     <p>Uploads blob to bucket.
-<div class="highlight"><pre><span></span><code>from prefect import flow
-from prefect_gcp import GcpCredentials
-from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_file
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_upload_blob_from_file</span>
 
-@flow()
-def example_cloud_storage_upload_blob_from_file_flow():
-    gcp_credentials = GcpCredentials(
-        service_account_file=&quot;/path/to/service/account/keyfile.json&quot;)
-    blob = cloud_storage_upload_blob_from_file(
-        &quot;/path/somewhere&quot;, &quot;bucket&quot;, &quot;blob&quot;, gcp_credentials)
-    return blob
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_cloud_storage_upload_blob_from_file_flow</span><span class="p">():</span>
+    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">cloud_storage_upload_blob_from_file</span><span class="p">(</span>
+        <span class="s2">&quot;/path/somewhere&quot;</span><span class="p">,</span> <span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">blob</span>
 
-example_cloud_storage_upload_blob_from_file_flow()
+<span class="n">example_cloud_storage_upload_blob_from_file_flow</span><span class="p">()</span>
 </code></pre></div></p>
 
         <details class="quote">
@@ -2289,7 +2291,7 @@ example_cloud_storage_upload_blob_from_file_flow()
 
 <span class="sd">    Example:</span>
 <span class="sd">        Uploads blob to bucket.</span>
-<span class="sd">        ```</span>
+<span class="sd">        ```python</span>
 <span class="sd">        from prefect import flow</span>
 <span class="sd">        from prefect_gcp import GcpCredentials</span>
 <span class="sd">        from prefect_gcp.cloud_storage import cloud_storage_upload_blob_from_file</span>
@@ -2628,10 +2630,10 @@ gcp_credentials project if provided.</p></td>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.39f04ddb.min.js"></script>
+      <script src="../assets/javascripts/bundle.37e9125f.min.js"></script>
       
     
   </body>
