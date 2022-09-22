@@ -63,7 +63,7 @@ class GcpCredentials(Block):
     """
     Block used to manage authentication with GCP. GCP authentication is
     handled via the `google.oauth2` module or through the CLI.
-    Specify either one of service account_file or service_account_info; if both
+    Specify either one of service `account_file` or `service_account_info`; if both
     are not specified, the client will try to detect the service account info stored
     in the env from the command, `gcloud auth application-default login`. Refer to the
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
@@ -74,7 +74,7 @@ class GcpCredentials(Block):
         service_account_info: The contents of the keyfile as a dict or JSON string.
 
     Example:
-        Load stored GCP credentials:
+        Load GCP credentials stored in a `GCP Credentials` Block:
         ```python
         from prefect_gcp import GcpCredentials
         gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
@@ -175,6 +175,7 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
+
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
@@ -188,6 +189,7 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
+
             @flow()
             def example_get_client_flow():
                 service_account_info = {
@@ -235,6 +237,7 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
+
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
@@ -248,6 +251,7 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
+
             @flow()
             def example_get_client_flow():
                 service_account_info = {
@@ -291,6 +295,7 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
+
             @flow()
             def example_get_client_flow():
                 service_account_file = "~/.secrets/prefect-service-account.json"
@@ -304,6 +309,7 @@ class GcpCredentials(Block):
             ```python
             from prefect import flow
             from prefect_gcp.credentials import GcpCredentials
+
             @flow()
             def example_get_client_flow():
                 service_account_info = {
