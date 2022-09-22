@@ -187,14 +187,14 @@ async def cloud_storage_download_blob_to_file(
         ```python
         from prefect import flow
         from prefect_gcp import GcpCredentials
-        from prefect_gcp.cloud_storage import cloud_storage_download_blob
+        from prefect_gcp.cloud_storage import cloud_storage_download_blob_to_file
 
         @flow()
         def example_cloud_storage_download_blob_flow():
             gcp_credentials = GcpCredentials(
                 service_account_file="/path/to/service/account/keyfile.json")
-            path = cloud_storage_download_blob(
-                "bucket", "blob", "data_path", gcp_credentials)
+            path = cloud_storage_download_blob_to_file(
+                "bucket", "blob", "file_path", gcp_credentials)
             return path
 
         example_cloud_storage_download_blob_flow()
