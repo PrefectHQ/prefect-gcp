@@ -436,7 +436,7 @@ async def cloud_storage_copy_blob(
     logger = get_run_logger()
     logger.info(
         "Copying blob named %s from the %s bucket to the %s bucket",
-        dest_blob or source_blob,
+        source_blob,
         source_bucket,
         dest_bucket,
     )
