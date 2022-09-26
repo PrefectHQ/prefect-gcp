@@ -87,26 +87,9 @@ def test_get_credentials_from_service_account_both_error(
         ).get_credentials_from_service_account()
 
 
-def test_cannot_infer_project_with_specified_project(
-    service_account_info_dict, oauth2_credentials
-):
-    with pytest.raises(ValueError):
-        GcpCredentials(
-            service_account_info=service_account_info_dict,
-            project="some_project",
-            infer_project=True,
-        )
-
-
-@pytest.mark.parametrize("infer_project", [True, False])
-def test_block_initialization(infer_project, service_account_info, oauth2_credentials):
-    gcp_credentials = GcpCredentials(
-        service_account_info=service_account_info, infer_project=infer_project
-    )
-    if infer_project:
-        assert gcp_credentials.project == "my_project"
-    else:
-        assert gcp_credentials.project is None
+def test_block_initialization(service_account_info, oauth2_credentials):
+    gcp_credentials = GcpCredentials(service_account_info=service_account_info)
+    assert gcp_credentials.project == "my_project"
 
 
 @pytest.mark.parametrize("override_project", [None, "override_project"])
@@ -149,7 +132,6 @@ class MockTargetConfigs(Block):
         configs = self.credentials.dict()
         for key in Block().dict():
             configs.pop(key, None)
-            configs.pop("infer_project")
         return configs
 
 

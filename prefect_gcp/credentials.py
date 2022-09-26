@@ -87,7 +87,6 @@ class GcpCredentials(Block):
     service_account_file: Optional[Path] = None
     service_account_info: Optional[Union[Dict[str, str], Json]] = None
     project: Optional[str] = None
-    infer_project: bool = False
 
     @root_validator
     def _provide_one_service_account_source(cls, values):
@@ -105,12 +104,6 @@ class GcpCredentials(Block):
             )
         return values
 
-    @root_validator
-    def _cannot_infer_project_with_specified_project(cls, values):
-        if values.get("infer_project") and values.get("project"):
-            raise ValueError("Unable to infer project with a project already set")
-        return values
-
     @validator("service_account_file")
     def _check_service_account_file(cls, file):
         """Get full path of provided file and make sure that it exists."""
@@ -123,9 +116,8 @@ class GcpCredentials(Block):
         return service_account_file
 
     def block_initialization(self):
-        if self.infer_project:
-            credentials = self.get_credentials_from_service_account()
-            self.project = credentials.project_id
+        credentials = self.get_credentials_from_service_account()
+        self.project = credentials.project_id
 
     def get_credentials_from_service_account(self) -> Union[Credentials, None]:
         """
