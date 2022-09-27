@@ -120,7 +120,7 @@ class GcpCredentials(Block):
         if self.project is None:
             self.project = credentials.project_id
 
-    def get_credentials_from_service_account(self) -> Union[Credentials, None]:
+    def get_credentials_from_service_account(self) -> Credentials:
         """
         Helper method to serialize credentials by using either
         service_account_file or service_account_info.
