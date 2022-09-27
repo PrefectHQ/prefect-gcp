@@ -118,9 +118,13 @@ class GcpCredentials(Block):
     def block_initialization(self):
         credentials = self.get_credentials_from_service_account()
         if self.project is None:
-            self.project = credentials.project_id
+            if self.service_account_info or self.service_account_file:
+                credentials_project = credentials.project_id
+            else:  # google.auth.default using gcloud auth application-default login
+                credentials_project = credentials.quota_project_id
+            self.project = credentials_project
 
-    def get_credentials_from_service_account(self) -> Union[Credentials, None]:
+    def get_credentials_from_service_account(self) -> Credentials:
         """
         Helper method to serialize credentials by using either
         service_account_file or service_account_info.

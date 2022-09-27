@@ -16,6 +16,20 @@ def prefect_db():
 
 
 @pytest.fixture
+def google_auth(monkeypatch):
+    google_auth_mock = MagicMock()
+    default_credentials_mock = MagicMock(
+        client_id="my_client_id", quota_project_id="my_project"
+    )
+    google_auth_mock.default.side_effect = lambda *args, **kwargs: (
+        default_credentials_mock,
+        None,
+    )
+    monkeypatch.setattr("google.auth", google_auth_mock)
+    return google_auth_mock
+
+
+@pytest.fixture
 def oauth2_credentials(monkeypatch):
     CredentialsMock = MagicMock()
     CredentialsMock.from_service_account_info.side_effect = (
@@ -150,12 +164,8 @@ class SecretManagerClient:
 
 
 @pytest.fixture
-def gcp_credentials(monkeypatch):
-    google_auth_mock = MagicMock()
-    google_auth_mock.default.side_effect = lambda: (MagicMock(), MagicMock())
-    monkeypatch.setattr("google.auth", google_auth_mock)
+def gcp_credentials(monkeypatch, google_auth):
     gcp_credentials_mock = GcpCredentials(project="gcp_credentials_project")
-    google_auth_mock.default.assert_called_with()
     gcp_credentials_mock.get_cloud_storage_client = (
         lambda *args, **kwargs: CloudStorageClient()
     )
