@@ -1,10 +1,6 @@
 {
   "template": "https://github.com/PrefectHQ/prefect-collection-template",
-<<<<<<< HEAD
   "commit": "b1962373b9265b51e0920e2950f899e2c2bf75a0",
-=======
-  "commit": "c0ea1b51ff5cf11aca3e64168d1025c6bcab4bca",
->>>>>>> 7c2cc9eac49d64001a2ccde880ed02c0b5361235
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -13,11 +9,7 @@
       "github_organization": "PrefectHQ",
       "collection_name": "prefect-gcp",
       "collection_slug": "prefect_gcp",
-<<<<<<< HEAD
       "collection_short_description": "Prefect integrations for interacting with Google Cloud Platform.",
-=======
-      "collection_short_description": "Prefect integrations with Google Cloud Platform.",
->>>>>>> 7c2cc9eac49d64001a2ccde880ed02c0b5361235
       "_copy_without_render": [
         ".github/workflows/*.yml"
       ],
