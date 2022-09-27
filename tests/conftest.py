@@ -150,8 +150,12 @@ class SecretManagerClient:
 
 
 @pytest.fixture
-def gcp_credentials():
+def gcp_credentials(monkeypatch):
+    google_auth_mock = MagicMock()
+    google_auth_mock.default.side_effect = lambda: (MagicMock(), MagicMock())
+    monkeypatch.setattr("google.auth", google_auth_mock)
     gcp_credentials_mock = GcpCredentials(project="gcp_credentials_project")
+    google_auth_mock.default.assert_called_with()
     gcp_credentials_mock.get_cloud_storage_client = (
         lambda *args, **kwargs: CloudStorageClient()
     )
