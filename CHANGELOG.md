@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Retrieving the `project_id` from service account if `project` is not specified - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
+- Retrieving the `project_id` from service account or `quota_project_id` from gcloud CLI if `project` is not specified - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
 
 ### Security
 
