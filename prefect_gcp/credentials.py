@@ -117,7 +117,8 @@ class GcpCredentials(Block):
 
     def block_initialization(self):
         credentials = self.get_credentials_from_service_account()
-        self.project = credentials.project_id
+        if self.project is None:
+            self.project = credentials.project_id
 
     def get_credentials_from_service_account(self) -> Union[Credentials, None]:
         """

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -159,3 +160,29 @@ def gcp_credentials():
         lambda *args, **kwargs: SecretManagerClient()
     )
     return gcp_credentials_mock
+
+
+@pytest.fixture()
+def service_account_info_dict(monkeypatch):
+    monkeypatch.setattr(
+        "google.auth.crypt._cryptography_rsa.serialization.load_pem_private_key",
+        lambda *args, **kwargs: args[0],
+    )
+    _service_account_info = {
+        "project_id": "my_project",
+        "token_uri": "my-token-uri",
+        "client_email": "my-client-email",
+        "private_key": "my-private-key",
+    }
+    return _service_account_info
+
+
+@pytest.fixture()
+def service_account_info_json(service_account_info_dict):
+    _service_account_info = json.dumps(service_account_info_dict)
+    return _service_account_info
+
+
+@pytest.fixture(params=["service_account_info_dict", "service_account_info_json"])
+def service_account_info(request):
+    return request.getfixturevalue(request.param)
