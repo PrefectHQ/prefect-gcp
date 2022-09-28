@@ -11,17 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Invoke `google.auth.default` if both `service_account_info` and `service_account_file` is not specified - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
-
 ### Deprecated
 
 ### Removed
 
 ### Fixed
 
-- Retrieving the `project_id` from service account or `quota_project_id` from gcloud CLI if `project` is not specified - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
-
 ### Security
+
+## 0.1.5
+
+Released on September 28th, 2022.
+
+### Changed
+
+- Invoke `google.auth.default` if both `service_account_info` and `service_account_file` is not specified - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
+
+### Fixed
+
+- Retrieving the `project_id` from service account or `quota_project_id` from gcloud CLI if `project` is not specified - [#57](https://github.com/PrefectHQ/prefect-gcp/pull/57)
 
 ## 0.1.4
 
