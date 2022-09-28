@@ -396,13 +396,11 @@ class TestExecution:
 
 
 @pytest.fixture
-def cloud_run_job():
+def cloud_run_job(service_account_info):
     return CloudRunJob(
         image="gcr.io//not-a/real-image",
         region="middle-earth2",
-        credentials=GcpCredentials(
-            service_account_info={"hello": "world"}, project="my-project"
-        ),
+        credentials=GcpCredentials(service_account_info=service_account_info),
     )
 
 
