@@ -3,12 +3,12 @@
 <p align="center">
     <a href="https://pypi.python.org/pypi/prefect-gcp/" alt="PyPI version">
         <img alt="PyPI" src="https://img.shields.io/pypi/v/prefect-gcp?color=0052FF&labelColor=090422"></a>
-    <a href="https://github.com/prefecthq/prefect-gcp/" alt="Stars">
-        <img src="https://img.shields.io/github/stars/prefecthq/prefect-gcp?color=0052FF&labelColor=090422" /></a>
+    <a href="https://github.com/PrefectHQ/prefect-gcp/" alt="Stars">
+        <img src="https://img.shields.io/github/stars/PrefectHQ/prefect-gcp?color=0052FF&labelColor=090422" /></a>
     <a href="https://pepy.tech/badge/prefect-gcp/" alt="Downloads">
         <img src="https://img.shields.io/pypi/dm/prefect-gcp?color=0052FF&labelColor=090422" /></a>
-    <a href="https://github.com/prefecthq/prefect-gcp/pulse" alt="Activity">
-        <img src="https://img.shields.io/github/commit-activity/m/prefecthq/prefect-gcp?color=0052FF&labelColor=090422" /></a>
+    <a href="https://github.com/PrefectHQ/prefect-gcp/pulse" alt="Activity">
+        <img src="https://img.shields.io/github/commit-activity/m/PrefectHQ/prefect-gcp?color=0052FF&labelColor=090422" /></a>
     <br>
     <a href="https://prefect-community.slack.com" alt="Slack">
         <img src="https://img.shields.io/badge/slack-join_community-red.svg?color=0052FF&labelColor=090422&logo=slack" /></a>
@@ -54,6 +54,14 @@ To use Secret Manager:
 pip install "prefect-gcp[secret_manager]"
 ```
 
+Then, register to [view the block](https://orion-docs.prefect.io/ui/blocks/) on Prefect Cloud:
+
+```bash
+prefect block register -m prefect_gcp.credentials
+```
+
+Note, to use the `load` method on Blocks, you must already have a block document [saved through code](https://orion-docs.prefect.io/concepts/blocks/#saving-blocks) or [saved through the UI](https://orion-docs.prefect.io/ui/blocks/).
+
 ### Write and run a flow
 
 ```python
@@ -76,6 +84,8 @@ example_cloud_storage_download_blob_flow()
 If you encounter any bugs while using `prefect-gcp`, feel free to open an issue in the [prefect-gcp](https://github.com/PrefectHQ/prefect-gcp) repository.
 
 If you have any questions or issues while using `prefect-gcp`, you can find help in either the [Prefect Discourse forum](https://discourse.prefect.io/) or the [Prefect Slack community](https://prefect.io/slack).
+
+Feel free to ⭐️ or watch [`prefect-gcp`](https://github.com/PrefectHQ/prefect-gcp) for updates too!
 
 ## Development
 

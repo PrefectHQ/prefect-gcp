@@ -4,6 +4,7 @@ import functools
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
 from pydantic import Json, root_validator, validator
@@ -92,10 +93,11 @@ class GcpCredentials(Block):
         """
         Ensure that only a service account file or service account info ias provided.
         """
-        if (
+        both_service_account = (
             values.get("service_account_info") is not None
             and values.get("service_account_file") is not None
-        ):
+        )
+        if both_service_account:
             raise ValueError(
                 "Only one of service_account_info or service_account_file "
                 "can be specified at once"
@@ -114,29 +116,31 @@ class GcpCredentials(Block):
         return service_account_file
 
     def block_initialization(self):
-        if self.project is None and (
-            self.service_account_file or self.service_account_info
-        ):
-            credentials = self.get_credentials_from_service_account()
-            self.project = credentials.project
+        credentials = self.get_credentials_from_service_account()
+        if self.project is None:
+            if self.service_account_info or self.service_account_file:
+                credentials_project = credentials.project_id
+            else:  # google.auth.default using gcloud auth application-default login
+                credentials_project = credentials.quota_project_id
+            self.project = credentials_project
 
-    def get_credentials_from_service_account(self) -> Union[Credentials, None]:
+    def get_credentials_from_service_account(self) -> Credentials:
         """
         Helper method to serialize credentials by using either
         service_account_file or service_account_info.
         """
-        if self.service_account_file:
-            credentials = Credentials.from_service_account_file(
-                self.service_account_file,
-                scopes=["https://www.googleapis.com/auth/cloud-platform"],
-            )
-        elif self.service_account_info:
+        if self.service_account_info:
             credentials = Credentials.from_service_account_info(
                 self.service_account_info,
                 scopes=["https://www.googleapis.com/auth/cloud-platform"],
             )
+        elif self.service_account_file:
+            credentials = Credentials.from_service_account_file(
+                self.service_account_file,
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
         else:
-            return None
+            credentials, _ = google.auth.default()
         return credentials
 
     async def get_access_token(self):
@@ -147,7 +151,6 @@ class GcpCredentials(Block):
         request = google.auth.transport.requests.Request()
         credentials = self.get_credentials_from_service_account()
         await run_sync_in_worker_thread(credentials.refresh, request)
-
         return credentials.token
 
     @_raise_help_msg("cloud_storage")
