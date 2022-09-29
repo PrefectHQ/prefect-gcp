@@ -2,7 +2,7 @@ site_name: prefect-gcp
 site_url: https://PrefectHQ.github.io/prefect-gcp
 repo_url: https://github.com/PrefectHQ/prefect-gcp
 edit_uri: edit/main/docs/
- theme:
+theme:
   name: material
   favicon: img/favicon.ico
   palette:
