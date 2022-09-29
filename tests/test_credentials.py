@@ -23,23 +23,6 @@ SERVICE_ACCOUNT_FILES.append(_get_first_file_in_root())
 SERVICE_ACCOUNT_FILES.append(os.path.expanduser(_get_first_file_in_root()))
 
 
-@pytest.fixture()
-def service_account_info_dict():
-    _service_account_info = {"key": "abc", "pass": "pass"}
-    return _service_account_info
-
-
-@pytest.fixture()
-def service_account_info_json(service_account_info_dict):
-    _service_account_info = json.dumps(service_account_info_dict)
-    return _service_account_info
-
-
-@pytest.fixture(params=["service_account_info_dict", "service_account_info_json"])
-def service_account_info(request):
-    return request.getfixturevalue(request.param)
-
-
 @pytest.mark.parametrize("service_account_file", SERVICE_ACCOUNT_FILES)
 def test_get_credentials_from_service_account_file(
     service_account_file, oauth2_credentials
@@ -61,12 +44,15 @@ def test_get_credentials_from_service_account_file(
 
 
 def test_get_credentials_from_service_account_info(
-    service_account_info_dict, oauth2_credentials
+    service_account_info, oauth2_credentials
 ):
     credentials = GcpCredentials(
-        service_account_info=service_account_info_dict, project="my-project"
+        service_account_info=service_account_info, project="my-project"
     ).get_credentials_from_service_account()
-    assert credentials == service_account_info_dict
+    if isinstance(service_account_info, str):
+        service_account_info = json.loads(service_account_info)
+    for key, value in service_account_info.items():
+        assert getattr(credentials, key) == value
 
 
 def test_get_credentials_from_service_account_file_error(oauth2_credentials):
@@ -86,6 +72,25 @@ def test_get_credentials_from_service_account_both_error(
         ).get_credentials_from_service_account()
 
 
+def test_block_initialization(service_account_info, oauth2_credentials):
+    gcp_credentials = GcpCredentials(service_account_info=service_account_info)
+    assert gcp_credentials.project == "my_project"
+
+
+def test_block_initialization_project_specified(
+    service_account_info, oauth2_credentials
+):
+    gcp_credentials = GcpCredentials(
+        service_account_info=service_account_info, project="overrided_project"
+    )
+    assert gcp_credentials.project == "overrided_project"
+
+
+def test_block_initialization_gcloud_cli(google_auth, oauth2_credentials):
+    gcp_credentials = GcpCredentials()
+    assert gcp_credentials.project == "my_project"
+
+
 @pytest.mark.parametrize("override_project", [None, "override_project"])
 def test_get_cloud_storage_client(
     override_project, service_account_info, oauth2_credentials, storage_client
@@ -102,7 +107,8 @@ def test_get_cloud_storage_client(
             expected = json.loads(service_account_info)
         else:
             expected = service_account_info
-        assert client.credentials == expected
+        for key, value in expected.items():
+            assert getattr(client.credentials, key) == value
 
         if override_project is None:
             assert client.project == project
@@ -140,7 +146,7 @@ class MockCliProfile(Block):
         return profile
 
 
-def test_credentials_is_able_to_serialize_back(service_account_info):
+def test_credentials_is_able_to_serialize_back(monkeypatch, service_account_info):
     @task
     def test_task(mock_cli_profile):
         return mock_cli_profile.get_profile()
@@ -161,7 +167,12 @@ def test_credentials_is_able_to_serialize_back(service_account_info):
                 "target": {
                     "project": "my-project",
                     "service_account_file": None,
-                    "service_account_info": {"key": "abc", "pass": "pass"},
+                    "service_account_info": {
+                        "project_id": "my_project",
+                        "token_uri": "my-token-uri",
+                        "client_email": "my-client-email",
+                        "private_key": "my-private-key",
+                    },
                 }
             }
         }

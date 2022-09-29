@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -15,9 +16,25 @@ def prefect_db():
 
 
 @pytest.fixture
+def google_auth(monkeypatch):
+    google_auth_mock = MagicMock()
+    default_credentials_mock = MagicMock(
+        client_id="my_client_id", quota_project_id="my_project"
+    )
+    google_auth_mock.default.side_effect = lambda *args, **kwargs: (
+        default_credentials_mock,
+        None,
+    )
+    monkeypatch.setattr("google.auth", google_auth_mock)
+    return google_auth_mock
+
+
+@pytest.fixture
 def oauth2_credentials(monkeypatch):
     CredentialsMock = MagicMock()
-    CredentialsMock.from_service_account_info.side_effect = lambda json, scopes: json
+    CredentialsMock.from_service_account_info.side_effect = (
+        lambda json, scopes: MagicMock(scopes=scopes, **json)
+    )
     CredentialsMock.from_service_account_file.side_effect = lambda file, scopes: file
     monkeypatch.setattr("prefect_gcp.credentials.Credentials", CredentialsMock)
 
@@ -147,7 +164,7 @@ class SecretManagerClient:
 
 
 @pytest.fixture
-def gcp_credentials():
+def gcp_credentials(monkeypatch, google_auth):
     gcp_credentials_mock = GcpCredentials(project="gcp_credentials_project")
     gcp_credentials_mock.get_cloud_storage_client = (
         lambda *args, **kwargs: CloudStorageClient()
@@ -157,3 +174,29 @@ def gcp_credentials():
         lambda *args, **kwargs: SecretManagerClient()
     )
     return gcp_credentials_mock
+
+
+@pytest.fixture()
+def service_account_info_dict(monkeypatch):
+    monkeypatch.setattr(
+        "google.auth.crypt._cryptography_rsa.serialization.load_pem_private_key",
+        lambda *args, **kwargs: args[0],
+    )
+    _service_account_info = {
+        "project_id": "my_project",
+        "token_uri": "my-token-uri",
+        "client_email": "my-client-email",
+        "private_key": "my-private-key",
+    }
+    return _service_account_info
+
+
+@pytest.fixture()
+def service_account_info_json(service_account_info_dict):
+    _service_account_info = json.dumps(service_account_info_dict)
+    return _service_account_info
+
+
+@pytest.fixture(params=["service_account_info_dict", "service_account_info_json"])
+def service_account_info(request):
+    return request.getfixturevalue(request.param)
