@@ -21,7 +21,14 @@ extra_css:
 markdown_extensions:
     - admonition
     - attr_list
-  
+    - codehilite
+    - md_in_html
+    - meta
+    - pymdownx.highlight:
+        use_pygments: true
+    - pymdownx.superfences
+    - pymdownx.tabbed
+
 plugins:
   - search
   - gen-files:
