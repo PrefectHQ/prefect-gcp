@@ -92,7 +92,7 @@ from prefect_gcp.cloud_run import CloudRunJob
 @flow
 def cloud_run_job_flow():
     cloud_run_job = CloudRunJob(
-        image="prefecthq/prefect",
+        image="us-docker.pkg.dev/cloudrun/container/job:latest",
         credentials=GcpCredentials.load("MY_BLOCK_NAME"),
         region="us-central1",
         command=["echo", "hello world"],

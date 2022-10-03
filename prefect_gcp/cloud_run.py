@@ -228,7 +228,7 @@ class CloudRunJob(Infrastructure):
         description=(
             "The image to use for a new Cloud Run Job. This value must "
             "refer to an image within either Google Container Registry "
-            "or Google Artifact Registry."
+            "or Google Artifact Registry, like `gcr.io/<project_name>/<repo>/`"
         ),
     )
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
