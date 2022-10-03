@@ -80,7 +80,9 @@ def cloud_storage_download_blob_flow():
 cloud_storage_download_blob_flow()
 ```
 
-### Run command on Cloud Run
+### Deploy command on Cloud Run
+
+Save the following as `prefect_gcp_flow.py`:
 
 ```python
 from prefect import flow
@@ -90,15 +92,35 @@ from prefect_gcp.cloud_run import CloudRunJob
 @flow
 def cloud_run_job_flow():
     cloud_run_job = CloudRunJob(
-        image="us-docker.pkg.dev/cloudrun/container/job:latest",
+        image="prefecthq/prefect",
         credentials=GcpCredentials.load("MY_BLOCK_NAME"),
         region="us-central1",
         command=["echo", "hello world"],
     )
     return cloud_run_job.run()
-
-cloud_run_job_flow()
 ```
+
+Deploy `prefect_gcp_flow.py`:
+
+```python
+from prefect.deployments import Deployment
+from prefect_gcp_flow import cloud_run_job_flow
+
+deployment = Deployment.build_from_flow(
+    flow=cloud_run_job_flow,
+    name="cloud_run_job_deployment", 
+    version=1, 
+    work_queue_name="demo",
+)
+deployment.apply()
+```
+
+Run the deployment either on the UI or through the CLI:
+```bash
+prefect deployment run cloud-run-job-flow/cloud_run_job_deployment
+```
+
+Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
 
 ## Resources
 
