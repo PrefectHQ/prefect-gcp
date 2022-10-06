@@ -323,9 +323,9 @@ class CloudRunJob(Infrastructure):
         """Make sure memory conforms to expected values for API.
         See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
         """  # noqa
-        if (
-            values.get("memory") is not None and values.get("memory_unit") is None
-        ) or (values.get("memory_unit") is not None and values.get("memory") is None):
+        if (values.get("memory") is not None and values.get("memory_unit") is None) or (
+            values.get("memory_unit") is not None and values.get("memory") is None
+        ):
             raise ValueError(
                 "A memory value and unit must both be supplied to specify a memory"
                 " value other than the default memory value."
