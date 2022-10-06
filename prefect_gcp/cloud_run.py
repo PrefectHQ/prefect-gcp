@@ -235,7 +235,7 @@ class CloudRunJob(Infrastructure):
     credentials: GcpCredentials  # cannot be Field; else it shows as Json
 
     # Job settings
-    cpu: int = Field(
+    cpu: Optional[int] = Field(
         default=None,
         title="CPU",
         description=(
