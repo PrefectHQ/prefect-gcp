@@ -1,5 +1,6 @@
 from unittest.mock import Mock
 
+import pydantic
 import pytest
 from prefect.settings import (
     PREFECT_API_KEY,
@@ -487,7 +488,7 @@ class TestCloudRunJobContainerSettings:
         assert result.get("resources") is None
 
     def test_resources_added_correctly(self, cloud_run_job):
-        cpu = "1234"
+        cpu = 1
         memory = 12
         memory_unit = "G"
         cloud_run_job.cpu = cpu
@@ -495,10 +496,41 @@ class TestCloudRunJobContainerSettings:
         cloud_run_job.memory_unit = memory_unit
         base_setting = {}
         result = cloud_run_job._add_container_settings(base_setting)
+        expected_cpu = "1000m"
         assert result["resources"] == {
-            "limits": {"cpu": cpu, "memory": str(memory) + memory_unit},
-            "requests": {"cpu": cpu, "memory": str(memory) + memory_unit},
+            "limits": {"cpu": expected_cpu, "memory": str(memory) + memory_unit},
+            "requests": {"cpu": expected_cpu, "memory": str(memory) + memory_unit},
         }
+
+    def test_memory_validation_succeeds(self, gcp_credentials):
+        """Make sure that memory validation doesn't fail when valid params provided."""
+        CloudRunJob(
+            image="gcr.io//not-a/real-image",
+            region="middle-earth2",
+            credentials=gcp_credentials,
+            cpu=1,
+            memory=1,
+            memory_unit="G",
+        )
+
+    def test_memory_validation_fails(self, gcp_credentials):
+        """Make sure memory validation fails without both unit and memory"""
+        with pytest.raises(pydantic.error_wrappers.ValidationError):
+            CloudRunJob(
+                image="gcr.io//not-a/real-image",
+                region="middle-earth2",
+                credentials=gcp_credentials,
+                cpu=1,
+                memory_unit="G",
+            )
+        with pytest.raises(pydantic.error_wrappers.ValidationError):
+            CloudRunJob(
+                image="gcr.io//not-a/real-image",
+                region="middle-earth2",
+                credentials=gcp_credentials,
+                cpu=1,
+                memory=1,
+            )
 
     def test_args_skipped_by_default(self, cloud_run_job):
         base_setting = {}
