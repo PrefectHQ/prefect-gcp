@@ -235,7 +235,7 @@ class CloudRunJob(Infrastructure):
     credentials: GcpCredentials  # cannot be Field; else it shows as Json
 
     # Job settings
-    cpu: Optional[int] = Field(
+    cpu: int = Field(
         default=None,
         title="CPU",
         description=(
@@ -318,14 +318,6 @@ class CloudRunJob(Infrastructure):
         if value is not None:
             return value.strip()
 
-    @validator("cpu")
-    def _convert_cpu_to_k8s_quantity(cls, value):
-        """Set CPU integer to the format expected by API.
-        See: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        See also: https://cloud.google.com/run/docs/configuring/cpu#setting-jobs
-        """  # noqa
-        return str(value * 1000) + "m"
-
     @root_validator
     def _check_valid_memory(cls, values):
         """Make sure memory conforms to expected values for API.
@@ -376,6 +368,13 @@ class CloudRunJob(Infrastructure):
                 raise exc
 
         raise exc
+
+    def _cpu_as_k8s_quantity(self) -> str:
+        """Return the CPU integer in the format expected by GCP Cloud Run Jobs API.
+        See: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        See also: https://cloud.google.com/run/docs/configuring/cpu#setting-jobs
+        """  # noqa
+        return str(self.cpu * 1000) + "m"
 
     @sync_compatible
     async def run(self, task_status: Optional[TaskStatus] = None):
@@ -664,8 +663,9 @@ class CloudRunJob(Infrastructure):
         resources = {"limits": {}, "requests": {}}
 
         if self.cpu is not None:
-            resources["limits"]["cpu"] = self.cpu
-            resources["requests"]["cpu"] = self.cpu
+            cpu = self._cpu_as_k8s_quantity()
+            resources["limits"]["cpu"] = cpu
+            resources["requests"]["cpu"] = cpu
         if self.memory_string is not None:
             resources["limits"]["memory"] = self.memory_string
             resources["requests"]["memory"] = self.memory_string

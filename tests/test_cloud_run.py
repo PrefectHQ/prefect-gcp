@@ -487,7 +487,7 @@ class TestCloudRunJobContainerSettings:
         assert result.get("resources") is None
 
     def test_resources_added_correctly(self, cloud_run_job):
-        cpu = "1234"
+        cpu = 1
         memory = 12
         memory_unit = "G"
         cloud_run_job.cpu = cpu
@@ -495,9 +495,10 @@ class TestCloudRunJobContainerSettings:
         cloud_run_job.memory_unit = memory_unit
         base_setting = {}
         result = cloud_run_job._add_container_settings(base_setting)
+        expected_cpu = "1000m"
         assert result["resources"] == {
-            "limits": {"cpu": cpu, "memory": str(memory) + memory_unit},
-            "requests": {"cpu": cpu, "memory": str(memory) + memory_unit},
+            "limits": {"cpu": expected_cpu, "memory": str(memory) + memory_unit},
+            "requests": {"cpu": expected_cpu, "memory": str(memory) + memory_unit},
         }
 
     def test_args_skipped_by_default(self, cloud_run_job):
