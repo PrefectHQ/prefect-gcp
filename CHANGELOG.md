@@ -17,8 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Validation errors for CPU and Memory being raised incorrectly - [#64](https://github.com/PrefectHQ/prefect-gcp/pull/64)
 ### Security
+
+## 0.1.6
+
+Released on October 7th, 2022.
+
+### Fixed
+
+- Validation errors for CPU and Memory being raised incorrectly - [#64](https://github.com/PrefectHQ/prefect-gcp/pull/64)
 
 ## 0.1.5
 
