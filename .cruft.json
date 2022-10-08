@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/PrefectHQ/prefect-collection-template",
-  "commit": "bec430a3d32d97d60da3db5964e14d9056f4751b",
+  "commit": "7d7bc7883431e648c8f0335e7de363fcd4169ac0",
   "checkout": null,
   "context": {
     "cookiecutter": {
