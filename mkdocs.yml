@@ -2,7 +2,7 @@ site_name: prefect-gcp
 site_url: https://PrefectHQ.github.io/prefect-gcp
 repo_url: https://github.com/PrefectHQ/prefect-gcp
 edit_uri: edit/main/docs/
- theme:
+theme:
   name: material
   favicon: img/favicon.ico
   palette:
@@ -21,7 +21,14 @@ extra_css:
 markdown_extensions:
     - admonition
     - attr_list
-  
+    - codehilite
+    - md_in_html
+    - meta
+    - pymdownx.highlight:
+        use_pygments: true
+    - pymdownx.superfences
+    - pymdownx.tabbed
+
 plugins:
   - search
   - gen-files:
@@ -33,8 +40,8 @@ plugins:
           rendering:
             show_root_heading: True
             show_object_full_path: False
-            show_category_heading: False
-            show_bases: False
+            show_category_heading: True
+            show_bases: True
             show_signature: False
             heading_level: 1
       watch:
