@@ -15,6 +15,7 @@ extras_require = {
     "cloud_storage": ["google-cloud-storage"],
     "bigquery": ["google-cloud-bigquery"],
     "secret_manager": ["google-cloud-secret-manager"],
+    "aiplatform": ["google-cloud-aiplatform"]
 }
 extras_require["all_extras"] = sorted(
     {lib for key in extras_require.values() for lib in key}
@@ -42,6 +43,7 @@ setup(
             "prefect_gcp = prefect_gcp",
             "prefect_gcp_cloud_run = prefect_gcp.cloud_run",
             "prefect_gcp_cloud_storage = prefect_gcp.cloud_storage",
+            "prefect_gcp_aiplatform = prefect_gcp.aiplatform"
         ]
     },
     classifiers=[
