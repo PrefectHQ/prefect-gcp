@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `CloudJobRun.kill` method for cancellation support - [#67](https://github.com/PrefectHQ/prefect-gcp/pull/67)
+
 ### Changed
 
 ### Deprecated

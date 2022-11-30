@@ -398,6 +398,30 @@ class CloudRunJob(Infrastructure):
             )
             return result
 
+    @sync_compatible
+    async def kill(self, identifier: str, grace_seconds: int = 30) -> None:
+        """
+        Kill a task running Cloud Run.
+
+        Args:
+            identifier: The Cloud Run Job name. This should match a
+                value yielded by CloudRunJob.run.
+        """
+        if grace_seconds != 30:
+            self.logger.warning(
+                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
+                "support dynamic grace period configuration. See here for more info: "
+                "https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs/delete"  # noqa
+            )
+
+        with self._get_client() as client:
+            await run_sync_in_worker_thread(
+                Job.delete,
+                client=client,
+                namespace=self.credentials.project,
+                job_name=identifier,
+            )
+
     def _create_job_and_wait_for_registration(self, client: Resource) -> None:
         """Create a new job wait for it to finish registering."""
         try:
