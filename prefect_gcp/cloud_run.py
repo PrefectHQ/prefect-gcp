@@ -46,6 +46,7 @@ from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
+from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import BaseModel, Field, root_validator, validator
@@ -135,7 +136,15 @@ class Job(BaseModel):
     def delete(client: Resource, namespace: str, job_name: str):
         """Make a delete request to the GCP jobs API."""
         request = client.jobs().delete(name=f"namespaces/{namespace}/jobs/{job_name}")
-        response = request.execute()
+        try:
+            response = request.execute()
+        except Exception as exc:
+            if "does not exist" in str(exc):
+                raise InfrastructureNotFound(
+                    f"Cannot stop Cloud Run Job; the job name {job_name!r} "
+                    "could not be found."
+                ) from exc
+            raise
         return response
 
     @staticmethod

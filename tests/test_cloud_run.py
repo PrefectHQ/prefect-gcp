@@ -3,6 +3,8 @@ from unittest.mock import Mock
 import anyio
 import pydantic
 import pytest
+from googleapiclient.errors import HttpError
+from prefect.exceptions import InfrastructureNotFound
 from prefect.settings import (
     PREFECT_API_KEY,
     PREFECT_API_URL,
@@ -769,6 +771,16 @@ class TestCloudRunJobRun:
 
         actual_calls = list_mock_calls(mock_client=mock_client)
         assert "call.jobs().delete().execute()" in actual_calls
+
+    def failed_to_get(self):
+        raise HttpError(Mock(reason="does not exist"), content=b"")
+
+    async def test_kill_not_found(self, mock_client, cloud_run_job):
+        mock_client.jobs().delete().execute.side_effect = self.failed_to_get
+        with pytest.raises(
+            InfrastructureNotFound, match="Cannot stop Cloud Run Job; the job name"
+        ):
+            await cloud_run_job.kill("non-existent")
 
     async def test_kill_grace_seconds(self, mock_client, cloud_run_job, caplog):
         mock_client.jobs().get().execute.return_value = self.job_ready
