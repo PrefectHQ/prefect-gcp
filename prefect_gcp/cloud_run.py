@@ -136,15 +136,7 @@ class Job(BaseModel):
     def delete(client: Resource, namespace: str, job_name: str):
         """Make a delete request to the GCP jobs API."""
         request = client.jobs().delete(name=f"namespaces/{namespace}/jobs/{job_name}")
-        try:
-            response = request.execute()
-        except Exception as exc:
-            if "does not exist" in str(exc):
-                raise InfrastructureNotFound(
-                    f"Cannot stop Cloud Run Job; the job name {job_name!r} "
-                    "could not be found."
-                ) from exc
-            raise
+        response = request.execute()
         return response
 
     @staticmethod
@@ -425,11 +417,27 @@ class CloudRunJob(Infrastructure):
 
         with self._get_client() as client:
             await run_sync_in_worker_thread(
-                Job.delete,
+                self._kill_job,
                 client=client,
                 namespace=self.credentials.project,
                 job_name=identifier,
             )
+
+    def _kill_job(client: Resource, namespace: str, job_name: str) -> None:
+        """
+        Thin wrapper around Job.delete, wrapping a try/except since
+        Job is an independent class that doesn't have knowledge of
+        CloudRunJob and its associated logic.
+        """
+        try:
+            Job.delete(client=client, namespace=namespace, job_name=job_name)
+        except Exception as exc:
+            if "does not exist" in str(exc):
+                raise InfrastructureNotFound(
+                    f"Cannot stop Cloud Run Job; the job name {job_name!r} "
+                    "could not be found."
+                ) from exc
+            raise
 
     def _create_job_and_wait_for_registration(self, client: Resource) -> None:
         """Create a new job wait for it to finish registering."""
