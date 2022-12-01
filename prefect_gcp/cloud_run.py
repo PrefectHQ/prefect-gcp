@@ -423,7 +423,7 @@ class CloudRunJob(Infrastructure):
                 job_name=identifier,
             )
 
-    def _kill_job(client: Resource, namespace: str, job_name: str) -> None:
+    def _kill_job(self, client: Resource, namespace: str, job_name: str) -> None:
         """
         Thin wrapper around Job.delete, wrapping a try/except since
         Job is an independent class that doesn't have knowledge of
