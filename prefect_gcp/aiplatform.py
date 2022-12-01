@@ -194,7 +194,8 @@ class VertexAICustomTrainingJob(Infrastructure):
         until_states: Tuple[JobState],
         timeout: int = None,
     ) -> CustomJob:
-        last_state = state = current_state
+        state = JobState.JOB_STATE_UNSPECIFIED
+        last_state = current_state
         t0 = time.time()
 
         while state not in until_states:
@@ -243,10 +244,11 @@ class VertexAICustomTrainingJob(Infrastructure):
         client_options = ClientOptions(
             api_endpoint=f"{self.region}-aiplatform.googleapis.com"
         )
+
+        job_spec = self._build_job_spec()
         with self.gcp_credentials.get_job_service_client(
             client_options=client_options
         ) as job_service_client:
-            job_spec = self._build_job_spec()
             job_run = await self._create_and_begin_job(job_spec, job_service_client)
 
             if task_status:
