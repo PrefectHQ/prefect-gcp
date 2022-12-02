@@ -131,7 +131,10 @@ class VertexAICustomTrainingJob(Infrastructure):
         return job_name
 
     def preview(self) -> str:
-        return "not implemented..."
+        """Generate a preview of the job definition that will be sent to GCP."""
+        job_spec = self._build_job_spec()
+        custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
+        return str(custom_job)  # outputs a json string
 
     def _build_job_spec(self) -> CustomJobSpec:
         # gather worker pool spec
@@ -171,8 +174,6 @@ class VertexAICustomTrainingJob(Infrastructure):
         self, job_spec: CustomJobSpec, job_service_client: JobServiceClient
     ) -> CustomJob:
         # create custom job
-        project = self.gcp_credentials.project
-        resource_name = f"projects/{project}/locations/{self.region}"
         custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
 
         # run job
@@ -181,6 +182,8 @@ class VertexAICustomTrainingJob(Infrastructure):
             f"in region {self.region!r} using image {self.image!r}..."
         )
 
+        project = self.gcp_credentials.project
+        resource_name = f"projects/{project}/locations/{self.region}"
         custom_job_run = await run_sync_in_worker_thread(
             job_service_client.create_custom_job,
             parent=resource_name,
