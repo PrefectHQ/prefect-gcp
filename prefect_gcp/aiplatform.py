@@ -13,9 +13,11 @@ from google.cloud.aiplatform_v1.types.custom_job import (
     Scheduling,
     WorkerPoolSpec,
 )
+from google.cloud.aiplatform_v1.types.job_service import CancelCustomJobRequest
 from google.cloud.aiplatform_v1.types.job_state import JobState
 from google.cloud.aiplatform_v1.types.machine_resources import MachineSpec
 from google.protobuf.duration_pb2 import Duration
+from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import Field
@@ -275,6 +277,49 @@ class VertexAICustomTrainingJob(Infrastructure):
         return VertexAICustomTrainingJobResult(
             identifier=final_job_run.display_name, status_code=status_code
         )
+
+    @sync_compatible
+    async def kill(self, identifier: str, grace_seconds: int = 30) -> None:
+        """
+        Kill a job running Cloud Run.
+
+        Args:
+            identifier: The Vertex AI job name, formatted like
+                "projects/{project}/locations/{location}/customJobs/{custom_job}".
+
+        Returns:
+            The `VertexAICustomTrainingJobResult`.
+        """
+        client_options = ClientOptions(
+            api_endpoint=f"{self.region}-aiplatform.googleapis.com"
+        )
+        with self.gcp_credentials.get_job_service_client(
+            client_options=client_options
+        ) as job_service_client:
+            await run_sync_in_worker_thread(
+                self._kill_job,
+                job_service_client=job_service_client,
+                job_name=identifier,
+            )
+
+    def _kill_job(self, job_service_client: JobServiceClient, job_name: str) -> None:
+        """
+        Thin wrapper around Job.delete, wrapping a try/except since
+        Job is an independent class that doesn't have knowledge of
+        CloudRunJob and its associated logic.
+        """
+        cancel_custom_job_request = CancelCustomJobRequest(name=job_name)
+        try:
+            job_service_client.cancel_custom_job(
+                request=cancel_custom_job_request,
+            )
+        except Exception as exc:
+            if "does not exist" in str(exc):
+                raise InfrastructureNotFound(
+                    f"Cannot stop Vertex AI job; the job name {job_name!r} "
+                    "could not be found."
+                ) from exc
+            raise
 
     @property
     def _log_prefix(self) -> str:
