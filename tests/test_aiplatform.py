@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-from google.cloud.aiplatform_v1.types.job_service import CancelCustomJobRequest
 from google.cloud.aiplatform_v1.types.job_state import JobState
 from prefect.exceptions import InfrastructureNotFound
 
@@ -52,11 +51,6 @@ class TestVertexAICustomTrainingJob:
     ):
         identifier = "projects/1234/locations/us-east1/customJobs/12345"
         vertex_ai_custom_training_job.kill(identifier)
-        request = CancelCustomJobRequest(name=identifier)
-        gcp_credentials = vertex_ai_custom_training_job.gcp_credentials
-        job_service_client = gcp_credentials.job_service_client
-        call_args_list = job_service_client.cancel_custom_job.call_args_list
-        assert call_args_list[0].kwargs["request"] == request
         for record in caplog.records:
             if f"Requested to cancel {identifier}..." in record.msg:
                 break

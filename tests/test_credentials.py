@@ -146,7 +146,7 @@ class MockTargetConfigs(Block):
         configs = self.credentials.dict()
         for key in Block().dict():
             configs.pop(key, None)
-        for key in configs.keys():
+        for key in configs.copy():
             if key.startswith("_"):
                 configs.pop(key)
         return configs
