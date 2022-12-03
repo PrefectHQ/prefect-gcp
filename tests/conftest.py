@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from google.cloud.aiplatform_v1.types.job_state import JobState
 from google.cloud.exceptions import NotFound
 from prefect.testing.utilities import prefect_test_harness
 
@@ -164,14 +165,51 @@ class SecretManagerClient:
 
 
 @pytest.fixture
-def gcp_credentials(monkeypatch, google_auth):
+def mock_credentials(monkeypatch):
+    mock_credentials = MagicMock(name="MockGoogleCredentials")
+    monkeypatch.setattr(
+        "prefect_gcp.cloud_run.GcpCredentials.get_credentials_from_service_account",  # noqa
+        mock_credentials,
+    )
+    return mock_credentials
+
+
+@pytest.fixture
+def job_service_client():
+    job_service_client_mock = MagicMock()
+    custom_run = MagicMock(name="mock_name")
+    job_service_client_mock.create_custom_job.return_value = custom_run
+
+    error = MagicMock(message="")
+    custom_run_final = MagicMock(
+        name="mock_name",
+        state=JobState.JOB_STATE_SUCCEEDED,
+        error=error,
+        display_name="mock_display_name",
+    )
+    job_service_client_mock.get_custom_job.return_value = custom_run_final
+    return job_service_client_mock
+
+
+@pytest.fixture
+def gcp_credentials(monkeypatch, google_auth, mock_credentials, job_service_client):
     gcp_credentials_mock = GcpCredentials(project="gcp_credentials_project")
+    gcp_credentials_mock._service_account_email = "my_service_account_email"
+
+    gcp_credentials_mock.cloud_storage_client = CloudStorageClient()
+    gcp_credentials_mock.secret_manager_client = SecretManagerClient()
+    gcp_credentials_mock.job_service_client = job_service_client
+    gcp_credentials_mock.job_service_client.__enter__.return_value = job_service_client
+
     gcp_credentials_mock.get_cloud_storage_client = (
-        lambda *args, **kwargs: CloudStorageClient()
+        lambda *args, **kwargs: gcp_credentials_mock.cloud_storage_client
     )
     gcp_credentials_mock.get_bigquery_client = lambda *args, **kwargs: BigQueryClient()
     gcp_credentials_mock.get_secret_manager_client = (
-        lambda *args, **kwargs: SecretManagerClient()
+        lambda *args, **kwargs: gcp_credentials_mock.secret_manager_client
+    )
+    gcp_credentials_mock.get_job_service_client = (
+        lambda *args, **kwargs: gcp_credentials_mock.job_service_client
     )
     return gcp_credentials_mock
 

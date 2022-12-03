@@ -1,3 +1,5 @@
+"""Integrations with Google VertexAI."""
+
 import datetime
 import time
 from typing import Dict, Optional, Tuple
@@ -137,6 +139,9 @@ class VertexAICustomTrainingJob(Infrastructure):
         return str(custom_job)  # outputs a json string
 
     def _build_job_spec(self) -> CustomJobSpec:
+        """
+        Builds a job spec by gathering details.
+        """
         # gather worker pool spec
         env_list = [{"name": name, "value": value} for name, value in self.env.items()]
         container_spec = ContainerSpec(
@@ -173,13 +178,17 @@ class VertexAICustomTrainingJob(Infrastructure):
     async def _create_and_begin_job(
         self, job_spec: CustomJobSpec, job_service_client: JobServiceClient
     ) -> CustomJob:
+        """
+        Builds a custom job and begins running it.
+        """
         # create custom job
         custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
 
         # run job
         self.logger.info(
-            f"{self._log_prefix}: Preparing to run command {' '.join(self.command)!r} "
-            f"in region {self.region!r} using image {self.image!r}..."
+            f"{self._log_prefix}: Job {self.job_name!r} starting to run "
+            f"the command {' '.join(self.command)!r} in region "
+            f"{self.region!r} using image {self.image!r}"
         )
 
         project = self.gcp_credentials.project
@@ -189,6 +198,12 @@ class VertexAICustomTrainingJob(Infrastructure):
             parent=resource_name,
             custom_job=custom_job,
         )
+
+        self.logger.info(
+            f"{self._log_prefix}: Job {self.job_name!r} has successfully started; "
+            f"the full job name is {custom_job_run.name!r}"
+        )
+
         return custom_job_run
 
     async def _watch_job_run(
@@ -199,6 +214,9 @@ class VertexAICustomTrainingJob(Infrastructure):
         until_states: Tuple[JobState],
         timeout: int = None,
     ) -> CustomJob:
+        """
+        Polls job run to see if status changed.
+        """
         state = JobState.JOB_STATE_UNSPECIFIED
         last_state = current_state
         t0 = time.time()
@@ -216,7 +234,9 @@ class VertexAICustomTrainingJob(Infrastructure):
                     .replace("state", "state is now:")
                 )
                 # results in "New job state is now: succeeded"
-                self.logger.info(f"{self._log_prefix}: New {state_label}")
+                self.logger.info(
+                    f"{self._log_prefix}: {self.job_name} has new {state_label}"
+                )
                 last_state = state
             else:
                 # Intermittently, the job will not be described. We want to respect the
@@ -276,7 +296,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         if error_msg:
             raise RuntimeError(f"{self._log_prefix}: {error_msg}")
 
-        status_code = final_job_run.state.value
+        status_code = 0 if final_job_run.state == JobState.JOB_STATE_SUCCEEDED else 1
         return VertexAICustomTrainingJobResult(
             identifier=final_job_run.display_name, status_code=status_code
         )
@@ -287,7 +307,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         Kill a job running Cloud Run.
 
         Args:
-            identifier: The Vertex AI job name, formatted like
+            identifier: The Vertex AI full job name, formatted like
                 "projects/{project}/locations/{location}/customJobs/{custom_job}".
 
         Returns:
@@ -302,16 +322,19 @@ class VertexAICustomTrainingJob(Infrastructure):
             await run_sync_in_worker_thread(
                 self._kill_job,
                 job_service_client=job_service_client,
-                job_name=identifier,
+                full_job_name=identifier,
             )
+            self.logger.info(f"Requested to cancel {identifier}...")
 
-    def _kill_job(self, job_service_client: JobServiceClient, job_name: str) -> None:
+    def _kill_job(
+        self, job_service_client: JobServiceClient, full_job_name: str
+    ) -> None:
         """
         Thin wrapper around Job.delete, wrapping a try/except since
         Job is an independent class that doesn't have knowledge of
         CloudRunJob and its associated logic.
         """
-        cancel_custom_job_request = CancelCustomJobRequest(name=job_name)
+        cancel_custom_job_request = CancelCustomJobRequest(name=full_job_name)
         try:
             job_service_client.cancel_custom_job(
                 request=cancel_custom_job_request,
@@ -319,7 +342,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         except Exception as exc:
             if "does not exist" in str(exc):
                 raise InfrastructureNotFound(
-                    f"Cannot stop Vertex AI job; the job name {job_name!r} "
+                    f"Cannot stop Vertex AI job; the job name {full_job_name!r} "
                     "could not be found."
                 ) from exc
             raise

@@ -29,17 +29,6 @@ jobs_return_value = {
 
 
 @pytest.fixture
-def mock_credentials(monkeypatch):
-    mock_credentials = Mock(name="Credentials")
-    monkeypatch.setattr(
-        "prefect_gcp.cloud_run.GcpCredentials.get_credentials_from_service_account",  # noqa
-        mock_credentials,
-    )
-
-    return mock_credentials
-
-
-@pytest.fixture
 def mock_client(monkeypatch, mock_credentials):
     m = Mock(name="MockClient")
 

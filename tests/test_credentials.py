@@ -3,6 +3,7 @@ import os
 from pathlib import Path, PosixPath
 
 import pytest
+from google.cloud.aiplatform.gapic import JobServiceClient
 from prefect import flow, task
 from prefect.blocks.core import Block
 
@@ -119,6 +120,20 @@ def test_get_cloud_storage_client(
     test_flow()
 
 
+def test_get_job_service_client(service_account_info, oauth2_credentials):
+    @flow
+    def test_flow():
+        project = "test_project"
+        credentials = GcpCredentials(
+            service_account_info=service_account_info,
+            project=project,
+        )
+        client = credentials.get_job_service_client(client_options={})
+        assert isinstance(client, JobServiceClient)
+
+    test_flow()
+
+
 class MockTargetConfigs(Block):
     credentials: GcpCredentials
 
@@ -131,6 +146,9 @@ class MockTargetConfigs(Block):
         configs = self.credentials.dict()
         for key in Block().dict():
             configs.pop(key, None)
+        for key in configs.keys():
+            if key.startswith("_"):
+                configs.pop(key)
         return configs
 
 
