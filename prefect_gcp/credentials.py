@@ -131,6 +131,9 @@ class GcpCredentials(Block):
                 credentials_project = credentials.quota_project_id
             self.project = credentials_project
 
+        if hasattr(credentials, "service_account_email"):
+            self._service_account_email = credentials.service_account_email
+
     def get_credentials_from_service_account(self) -> Credentials:
         """
         Helper method to serialize credentials by using either
