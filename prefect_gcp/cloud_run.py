@@ -46,6 +46,7 @@ from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
+from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import BaseModel, Field, root_validator, validator
@@ -397,6 +398,46 @@ class CloudRunJob(Infrastructure):
                 5,
             )
             return result
+
+    @sync_compatible
+    async def kill(self, identifier: str, grace_seconds: int = 30) -> None:
+        """
+        Kill a task running Cloud Run.
+
+        Args:
+            identifier: The Cloud Run Job name. This should match a
+                value yielded by CloudRunJob.run.
+        """
+        if grace_seconds != 30:
+            self.logger.warning(
+                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
+                "support dynamic grace period configuration. See here for more info: "
+                "https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs/delete"  # noqa
+            )
+
+        with self._get_client() as client:
+            await run_sync_in_worker_thread(
+                self._kill_job,
+                client=client,
+                namespace=self.credentials.project,
+                job_name=identifier,
+            )
+
+    def _kill_job(self, client: Resource, namespace: str, job_name: str) -> None:
+        """
+        Thin wrapper around Job.delete, wrapping a try/except since
+        Job is an independent class that doesn't have knowledge of
+        CloudRunJob and its associated logic.
+        """
+        try:
+            Job.delete(client=client, namespace=namespace, job_name=job_name)
+        except Exception as exc:
+            if "does not exist" in str(exc):
+                raise InfrastructureNotFound(
+                    f"Cannot stop Cloud Run Job; the job name {job_name!r} "
+                    "could not be found."
+                ) from exc
+            raise
 
     def _create_job_and_wait_for_registration(self, client: Resource) -> None:
         """Create a new job wait for it to finish registering."""
