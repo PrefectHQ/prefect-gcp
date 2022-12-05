@@ -122,6 +122,52 @@ prefect deployment run cloud-run-job-flow/cloud_run_job_deployment
 
 Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
 
+### Deploy command on Vertex AI as a flow
+
+Save the following as `prefect_gcp_flow.py`:
+
+```python
+from prefect import flow
+from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.aiplatform import VertexAICustomTrainingJob
+
+@flow
+def vertex_ai_job_flow():
+    gcp_credentials = GcpCredentials.load("MY_BLOCK")
+    job = VertexAICustomTrainingJob(
+        command=["echo", "hello world"],
+        region="us-east1",
+        image="us-docker.pkg.dev/cloudrun/container/job:latest",
+        gcp_credentials=gcp_credentials,
+    )
+    job.run()
+
+vertex_ai_job_flow()
+```
+
+Deploy `prefect_gcp_flow.py`:
+
+
+```python
+from prefect.deployments import Deployment
+from prefect_gcp_flow import vertex_ai_job_flow
+
+deployment = Deployment.build_from_flow(
+    flow=vertex_ai_job_flow,
+    name="vertex-ai-job-deployment", 
+    version=1, 
+    work_queue_name="demo",
+)
+deployment.apply()
+```
+
+Run the deployment either on the UI or through the CLI:
+```bash
+prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
+```
+
+Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
+
 ## Resources
 
 If you encounter any bugs while using `prefect-gcp`, feel free to open an issue in the [prefect-gcp](https://github.com/PrefectHQ/prefect-gcp) repository.
