@@ -289,6 +289,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#deploy-command-on-vertex-ai-as-a-flow" class="md-nav__link">
+    Deploy command on Vertex AI as a flow
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -391,6 +398,21 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="aiplatform/" class="md-nav__link">
+        AI Platform
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -456,6 +478,13 @@
           <li class="md-nav__item">
   <a href="#deploy-command-on-cloud-run" class="md-nav__link">
     Deploy command on Cloud Run
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy-command-on-vertex-ai-as-a-flow" class="md-nav__link">
+    Deploy command on Vertex AI as a flow
   </a>
   
 </li>
@@ -585,6 +614,41 @@ prefect block register -m prefect_gcp.cloud_run
 </code></pre></div>
 <p>Run the deployment either on the UI or through the CLI:
 <div class="highlight"><pre><span></span><code>prefect deployment run cloud-run-job-flow/cloud_run_job_deployment
+</code></pre></div></p>
+<p>Visit <a href="https://docs.prefect.io/tutorials/deployments/">Prefect Deployments</a> for more information about deployments.</p>
+<h3 id="deploy-command-on-vertex-ai-as-a-flow">Deploy command on Vertex AI as a flow</h3>
+<p>Save the following as <code>prefect_gcp_flow.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.aiplatform</span> <span class="kn">import</span> <span class="n">VertexAICustomTrainingJob</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">vertex_ai_job_flow</span><span class="p">():</span>
+    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK&quot;</span><span class="p">)</span>
+    <span class="n">job</span> <span class="o">=</span> <span class="n">VertexAICustomTrainingJob</span><span class="p">(</span>
+        <span class="n">command</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;echo&quot;</span><span class="p">,</span> <span class="s2">&quot;hello world&quot;</span><span class="p">],</span>
+        <span class="n">region</span><span class="o">=</span><span class="s2">&quot;us-east1&quot;</span><span class="p">,</span>
+        <span class="n">image</span><span class="o">=</span><span class="s2">&quot;us-docker.pkg.dev/cloudrun/container/job:latest&quot;</span><span class="p">,</span>
+        <span class="n">gcp_credentials</span><span class="o">=</span><span class="n">gcp_credentials</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">job</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="n">vertex_ai_job_flow</span><span class="p">()</span>
+</code></pre></div>
+<p>Deploy <code>prefect_gcp_flow.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect.deployments</span> <span class="kn">import</span> <span class="n">Deployment</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp_flow</span> <span class="kn">import</span> <span class="n">vertex_ai_job_flow</span>
+
+<span class="n">deployment</span> <span class="o">=</span> <span class="n">Deployment</span><span class="o">.</span><span class="n">build_from_flow</span><span class="p">(</span>
+    <span class="n">flow</span><span class="o">=</span><span class="n">vertex_ai_job_flow</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;vertex-ai-job-deployment&quot;</span><span class="p">,</span> 
+    <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+    <span class="n">work_queue_name</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">deployment</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
+</code></pre></div>
+<p>Run the deployment either on the UI or through the CLI:
+<div class="highlight"><pre><span></span><code>prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
 </code></pre></div></p>
 <p>Visit <a href="https://docs.prefect.io/tutorials/deployments/">Prefect Deployments</a> for more information about deployments.</p>
 <h2 id="resources">Resources</h2>
