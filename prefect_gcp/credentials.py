@@ -2,7 +2,7 @@
 
 import functools
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import google.auth
 import google.auth.transport.requests
@@ -21,6 +21,11 @@ except ModuleNotFoundError:
 
 try:
     from google.cloud.storage import Client as StorageClient
+except ModuleNotFoundError:
+    pass
+
+try:
+    from google.cloud.aiplatform.gapic import JobServiceClient
 except ModuleNotFoundError:
     pass
 
@@ -88,6 +93,8 @@ class GcpCredentials(Block):
     service_account_info: Optional[Union[Dict[str, str], Json]] = None
     project: Optional[str] = None
 
+    _service_account_email: Optional[str] = None
+
     @root_validator
     def _provide_one_service_account_source(cls, values):
         """
@@ -123,6 +130,9 @@ class GcpCredentials(Block):
             else:  # google.auth.default using gcloud auth application-default login
                 credentials_project = credentials.quota_project_id
             self.project = credentials_project
+
+        if hasattr(credentials, "service_account_email"):
+            self._service_account_email = credentials.service_account_email
 
     def get_credentials_from_service_account(self) -> Credentials:
         """
@@ -320,7 +330,7 @@ class GcpCredentials(Block):
                     "token_uri": "token_uri",
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
-                })
+                }
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_secret_manager_client()
@@ -332,3 +342,61 @@ class GcpCredentials(Block):
         # doesn't accept project; must pass in project in tasks
         secret_manager_client = SecretManagerServiceClient(credentials=credentials)
         return secret_manager_client
+
+    @_raise_help_msg("aiplatform")
+    def get_job_service_client(
+        self, client_options: Dict[str, Any] = None
+    ) -> "JobServiceClient":
+        """
+        Gets an authenticated Job Service client for Vertex AI.
+
+        Returns:
+            An authenticated Job Service client.
+
+        Examples:
+            Gets a GCP Job Service client from a path.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_file = "~/.secrets/prefect-service-account.json"
+                client = GcpCredentials(
+                    service_account_file=service_account_file
+                ).get_job_service_client()
+
+            example_get_client_flow()
+            ```
+
+            Gets a GCP Cloud Storage client from a dictionary.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_info = {
+                    "type": "service_account",
+                    "project_id": "project_id",
+                    "private_key_id": "private_key_id",
+                    "private_key": "private_key",
+                    "client_email": "client_email",
+                    "client_id": "client_id",
+                    "auth_uri": "auth_uri",
+                    "token_uri": "token_uri",
+                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
+                    "client_x509_cert_url": "client_x509_cert_url"
+                }
+                client = GcpCredentials(
+                    service_account_info=service_account_info
+                ).get_job_service_client()
+
+            example_get_client_flow()
+            ```
+        """
+        credentials = self.get_credentials_from_service_account()
+        job_service_client = JobServiceClient(
+            credentials=credentials, client_options=client_options
+        )
+        return job_service_client
