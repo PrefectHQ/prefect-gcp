@@ -2,7 +2,7 @@
 
 import datetime
 import time
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from anyio.abc import TaskStatus
@@ -23,7 +23,6 @@ from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import Field
-from slugify import slugify
 from typing_extensions import Literal
 
 from prefect_gcp import GcpCredentials
@@ -89,6 +88,13 @@ class VertexAICustomTrainingJob(Infrastructure):
         "already be configured for the network. If left unspecified, the job "
         "is not peered with any network.",
     )
+    reserved_ip_ranges: Optional[List[str]] = Field(
+        default=None,
+        description="A list of names for the reserved ip ranges under the VPC "
+        "network that can be used for this job. If set, we will deploy the job "
+        "within the provided ip ranges. Otherwise, the job will be deployed to "
+        "any ip ranges under the provided VPC network.",
+    )
     service_account: Optional[str] = Field(
         default=None,
         description=(
@@ -112,8 +118,7 @@ class VertexAICustomTrainingJob(Infrastructure):
     @property
     def job_name(self):
         """
-        The name can be up to 128 characters long and can be consist of any UTF-8 characters.
-        Keeps only alphanumeric characters, dashes, underscores, and periods. Reference:
+        The name can be up to 128 characters long and can be consist of any UTF-8 characters. Reference:
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
         try:
@@ -125,11 +130,7 @@ class VertexAICustomTrainingJob(Infrastructure):
             )
 
         unique_suffix = uuid4().hex
-        job_name = slugify(
-            f"{repo_name}-{unique_suffix}",
-            regex_pattern=r"[^a-zA-Z0-9-_.]+",
-            max_length=128,
-        )
+        job_name = f"{repo_name}-{unique_suffix}"
         return job_name
 
     def preview(self) -> str:
@@ -172,6 +173,7 @@ class VertexAICustomTrainingJob(Infrastructure):
             service_account=service_account,
             scheduling=scheduling,
             network=self.network,
+            reserved_ip_ranges=self.reserved_ip_ranges,
         )
         return job_spec
 
