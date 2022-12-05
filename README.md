@@ -127,19 +127,22 @@ Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for 
 Save the following as `prefect_gcp_flow.py`:
 
 ```python
+from prefect import flow
 from prefect_gcp.credentials import GcpCredentials
 from prefect_gcp.aiplatform import VertexAICustomTrainingJob
 
 @flow
 def vertex_ai_job_flow():
-    gcp_credentials = await GcpCredentials.load("BLOCK_NAME")
+    gcp_credentials = GcpCredentials.load("MY_BLOCK")
     job = VertexAICustomTrainingJob(
         command=["echo", "hello world"],
         region="us-east1",
         image="us-docker.pkg.dev/cloudrun/container/job:latest",
         gcp_credentials=gcp_credentials,
     )
-job.run()
+    job.run()
+
+vertex_ai_job_flow()
 ```
 
 Deploy `prefect_gcp_flow.py`:
