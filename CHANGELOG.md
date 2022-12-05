@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.1.7
+
+Released on December 2nd, 2022.
+
+### Added
+
+- `CloudJobRun.kill` method for cancellation support - [#76](https://github.com/PrefectHQ/prefect-gcp/pull/76)
+
 ## 0.1.6
 
 Released on October 7th, 2022.
