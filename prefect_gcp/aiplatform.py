@@ -12,7 +12,7 @@ Examples:
     from prefect_gcp.credentials import GcpCredentials
     from prefect_gcp.aiplatform import VertexAICustomTrainingJob
 
-    gcp_credentials = await GcpCredentials.load("BLOCK_NAME")
+    gcp_credentials = GcpCredentials.load("BLOCK_NAME")
     job = VertexAICustomTrainingJob(
         region="us-east1",
         image="us-docker.pkg.dev/cloudrun/container/job:latest",
@@ -26,7 +26,7 @@ Examples:
     from prefect_gcp.credentials import GcpCredentials
     from prefect_gcp.aiplatform import VertexAICustomTrainingJob
 
-    gcp_credentials = await GcpCredentials.load("BLOCK_NAME")
+    gcp_credentials = GcpCredentials.load("BLOCK_NAME")
     job = VertexAICustomTrainingJob(
         command=["echo", "hello world"],
         region="us-east1",
@@ -41,7 +41,7 @@ Examples:
     from prefect_gcp.credentials import GcpCredentials
     from prefect_gcp.aiplatform import VertexAICustomTrainingJob
 
-    gcp_credentials = await GcpCredentials.load("BLOCK_NAME")
+    gcp_credentials = GcpCredentials.load("BLOCK_NAME")
     job = VertexAICustomTrainingJob(
         command=["echo", "hello world"],
         region="us-east1",
