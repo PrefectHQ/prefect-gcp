@@ -167,9 +167,18 @@ class SecretManagerClient:
 @pytest.fixture
 def mock_credentials(monkeypatch):
     mock_credentials = MagicMock(name="MockGoogleCredentials")
+    mock_authenticated_credentials = MagicMock(token="my-token")
+    mock_credentials.from_service_account_info = mock_authenticated_credentials
+    mock_credentials.from_service_account_file = mock_authenticated_credentials
     monkeypatch.setattr(
-        "prefect_gcp.cloud_run.GcpCredentials.get_credentials_from_service_account",  # noqa
+        "prefect_gcp.credentials.Credentials",  # noqa
         mock_credentials,
+    )
+    mock_auth = MagicMock()
+    mock_auth.default.return_value = (mock_authenticated_credentials, "project")
+    monkeypatch.setattr(
+        "prefect_gcp.credentials.google.auth",  # noqa
+        mock_auth,
     )
     return mock_credentials
 

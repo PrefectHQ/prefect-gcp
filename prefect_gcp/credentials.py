@@ -30,7 +30,7 @@ except ModuleNotFoundError:
     pass
 
 from prefect.blocks.core import Block
-from prefect.utilities.asyncutils import run_sync_in_worker_thread
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 
 
 def _raise_help_msg(key: str):
@@ -153,6 +153,7 @@ class GcpCredentials(Block):
             credentials, _ = google.auth.default()
         return credentials
 
+    @sync_compatible
     async def get_access_token(self):
         """
         See: https://stackoverflow.com/a/69107745
