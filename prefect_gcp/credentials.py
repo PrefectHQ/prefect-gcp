@@ -1,13 +1,14 @@
 """Module handling GCP credentials."""
 
 import functools
+import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
-from pydantic import Json, root_validator, validator
+from pydantic import SecretStr, root_validator, validator
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -90,7 +91,7 @@ class GcpCredentials(Block):
     _block_type_name = "GCP Credentials"
 
     service_account_file: Optional[Path] = None
-    service_account_info: Optional[Union[Dict[str, str], Json]] = None
+    service_account_info: Optional[SecretStr] = None
     project: Optional[str] = None
 
     _service_account_email: Optional[str] = None
@@ -140,8 +141,14 @@ class GcpCredentials(Block):
         service_account_file or service_account_info.
         """
         if self.service_account_info:
+            if isinstance(self.service_account_info, SecretStr):
+                service_account_info = self.service_account_info.get_secret_value()
+            else:
+                service_account_info = self.service_account_info
+            if isinstance(service_account_info, str):
+                service_account_info = json.loads(service_account_info)
             credentials = Credentials.from_service_account_info(
-                self.service_account_info,
+                service_account_info,
                 scopes=["https://www.googleapis.com/auth/cloud-platform"],
             )
         elif self.service_account_file:

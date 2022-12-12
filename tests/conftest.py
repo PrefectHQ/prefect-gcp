@@ -224,26 +224,17 @@ def gcp_credentials(monkeypatch, google_auth, mock_credentials, job_service_clie
 
 
 @pytest.fixture()
-def service_account_info_dict(monkeypatch):
+def service_account_info(monkeypatch):
     monkeypatch.setattr(
         "google.auth.crypt._cryptography_rsa.serialization.load_pem_private_key",
         lambda *args, **kwargs: args[0],
     )
-    _service_account_info = {
-        "project_id": "my_project",
-        "token_uri": "my-token-uri",
-        "client_email": "my-client-email",
-        "private_key": "my-private-key",
-    }
+    _service_account_info = json.dumps(
+        {
+            "project_id": "my_project",
+            "token_uri": "my-token-uri",
+            "client_email": "my-client-email",
+            "private_key": "my-private-key",
+        }
+    )
     return _service_account_info
-
-
-@pytest.fixture()
-def service_account_info_json(service_account_info_dict):
-    _service_account_info = json.dumps(service_account_info_dict)
-    return _service_account_info
-
-
-@pytest.fixture(params=["service_account_info_dict", "service_account_info_json"])
-def service_account_info(request):
-    return request.getfixturevalue(request.param)
