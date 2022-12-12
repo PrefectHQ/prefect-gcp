@@ -55,3 +55,4 @@ nav:
     - BigQuery: bigquery.md
     - Secret Manager: secret_manager.md
     - Cloud Run: cloud_run.md
+    - AI Platform: aiplatform.md

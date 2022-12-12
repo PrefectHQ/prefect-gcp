@@ -196,3 +196,14 @@ def test_credentials_is_able_to_serialize_back(monkeypatch, service_account_info
         }
     }
     assert test_flow() == expected
+
+
+async def test_get_access_token_async(gcp_credentials):
+    print(gcp_credentials.get_credentials_from_service_account().token)
+    token = await gcp_credentials.get_access_token()
+    assert token == "my-token"
+
+
+def test_get_access_token_sync_compatible(gcp_credentials):
+    token = gcp_credentials.get_access_token()
+    assert token == "my-token"

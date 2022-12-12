@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Made `GcpCredentials.get_access_token` sync compatible - [#80](https://github.com/PrefectHQ/prefect-gcp/pull/80)
+
 ### Deprecated
 
 ### Removed
@@ -18,6 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## 0.1.8
+
+Released on December 5th, 2022.
+
+### Added
+
+- `VertexAICustomTrainingJob` infrastructure block - [#75](https://github.com/PrefectHQ/prefect-gcp/pull/75)
 
 ## 0.1.7
 
