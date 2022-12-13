@@ -3,10 +3,13 @@
 import os
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
+from typing import Any, BinaryIO, Dict, Optional, Tuple, Union
 from uuid import uuid4
 
+from google.api_core.page_iterator import HTTPIterator
+from google.cloud.storage import Bucket
 from prefect import get_run_logger, task
+from prefect.blocks.abstract import ObjectStorageBlock
 from prefect.filesystems import WritableDeploymentStorage, WritableFileSystem
 from prefect.logging import disable_run_logger
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
@@ -16,9 +19,6 @@ from pydantic import Field, validator
 # cannot be type_checking only or else `fields = cls.schema()` raises
 # TypeError: issubclass() arg 1 must be a class
 from prefect_gcp.credentials import GcpCredentials
-
-if TYPE_CHECKING:
-    from google.cloud.storage import Bucket
 
 
 @task
@@ -665,3 +665,219 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem):
                 gcp_credentials=self.gcp_credentials,
             )
         return path
+
+
+class Gcs(ObjectStorageBlock):
+    """
+    Block that represents a resource that can upload and download
+    objects in GCP Cloud Storage Buckets.
+    """
+
+    gcp_credentials: GcpCredentials
+    bucket_name: str
+
+    async def get_bucket(self) -> "Bucket":
+        client = self.gcp_credentials.get_cloud_storage_client()
+        bucket = await run_sync_in_worker_thread(client.get_bucket, self.bucket_name)
+        return bucket
+
+    async def list_blobs(self, folder) -> HTTPIterator:
+        client = self.gcp_credentials.get_cloud_storage_client()
+        blobs = await run_sync_in_worker_thread(
+            client.list_blobs, self.bucket_name, folder
+        )
+        return blobs
+
+    async def download_object_to_path(
+        self,
+        from_path: str,
+        to_path: Union[str, Path],
+        **download_kwargs: Dict[str, Any],
+    ) -> Path:
+        """
+        Downloads an object from the object storage service to a path.
+
+        Args:
+            from_path: The path to the blob to download.
+            to_path: The path to download the blob to.
+            **download_kwargs: Additional keyword arguments to pass to
+                `Blob.download_to_filename`.
+
+        Returns:
+            The path that the object was downloaded to.
+        """
+        bucket = await self.get_bucket()
+        blob = bucket.blob(from_path)
+        await run_sync_in_worker_thread(
+            blob.download_to_filename, filename=to_path, **download_kwargs
+        )
+        return Path(to_path)
+
+    async def download_object_to_file_object(
+        self,
+        from_path: str,
+        to_file_object: BinaryIO,
+        **download_kwargs: Dict[str, Any],
+    ) -> BinaryIO:
+        """
+        Downloads an object from the object storage service to a file-like object,
+        which can be a BytesIO object or a BufferedWriter.
+
+        Args:
+            from_path: The path to the blob to download from.
+            to_file_object: The file-like object to download the blob to.
+            **download_kwargs: Additional keyword arguments to pass to
+                `Blob.download_to_file`.
+
+        Returns:
+            The file-like object that the object was downloaded to.
+        """
+        bucket = await self.get_bucket()
+        blob = bucket.blob(from_path)
+        await run_sync_in_worker_thread(
+            blob.download_to_file, file_obj=to_file_object, **download_kwargs
+        )
+        return to_file_object
+
+    async def download_folder_to_path(
+        self,
+        from_folder: str,
+        to_folder: Union[str, Path],
+        **download_kwargs: Dict[str, Any],
+    ) -> Path:
+        """
+        Downloads a folder from the object storage service to a path.
+
+        Args:
+            from_folder: The path to the folder to download from.
+            to_folder: The path to download the folder to.
+            **download_kwargs: Additional keyword arguments to pass to
+                `Blob.download_to_filename`.
+
+        Returns:
+            The path that the folder was downloaded to.
+        """
+        blobs = await self.list_blobs(prefix=from_folder)
+        for blob in blobs:
+            blob_name = blob.name
+            if blob_name.endswith("/"):
+                continue
+            to_path = Path(to_folder) / blob_name
+            to_path.parent.mkdirs(parents=True, exist_ok=True)
+            await run_sync_in_worker_thread(
+                blob.download_to_filename, filename=to_path, **download_kwargs
+            )
+        return to_folder
+
+    async def upload_from_path(
+        self, from_path: Union[str, Path], to_path: str, **upload_kwargs: Dict[str, Any]
+    ) -> str:
+        """
+        Uploads an object from a path to the object storage service.
+
+        Args:
+            from_path: The path to the file to upload from.
+            to_path: The path to upload the file to.
+            **upload_kwargs: Additional keyword arguments to pass to
+                `Blob.upload_from_filename`.
+
+        Returns:
+            The path that the object was uploaded to.
+        """
+        bucket = await self.get_bucket()
+        blob = bucket.blob(to_path)
+        await run_sync_in_worker_thread(
+            blob.upload_from_filename, filename=from_path, **upload_kwargs
+        )
+        return to_path
+
+    async def upload_from_file_object(
+        self, from_file_object: BinaryIO, to_path: str, **upload_kwargs
+    ) -> str:
+        """
+        Uploads an object to the object storage service from a file-like object,
+        which can be a BytesIO object or a BufferedReader.
+
+        Args:
+            from_file_object: The file-like object to upload from.
+            to_path: The path to upload the object to.
+            **upload_kwargs: Additional keyword arguments to pass to
+                `Blob.upload_from_file`.
+
+        Returns:
+            The path that the object was uploaded to.
+
+        Examples:
+            Open a file and upload it to GCS:
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+            from prefect_gcp.cloud_storage import Gcs
+
+            @flow
+            def example_flow():
+                gcp_credentials = await GcpCredentials.load("BLOCK_NAME")
+                gcs = Gcs(gcp_credentials=gcp_credentials, bucket_name="BUCKET_NAME")
+                with open("FROM_FILE_OBJECT_PATH", "rb") as from_file_object:
+                    to_path = gcs.upload_from_file_object(
+                        from_file_object=from_file_object,
+                        to_path="TO_PATH"
+                    )
+                return to_path
+            ```
+
+            Pass a BytesIO object and upload it to GCS:
+            ```python
+            from io import BytesIO
+
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+            from prefect_gcp.cloud_storage import Gcs
+
+            @flow
+            def example_flow():
+                gcp_credentials = await GcpCredentials.load("BLOCK_NAME")
+                gcs = Gcs(gcp_credentials=gcp_credentials, bucket_name="BUCKET_NAME")
+                from_file_object = BytesIO(b"FROM_FILE_OBJECT")
+                to_path = gcs.upload_from_file_object(
+                    from_file_object=from_file_object,
+                    to_path="TO_PATH"
+                )
+                return to_path
+            ```
+        """
+        bucket = await self.get_bucket()
+        blob = bucket.blob(to_path)
+        await run_sync_in_worker_thread(
+            blob.upload_from_file, from_file_object, **upload_kwargs
+        )
+        return to_path
+
+    async def upload_from_folder(
+        self,
+        from_folder: Union[str, Path],
+        to_folder: str,
+        **upload_kwargs: Dict[str, Any],
+    ) -> str:
+        """
+        Uploads a folder to the object storage service from a path.
+
+        Args:
+            from_folder: The path to the folder to upload from.
+            to_folder: The path to upload the folder to.
+            **upload_kwargs: Additional keyword arguments to pass to
+
+        Returns:
+            The path that the folder was uploaded to.
+        """
+        bucket = await self.get_bucket()
+        from_folder = Path(from_folder)
+        for file_path in from_folder.glob("**/*"):
+            if file_path.is_dir():
+                continue
+            to_path = to_folder / file_path.relative_to(from_folder)
+            blob = bucket.blob(to_path)
+            await run_sync_in_worker_thread(
+                blob.upload_from_filename, filename=file_path, **upload_kwargs
+            )
+        return to_folder
