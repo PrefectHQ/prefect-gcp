@@ -680,11 +680,13 @@ class Gcs(ObjectStorageBlock):
     gcp_credentials: GcpCredentials
     bucket_name: str = Field(default=..., description="The name of the bucket.")
 
+    @sync_compatible
     async def get_bucket(self) -> "Bucket":
         client = self.gcp_credentials.get_cloud_storage_client()
         bucket = await run_sync_in_worker_thread(client.get_bucket, self.bucket_name)
         return bucket
 
+    @sync_compatible
     async def list_blobs(self, folder) -> HTTPIterator:
         client = self.gcp_credentials.get_cloud_storage_client()
         blobs = await run_sync_in_worker_thread(
@@ -692,6 +694,7 @@ class Gcs(ObjectStorageBlock):
         )
         return blobs
 
+    @sync_compatible
     async def download_object_to_path(
         self,
         from_path: str,
@@ -717,6 +720,7 @@ class Gcs(ObjectStorageBlock):
         )
         return Path(to_path)
 
+    @sync_compatible
     async def download_object_to_file_object(
         self,
         from_path: str,
@@ -743,6 +747,7 @@ class Gcs(ObjectStorageBlock):
         )
         return to_file_object
 
+    @sync_compatible
     async def download_folder_to_path(
         self,
         from_folder: str,
@@ -774,6 +779,7 @@ class Gcs(ObjectStorageBlock):
             )
         return to_folder
 
+    @sync_compatible
     async def upload_from_path(
         self, from_path: Union[str, Path], to_path: str, **upload_kwargs: Dict[str, Any]
     ) -> str:
@@ -796,6 +802,7 @@ class Gcs(ObjectStorageBlock):
         )
         return to_path
 
+    @sync_compatible
     async def upload_from_file_object(
         self, from_file_object: BinaryIO, to_path: str, **upload_kwargs
     ) -> str:
@@ -858,6 +865,7 @@ class Gcs(ObjectStorageBlock):
         )
         return to_path
 
+    @sync_compatible
     async def upload_from_folder(
         self,
         from_folder: Union[str, Path],
