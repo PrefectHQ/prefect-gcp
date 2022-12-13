@@ -671,10 +671,14 @@ class Gcs(ObjectStorageBlock):
     """
     Block that represents a resource that can upload and download
     objects in GCP Cloud Storage Buckets.
+
+    Attributes:
+        gcp_credentials: Credentials to use for authentication with GCP.
+        bucket_name: The name of the bucket.
     """
 
     gcp_credentials: GcpCredentials
-    bucket_name: str
+    bucket_name: str = Field(default=..., description="The name of the bucket.")
 
     async def get_bucket(self) -> "Bucket":
         client = self.gcp_credentials.get_cloud_storage_client()
@@ -757,12 +761,13 @@ class Gcs(ObjectStorageBlock):
         Returns:
             The path that the folder was downloaded to.
         """
+        to_folder = Path(to_folder)
         blobs = await self.list_blobs(prefix=from_folder)
         for blob in blobs:
             blob_name = blob.name
             if blob_name.endswith("/"):
                 continue
-            to_path = Path(to_folder) / blob_name
+            to_path = to_folder / blob_name
             to_path.parent.mkdirs(parents=True, exist_ok=True)
             await run_sync_in_worker_thread(
                 blob.download_to_filename, filename=to_path, **download_kwargs
@@ -866,6 +871,7 @@ class Gcs(ObjectStorageBlock):
             from_folder: The path to the folder to upload from.
             to_folder: The path to upload the folder to.
             **upload_kwargs: Additional keyword arguments to pass to
+                `Blob.upload_from_filename`.
 
         Returns:
             The path that the folder was uploaded to.
