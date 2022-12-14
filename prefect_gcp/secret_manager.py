@@ -1,5 +1,5 @@
 from functools import partial
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from anyio import to_thread
 from google.cloud.secretmanager_v1.types.resources import Secret, SecretPayload
@@ -290,7 +290,7 @@ class SecretManager(SecretBlock):
     async def read_secret(
         self,
         version_id: Union[str, int] = "latest",
-    ) -> Any:
+    ) -> bytes:
         client = self.gcp_credentials.get_secret_manager_client()
         project = self.gcp_credentials.project
         name = f"projects/{project}/secrets/{self.secret_name}/versions/{version_id}"
