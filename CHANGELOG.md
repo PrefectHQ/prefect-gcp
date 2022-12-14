@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Warning stating "Failed to load collection 'prefect_gcp_aiplatform'" - [#87](https://github.com/PrefectHQ/prefect-gcp/pull/87)
+
 ### Security
 
 ## 0.1.8
