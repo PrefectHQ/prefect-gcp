@@ -77,7 +77,7 @@ async def create_secret(
 @task
 async def update_secret(
     secret_name: str,
-    secret_data: Union[str, bytes],
+    secret_value: Union[str, bytes],
     gcp_credentials: "GcpCredentials",
     timeout: float = 60,
     project: Optional[str] = None,
@@ -87,7 +87,7 @@ async def update_secret(
 
     Args:
         secret_name: Name of the secret to retrieve.
-        secret_data: Desired value of the secret. Can be either `str` or `bytes`.
+        secret_value: Desired value of the secret. Can be either `str` or `bytes`.
         gcp_credentials: Credentials to use for authentication with GCP.
         timeout: The number of seconds the transport should wait
             for the server response.
@@ -106,7 +106,7 @@ async def update_secret(
         @flow()
         def example_cloud_storage_update_secret_flow():
             gcp_credentials = GcpCredentials(project="project")
-            secret_path = update_secret("secret_name", "secret_data", gcp_credentials)
+            secret_path = update_secret("secret_name", "secret_value", gcp_credentials)
             return secret_path
 
         example_cloud_storage_update_secret_flow()
@@ -119,12 +119,12 @@ async def update_secret(
     project = project or gcp_credentials.project
 
     parent = f"projects/{project}/secrets/{secret_name}"
-    if isinstance(secret_data, str):
-        secret_data = secret_data.encode("UTF-8")
+    if isinstance(secret_value, str):
+        secret_value = secret_value.encode("UTF-8")
     partial_add = partial(
         client.add_secret_version,
         parent=parent,
-        payload={"data": secret_data},
+        payload={"data": secret_value},
         timeout=timeout,
     )
     response = await to_thread.run_sync(partial_add)
@@ -162,8 +162,8 @@ async def read_secret(
         @flow()
         def example_cloud_storage_read_secret_flow():
             gcp_credentials = GcpCredentials(project="project")
-            secret_data = read_secret("secret_name", gcp_credentials, version_id=1)
-            return secret_data
+            secret_value = read_secret("secret_name", gcp_credentials, version_id=1)
+            return secret_value
 
         example_cloud_storage_read_secret_flow()
         ```
@@ -261,8 +261,8 @@ async def delete_secret_version(
         @flow()
         def example_cloud_storage_delete_secret_version_flow():
             gcp_credentials = GcpCredentials(project="project")
-            secret_data = delete_secret_version("secret_name", 1, gcp_credentials)
-            return secret_data
+            secret_value = delete_secret_version("secret_name", 1, gcp_credentials)
+            return secret_value
 
         example_cloud_storage_delete_secret_version_flow()
         ```
