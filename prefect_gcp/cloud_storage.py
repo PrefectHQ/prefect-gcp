@@ -463,7 +463,7 @@ async def cloud_storage_copy_blob(
     return dest_blob
 
 
-class GcsBucket(WritableDeploymentStorage, WritableFileSystem):
+class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBlock):
     """
     Block used to store data using GCP Cloud Storage Buckets.
 
@@ -666,23 +666,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem):
             )
         return path
 
-
-class Gcs(ObjectStorageBlock):
-    """
-    Block that represents a resource that can upload and download
-    objects in GCP Cloud Storage Buckets.
-
-    Attributes:
-        gcp_credentials: Credentials to use for authentication with GCP.
-        bucket_name: The name of the bucket.
-    """
-
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
-    _block_type_name = "GCS"
-
-    gcp_credentials: GcpCredentials
-    bucket_name: str = Field(default=..., description="The name of the bucket.")
-
+    # NEW INTERFACE METHODS BELOW
     @sync_compatible
     async def get_bucket(self) -> "Bucket":
         """
@@ -701,7 +685,7 @@ class Gcs(ObjectStorageBlock):
             ```
         """
         client = self.gcp_credentials.get_cloud_storage_client()
-        bucket = await run_sync_in_worker_thread(client.get_bucket, self.bucket_name)
+        bucket = await run_sync_in_worker_thread(client.get_bucket, self.bucket)
         return bucket
 
     # QUESTION: should methods like this return original objects?
@@ -727,11 +711,10 @@ class Gcs(ObjectStorageBlock):
         """
         client = self.gcp_credentials.get_cloud_storage_client()
         blobs = await run_sync_in_worker_thread(
-            client.list_blobs, self.bucket_name, prefix=folder
+            client.list_blobs, self.bucket, prefix=folder
         )
         return [blob for blob in blobs if not blob.name.endswith("/")]
 
-    # QUESTION: should we support overwrite?
     @sync_compatible
     async def download_object_to_path(
         self,
@@ -854,15 +837,15 @@ class Gcs(ObjectStorageBlock):
         else:
             to_folder = Path(to_folder)
 
-        blobs = await self.list_blobs(folder=from_folder)
+        blobs = await self.list_blobs(folder=str(from_folder))
         for blob in blobs:
-            blob_path = Path(blob.name).relative_to(to_folder)
+            blob_path = Path(blob.name).relative_to(from_folder)
             if blob_path.is_dir():
                 continue
             to_path = to_folder / blob_path
             to_path.parent.mkdir(parents=True, exist_ok=True)
             await run_sync_in_worker_thread(
-                blob.download_to_filename, filename=to_path, **download_kwargs
+                blob.download_to_filename, filename=str(to_path), **download_kwargs
             )
         return to_folder
 

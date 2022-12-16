@@ -190,3 +190,105 @@ class TestGcsBucket:
             local_path=local_path, to_path=to_path, ignore_file=ignore_file
         )
         assert actual == expected
+
+    def test_get_bucket(self, gcs_bucket):
+        bucket = gcs_bucket.get_bucket()
+        assert bucket.name == "my-bucket"
+
+    def test_list_blobs(self, gcs_bucket):
+        blobs = gcs_bucket.list_blobs(folder="base_folder/")
+        assert len(blobs) == 2
+        assert blobs[0].name == "base_folder/nested_blob.txt"
+        assert blobs[1].name == "base_folder/base_folder/nested_blob.txt"
+
+    def test_download_object_to_path_default(self, gcs_bucket, tmp_path):
+        try:
+            from_path = tmp_path / "from_path"
+            to_path = gcs_bucket.download_object_to_path(from_path)
+            assert isinstance(to_path, Path)
+            assert to_path == Path(from_path.name)
+            assert to_path.read_text() == "abcdef"
+        finally:
+            if to_path.exists():
+                to_path.unlink()
+
+    @pytest.mark.parametrize("type_", [str, Path])
+    def test_download_object_to_path_set_to_path(self, gcs_bucket, tmp_path, type_):
+        from_path = tmp_path / "from_path"
+        to_path = type_(tmp_path / "to_path")
+        output_to_path = gcs_bucket.download_object_to_path(from_path, to_path)
+        assert isinstance(to_path, type_)
+        assert output_to_path == Path(to_path)
+        assert output_to_path.read_text() == "abcdef"
+
+    def test_download_object_to_file_object_bytesio(self, gcs_bucket, tmp_path):
+        from_path = tmp_path / "from_path"
+        with BytesIO() as buf:
+            to_file_object = gcs_bucket.download_object_to_file_object(from_path, buf)
+            assert to_file_object.getvalue() == b"abcdef"
+
+    def test_download_object_to_file_object_bufferedwriter(self, gcs_bucket, tmp_path):
+        from_path = tmp_path / "from_path"
+        to_path = tmp_path / "to_path"
+        with open(to_path, "wb") as f:
+            gcs_bucket.download_object_to_file_object(from_path, f)
+        assert to_path.read_text() == "abcdef"
+
+    def test_download_folder_to_path(self, gcs_bucket, tmp_path):
+        from_path = "base_folder"
+        to_path = tmp_path / "to_path"
+        gcs_bucket.download_folder_to_path(from_path, to_path)
+        assert (to_path / "nested_blob.txt").read_text() == "abcdef"
+        assert (to_path / "base_folder" / "nested_blob.txt").read_text() == "abcdef"
+
+    def test_download_folder_to_path_nested(self, gcs_bucket, tmp_path):
+        from_path = "base_folder/base_folder"
+        to_path = tmp_path / "to_path"
+        gcs_bucket.download_folder_to_path(from_path, to_path)
+        assert (to_path / "nested_blob.txt").read_text() == "abcdef"
+
+    def test_upload_from_path_default(self, gcs_bucket, tmp_path):
+        from_path = tmp_path / "from_path"
+        from_path.write_text("abcdef")
+        output_to_path = gcs_bucket.upload_from_path(from_path)
+        assert output_to_path == from_path.name
+
+    def test_upload_from_path_set(self, gcs_bucket, tmp_path):
+        from_path = tmp_path / "from_path"
+        from_path.write_text("abcdef")
+        to_path = "to_path"
+        output_to_path = gcs_bucket.upload_from_path(from_path, to_path)
+        assert output_to_path == to_path
+
+    def test_upload_from_file_object_bytesio(self, gcs_bucket):
+        to_path = "to_path"
+        with BytesIO() as buf:
+            output_to_path = gcs_bucket.upload_from_file_object(buf, to_path)
+        assert output_to_path == to_path
+
+    def test_upload_from_file_object_bufferedwriter(self, gcs_bucket, tmp_path):
+        to_path = "to_path"
+        from_path = tmp_path / "from_path"
+        with open(from_path, "wb") as f:
+            output_to_path = gcs_bucket.upload_from_file_object(f, to_path)
+        assert output_to_path == to_path
+
+    def test_upload_from_folder_default(self, gcs_bucket, tmp_path):
+        from_path = tmp_path / "from_path"
+        from_path.mkdir()
+        (from_path / "abc.html").write_text("<div>abc</div>")
+        (from_path / "cab.txt").write_text("cab")
+        (from_path / "some_dir").mkdir()
+
+        output_to_path = gcs_bucket.upload_from_folder(from_path)
+        assert output_to_path == from_path.name
+
+    def test_upload_from_folder_set_to_path(self, gcs_bucket, tmp_path):
+        from_path = tmp_path / "from_path"
+        from_path.mkdir()
+        (from_path / "abc.html").write_text("<div>abc</div>")
+        (from_path / "cab.txt").write_text("cab")
+        (from_path / "some_dir").mkdir()
+
+        output_to_path = gcs_bucket.upload_from_folder(from_path, "to_path")
+        assert output_to_path == "to_path"

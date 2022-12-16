@@ -44,6 +44,9 @@ class Blob:
     def __init__(self, name):
         self.name = name
 
+    def download_to_filename(self, filename, **kwargs):
+        Path(filename).write_text("abcdef")
+
 
 class CloudStorageClient:
     def __init__(self, credentials=None, project=None):
@@ -56,10 +59,14 @@ class CloudStorageClient:
     def get_bucket(self, bucket):
         blob_obj = MagicMock()
         blob_obj.download_as_bytes.return_value = b"bytes"
-        blob_obj.download_to_filename.side_effect = lambda path, **kwargs: Path(
-            path
+        blob_obj.download_to_file.side_effect = (
+            lambda file_obj, **kwargs: file_obj.write(b"abcdef")
+        )
+        blob_obj.download_to_filename.side_effect = lambda filename, **kwargs: Path(
+            filename
         ).write_text("abcdef")
         bucket_obj = MagicMock(bucket=bucket)
+        bucket_obj.name = "my-bucket"
         bucket_obj.blob.side_effect = lambda blob, **kwds: blob_obj
         return bucket_obj
 
