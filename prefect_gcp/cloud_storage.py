@@ -666,7 +666,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             )
         return path
 
-    # DEPRECATED MNEW BLOCK INTERFACE METHODS BELOW
+    # NEW BLOCK INTERFACE METHODS BELOW
     def _join_bucket_folder(self, bucket_path: str = "") -> str:
         """
         Joins the base bucket folder to the bucket path.
