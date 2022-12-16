@@ -54,14 +54,12 @@ To use Secret Manager:
 pip install "prefect-gcp[secret_manager]"
 ```
 
-Then, register to [view the blocks](https://orion-docs.prefect.io/ui/blocks/) on Prefect Cloud:
-
+To use Vertex AI:
 ```bash
-prefect block register -m prefect_gcp.credentials
-prefect block register -m prefect_gcp.cloud_run
+pip install "prefect-gcp[aiplatform]"
 ```
 
-Note, to use the `load` method on Blocks, you must already have a block document [saved through code](https://orion-docs.prefect.io/concepts/blocks/#saving-blocks) or [saved through the UI](https://orion-docs.prefect.io/ui/blocks/).
+Then, register to [view the blocks](https://orion-docs.prefect.io/ui/blocks/) on Prefect Cloud. A listing of available blocks in this collection can be found [here](https://prefecthq.github.io/prefect-gcp/blocks_listing/).
 
 ### Download blob from bucket
 

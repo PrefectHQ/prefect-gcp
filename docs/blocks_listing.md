@@ -1,6 +1,8 @@
 # Blocks Listing
 Below is a list of Blocks available for registration in `prefect-gcp`.
 
+Note, to use the `load` method on Blocks, you must already have a block document [saved through code](https://orion-docs.prefect.io/concepts/blocks/#saving-blocks) or [saved through the UI](https://orion-docs.prefect.io/ui/blocks/).
+
 ## Credentials
 - [GcpCredentials][prefect_gcp.credentials.GcpCredentials]
 
