@@ -666,7 +666,27 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             )
         return path
 
-    # NEW INTERFACE METHODS BELOW
+    # DEPRECATED MNEW BLOCK INTERFACE METHODS BELOW
+    def _join_bucket_folder(self, bucket_path: str = "") -> str:
+        """
+        Joins the base bucket folder to the bucket path.
+
+        NOTE: If a method reuses another method in this class, be careful to not
+        call this  twice because it'll join the bucket folder twice.
+        See https://github.com/PrefectHQ/prefect-aws/issues/141 for a past issue.
+        """
+        bucket_path = str(bucket_path)
+        if bucket_path.startswith(self.bucket_folder):
+            self.logger.warning(
+                f"Bucket path {bucket_path!r} already prefixed with "
+                f"bucket folder {self.bucket_folder}."
+            )
+
+        if self.bucket_folder == "":
+            return bucket_path
+        else:
+            return str(Path(self.bucket_folder) / bucket_path)
+
     @sync_compatible
     async def get_bucket(self) -> "Bucket":
         """
@@ -688,7 +708,6 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         bucket = await run_sync_in_worker_thread(client.get_bucket, self.bucket)
         return bucket
 
-    # QUESTION: should methods like this return original objects?
     @sync_compatible
     async def list_blobs(self, folder: str = "") -> List[Blob]:
         """
@@ -711,8 +730,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```
         """
         client = self.gcp_credentials.get_cloud_storage_client()
+        bucket_path = self._join_bucket_folder(folder)
         blobs = await run_sync_in_worker_thread(
-            client.list_blobs, self.bucket, prefix=folder
+            client.list_blobs, self.bucket, prefix=bucket_path
         )
         return [blob for blob in blobs if not blob.name.endswith("/")]
 
@@ -749,7 +769,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             to_path = Path(from_path).name
 
         bucket = await self.get_bucket()
-        blob = bucket.blob(from_path)
+        bucket_path = self._join_bucket_folder(from_path)
+        blob = bucket.blob(bucket_path)
+
         await run_sync_in_worker_thread(
             blob.download_to_filename, filename=to_path, **download_kwargs
         )
@@ -796,7 +818,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```
         """
         bucket = await self.get_bucket()
-        blob = bucket.blob(from_path)
+        bucket_path = self._join_bucket_folder(from_path)
+        blob = bucket.blob(bucket_path)
         await run_sync_in_worker_thread(
             blob.download_to_file, file_obj=to_file_object, **download_kwargs
         )
@@ -839,8 +862,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             to_folder = Path(to_folder)
 
         blobs = await self.list_blobs(folder=str(from_folder))
+
+        # do not call self._join_bucket_folder for list_blobs
+        # because it's built-in to that method already!
+        # however, we still need to do it because we're using relative_to
+        bucket_folder = self._join_bucket_folder(from_folder)
         for blob in blobs:
-            blob_path = Path(blob.name).relative_to(from_folder)
+            blob_path = Path(blob.name).relative_to(bucket_folder)
             if blob_path.is_dir():
                 continue
             to_path = to_folder / blob_path
@@ -882,12 +910,14 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         if to_path is None:
             to_path = Path(from_path).name
 
+        bucket_path = self._join_bucket_folder(to_path)
         bucket = await self.get_bucket()
-        blob = bucket.blob(to_path)
+        blob = bucket.blob(bucket_path)
+
         await run_sync_in_worker_thread(
             blob.upload_from_filename, filename=from_path, **upload_kwargs
         )
-        return to_path
+        return bucket_path
 
     @sync_compatible
     async def upload_from_file_object(
@@ -930,11 +960,14 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```
         """
         bucket = await self.get_bucket()
-        blob = bucket.blob(to_path)
+
+        bucket_path = self._join_bucket_folder(to_path)
+        blob = bucket.blob(bucket_path)
+
         await run_sync_in_worker_thread(
             blob.upload_from_file, from_file_object, **upload_kwargs
         )
-        return to_path
+        return bucket_path
 
     @sync_compatible
     async def upload_from_folder(
@@ -967,17 +1000,16 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         from_folder = Path(from_folder)
 
         if to_folder is None:
-            to_folder = Path(from_folder.stem)
-        else:
-            to_folder = Path(to_folder)
+            to_folder = from_folder.stem
+        bucket_folder = self._join_bucket_folder(to_folder)
 
         bucket = await self.get_bucket()
         for from_path in from_folder.rglob("**/*"):
             if from_path.is_dir():
                 continue
-            to_path = to_folder / from_path.relative_to(from_folder)
-            blob = bucket.blob(str(to_path))
+            to_path = str(Path(bucket_folder) / from_path.relative_to(from_folder))
+            blob = bucket.blob(to_path)
             await run_sync_in_worker_thread(
                 blob.upload_from_filename, filename=from_path, **upload_kwargs
             )
-        return str(to_folder)
+        return bucket_folder

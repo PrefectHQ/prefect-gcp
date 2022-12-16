@@ -195,16 +195,45 @@ class TestGcsBucket:
         bucket = gcs_bucket.get_bucket()
         assert bucket.name == "my-bucket"
 
-    def test_list_blobs(self, gcs_bucket):
-        blobs = gcs_bucket.list_blobs(folder="base_folder/")
+    @pytest.fixture
+    def gcs_bucket_no_bucket_folder(self, gcp_credentials):
+        return GcsBucket(
+            bucket="bucket",
+            gcp_credentials=gcp_credentials,
+        )
+
+    @pytest.fixture(params=["base_folder", "base_folder/"])
+    def gcs_bucket_with_bucket_folder(self, gcp_credentials, request):
+        return GcsBucket(
+            bucket="bucket",
+            gcp_credentials=gcp_credentials,
+            bucket_folder=request.param,
+        )
+
+    def test_list_blobs(self, gcs_bucket_no_bucket_folder):
+        blobs = gcs_bucket_no_bucket_folder.list_blobs(folder="base_folder/")
         assert len(blobs) == 2
         assert blobs[0].name == "base_folder/nested_blob.txt"
-        assert blobs[1].name == "base_folder/base_folder/nested_blob.txt"
+        assert blobs[1].name == "base_folder/sub_folder/nested_blob.txt"
 
-    def test_download_object_to_path_default(self, gcs_bucket, tmp_path):
+    def test_list_blobs_with_bucket_folder(self, gcs_bucket_with_bucket_folder):
+        # test without setting folder
+        blobs = gcs_bucket_with_bucket_folder.list_blobs()
+        assert len(blobs) == 2
+        assert blobs[0].name == "base_folder/nested_blob.txt"
+        assert blobs[1].name == "base_folder/sub_folder/nested_blob.txt"
+
+        # now test with sub_folder
+        blobs = gcs_bucket_with_bucket_folder.list_blobs(folder="sub_folder")
+        assert len(blobs) == 1
+        assert blobs[0].name == "base_folder/sub_folder/nested_blob.txt"
+
+    def test_download_object_to_path_default(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
         try:
             from_path = tmp_path / "from_path"
-            to_path = gcs_bucket.download_object_to_path(from_path)
+            to_path = gcs_bucket_with_bucket_folder.download_object_to_path(from_path)
             assert isinstance(to_path, Path)
             assert to_path == Path(from_path.name)
             assert to_path.read_text() == "abcdef"
@@ -213,82 +242,154 @@ class TestGcsBucket:
                 to_path.unlink()
 
     @pytest.mark.parametrize("type_", [str, Path])
-    def test_download_object_to_path_set_to_path(self, gcs_bucket, tmp_path, type_):
+    def test_download_object_to_path_set_to_path(
+        self, gcs_bucket_with_bucket_folder, tmp_path, type_
+    ):
         from_path = tmp_path / "from_path"
         to_path = type_(tmp_path / "to_path")
-        output_to_path = gcs_bucket.download_object_to_path(from_path, to_path)
+        output_to_path = gcs_bucket_with_bucket_folder.download_object_to_path(
+            from_path, to_path
+        )
         assert isinstance(to_path, type_)
         assert output_to_path == Path(to_path)
         assert output_to_path.read_text() == "abcdef"
 
-    def test_download_object_to_file_object_bytesio(self, gcs_bucket, tmp_path):
+    def test_download_object_to_file_object_bytesio(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
         from_path = tmp_path / "from_path"
         with BytesIO() as buf:
-            to_file_object = gcs_bucket.download_object_to_file_object(from_path, buf)
+            to_file_object = (
+                gcs_bucket_with_bucket_folder.download_object_to_file_object(
+                    from_path, buf
+                )
+            )
             assert to_file_object.getvalue() == b"abcdef"
 
-    def test_download_object_to_file_object_bufferedwriter(self, gcs_bucket, tmp_path):
+    def test_download_object_to_file_object_bufferedwriter(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
         from_path = tmp_path / "from_path"
         to_path = tmp_path / "to_path"
         with open(to_path, "wb") as f:
-            gcs_bucket.download_object_to_file_object(from_path, f)
+            gcs_bucket_with_bucket_folder.download_object_to_file_object(from_path, f)
         assert to_path.read_text() == "abcdef"
 
-    def test_download_folder_to_path(self, gcs_bucket, tmp_path):
+    def test_download_folder_to_path_no_bucket_folder(
+        self, gcs_bucket_no_bucket_folder, tmp_path
+    ):
         from_path = "base_folder"
         to_path = tmp_path / "to_path"
-        gcs_bucket.download_folder_to_path(from_path, to_path)
+        gcs_bucket_no_bucket_folder.download_folder_to_path(from_path, to_path)
+        print(list(to_path.glob("*")))
         assert (to_path / "nested_blob.txt").read_text() == "abcdef"
-        assert (to_path / "base_folder" / "nested_blob.txt").read_text() == "abcdef"
+        assert (to_path / "sub_folder" / "nested_blob.txt").read_text() == "abcdef"
 
-    def test_download_folder_to_path_nested(self, gcs_bucket, tmp_path):
-        from_path = "base_folder/base_folder"
+    def test_download_folder_to_path_nested(
+        self, gcs_bucket_no_bucket_folder, tmp_path
+    ):
+        from_path = "base_folder/sub_folder"
         to_path = tmp_path / "to_path"
-        gcs_bucket.download_folder_to_path(from_path, to_path)
+        gcs_bucket_no_bucket_folder.download_folder_to_path(from_path, to_path)
         assert (to_path / "nested_blob.txt").read_text() == "abcdef"
 
-    def test_upload_from_path_default(self, gcs_bucket, tmp_path):
+    def test_download_folder_to_path_nested_with_bucket_folder(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
+        from_path = "sub_folder"
+        to_path = tmp_path / "to_path"
+        gcs_bucket_with_bucket_folder.download_folder_to_path(from_path, to_path)
+        assert (to_path / "nested_blob.txt").read_text() == "abcdef"
+
+    def test_upload_from_path_default_with_bucket_folder(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
         from_path = tmp_path / "from_path"
         from_path.write_text("abcdef")
-        output_to_path = gcs_bucket.upload_from_path(from_path)
-        assert output_to_path == from_path.name
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_path(from_path)
+        assert output_to_path == f"base_folder/{from_path.name}"
 
-    def test_upload_from_path_set(self, gcs_bucket, tmp_path):
+    def test_upload_from_path_set_with_bucket_folder(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
         from_path = tmp_path / "from_path"
         from_path.write_text("abcdef")
         to_path = "to_path"
-        output_to_path = gcs_bucket.upload_from_path(from_path, to_path)
-        assert output_to_path == to_path
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_path(
+            from_path, to_path
+        )
+        assert output_to_path == f"base_folder/{to_path}"
 
-    def test_upload_from_file_object_bytesio(self, gcs_bucket):
+    def test_upload_from_file_object_bytesio_with_bucket_folder(
+        self, gcs_bucket_with_bucket_folder
+    ):
         to_path = "to_path"
         with BytesIO() as buf:
-            output_to_path = gcs_bucket.upload_from_file_object(buf, to_path)
-        assert output_to_path == to_path
+            output_to_path = gcs_bucket_with_bucket_folder.upload_from_file_object(
+                buf, to_path
+            )
+        assert output_to_path == f"base_folder/{to_path}"
 
-    def test_upload_from_file_object_bufferedwriter(self, gcs_bucket, tmp_path):
+    def test_upload_from_file_object_bufferedwriter_with_bucket_folder(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
         to_path = "to_path"
         from_path = tmp_path / "from_path"
         with open(from_path, "wb") as f:
-            output_to_path = gcs_bucket.upload_from_file_object(f, to_path)
-        assert output_to_path == to_path
+            output_to_path = gcs_bucket_with_bucket_folder.upload_from_file_object(
+                f, to_path
+            )
+        assert output_to_path == f"base_folder/{to_path}"
 
-    def test_upload_from_folder_default(self, gcs_bucket, tmp_path):
+    def test_upload_from_folder_default_no_bucket_folder(
+        self, gcs_bucket_no_bucket_folder, tmp_path
+    ):
         from_path = tmp_path / "from_path"
         from_path.mkdir()
         (from_path / "abc.html").write_text("<div>abc</div>")
         (from_path / "cab.txt").write_text("cab")
         (from_path / "some_dir").mkdir()
 
-        output_to_path = gcs_bucket.upload_from_folder(from_path)
+        output_to_path = gcs_bucket_no_bucket_folder.upload_from_folder(from_path)
         assert output_to_path == from_path.name
 
-    def test_upload_from_folder_set_to_path(self, gcs_bucket, tmp_path):
+    def test_upload_from_folder_default_with_bucket_folder(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
         from_path = tmp_path / "from_path"
         from_path.mkdir()
         (from_path / "abc.html").write_text("<div>abc</div>")
         (from_path / "cab.txt").write_text("cab")
         (from_path / "some_dir").mkdir()
 
-        output_to_path = gcs_bucket.upload_from_folder(from_path, "to_path")
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_folder(from_path)
+        assert output_to_path == f"base_folder/{from_path.name}"
+
+    def test_upload_from_folder_set_to_path_no_bucket_folder(
+        self, gcs_bucket_no_bucket_folder, tmp_path
+    ):
+        from_path = tmp_path / "from_path"
+        from_path.mkdir()
+        (from_path / "abc.html").write_text("<div>abc</div>")
+        (from_path / "cab.txt").write_text("cab")
+        (from_path / "some_dir").mkdir()
+
+        output_to_path = gcs_bucket_no_bucket_folder.upload_from_folder(
+            from_path, "to_path"
+        )
+        print(output_to_path)
         assert output_to_path == "to_path"
+
+    def test_upload_from_folder_set_to_path_with_bucket_folder(
+        self, gcs_bucket_with_bucket_folder, tmp_path
+    ):
+        from_path = tmp_path / "from_path"
+        from_path.mkdir()
+        (from_path / "abc.html").write_text("<div>abc</div>")
+        (from_path / "cab.txt").write_text("cab")
+        (from_path / "some_dir").mkdir()
+
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_folder(
+            from_path, "to_path"
+        )
+        assert output_to_path == "base_folder/to_path"
