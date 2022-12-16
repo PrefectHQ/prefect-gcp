@@ -50,6 +50,7 @@ watch:
 
 nav:
     - Home: index.md
+    - Blocks Listing: blocks_listing.md
     - Credentials: credentials.md
     - Cloud Storage: cloud_storage.md
     - BigQuery: bigquery.md
