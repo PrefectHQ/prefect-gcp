@@ -476,7 +476,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
     Example:
         Load stored GCP Cloud Storage Bucket:
         ```python
-        from prefect_gcp.cloud_storage import GcsBucket
+        from prefect_gcp.cloud_storage import GcsBucketBucket
         gcp_cloud_storage_bucket_block = GcsBucket.load("BLOCK_NAME")
         ```
     """
@@ -676,16 +676,12 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         See https://github.com/PrefectHQ/prefect-aws/issues/141 for a past issue.
         """
         bucket_path = str(bucket_path)
-        if bucket_path.startswith(self.bucket_folder):
+        if self.bucket_folder != "" and bucket_path.startswith(self.bucket_folder):
             self.logger.info(
                 f"Bucket path {bucket_path!r} is already prefixed with "
                 f"bucket folder {self.bucket_folder!r}; is this intentional?"
             )
-
-        if self.bucket_folder == "":
-            return bucket_path
-        else:
-            return str(Path(self.bucket_folder) / bucket_path)
+        return str(Path(self.bucket_folder) / bucket_path)
 
     @sync_compatible
     async def get_bucket(self) -> "Bucket":
@@ -698,12 +694,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Examples:
             Get the bucket object.
             ```python
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             gcs_bucket.get_bucket()
             ```
         """
+        self.logger.info(f"Getting bucket {self.bucket!r}.")
         client = self.gcp_credentials.get_cloud_storage_client()
         bucket = await run_sync_in_worker_thread(client.get_bucket, self.bucket)
         return bucket
@@ -723,7 +720,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Examples:
             Get all blobs from a folder named "prefect".
             ```python
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             gcs_bucket.list_blobs("prefect")
@@ -732,6 +729,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         client = self.gcp_credentials.get_cloud_storage_client()
 
         bucket_path = self._join_bucket_folder(folder)
+        self.logger.info(f"Listing blobs in bucket {bucket_path}.")
         blobs = await run_sync_in_worker_thread(
             client.list_blobs, self.bucket, prefix=bucket_path
         )
@@ -750,7 +748,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Downloads an object from the object storage service to a path.
 
         Args:
-            from_path: The path to the blob to download.
+            from_path: The path to the blob to download; this gets prefixed
+                with the bucket_folder.
             to_path: The path to download the blob to. If not provided, the
                 blob's name will be used.
             **download_kwargs: Additional keyword arguments to pass to
@@ -762,7 +761,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Examples:
             Download my_folder/notes.txt object to notes.txt.
             ```python
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             gcs_bucket.download_object_to_path("my_folder/notes.txt", "notes.txt")
@@ -774,6 +773,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         bucket = await self.get_bucket()
         bucket_path = self._join_bucket_folder(from_path)
         blob = bucket.blob(bucket_path)
+        self.logger.info(
+            f"Downloading blob from bucket {self.bucket!r} path {bucket_path!r}"
+            f"to {to_path!r}."
+        )
 
         await run_sync_in_worker_thread(
             blob.download_to_filename, filename=to_path, **download_kwargs
@@ -792,7 +795,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         which can be a BytesIO object or a BufferedWriter.
 
         Args:
-            from_path: The path to the blob to download from.
+            from_path: The path to the blob to download from; this gets prefixed
+                with the bucket_folder.
             to_file_object: The file-like object to download the blob to.
             **download_kwargs: Additional keyword arguments to pass to
                 `Blob.download_to_file`.
@@ -804,7 +808,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             Download my_folder/notes.txt object to a BytesIO object.
             ```python
             from io import BytesIO
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             with BytesIO() as buf:
@@ -813,7 +817,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
             Download my_folder/notes.txt object to a BufferedWriter.
             ```python
-                from prefect_gcp.cloud_storage import Gcs
+                from prefect_gcp.cloud_storage import GcsBucket
 
                 gcs_bucket = GcsBucket.load("my-bucket")
                 with open("notes.txt", "wb") as f:
@@ -824,10 +828,14 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         bucket_path = self._join_bucket_folder(from_path)
         blob = bucket.blob(bucket_path)
+        self.logger.info(
+            f"Downloading blob from bucket {self.bucket!r} path {bucket_path!r}"
+            f"to file object."
+        )
+
         await run_sync_in_worker_thread(
             blob.download_to_file, file_obj=to_file_object, **download_kwargs
         )
-
         return to_file_object
 
     @sync_compatible
@@ -838,12 +846,14 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         **download_kwargs: Dict[str, Any],
     ) -> Path:
         """
-        Downloads a folder from the object storage service to a path.
+        Downloads objects *within* a folder (excluding the folder itself)
+        from the object storage service to a folder.
 
         Args:
-            from_folder: The path to the folder to download from.
-            to_folder: The path to download the folder to. If not provided, will use
-                the last folder in from_folder.
+            from_folder: The path to the folder to download from; this gets prefixed
+                with the bucket_folder.
+            to_folder: The path to download the folder to. If not provided, will default
+                to the current directory.
             **download_kwargs: Additional keyword arguments to pass to
                 `Blob.download_to_filename`.
 
@@ -853,29 +863,38 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Examples:
             Download my_folder to a folder named my_folder.
             ```python
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             gcs_bucket.download_folder_to_path("my_folder", "my_folder")
             ```
         """
         if to_folder is None:
-            to_folder = Path(from_folder).stem
-        # don't be fooled by the double Path; stem makes it a string.
+            to_folder = ""
         to_folder = Path(to_folder)
 
         blobs = await self.list_blobs(folder=from_folder)
+        if len(blobs) == 0:
+            self.logger.warning(
+                f"No blobs were downloaded from "
+                f"bucket {self.bucket!r} path {from_folder!r}."
+            )
+            return to_folder
+
         # do not call self._join_bucket_folder for list_blobs
         # because it's built-in to that method already!
         # however, we still need to do it because we're using relative_to
         bucket_folder = self._join_bucket_folder(from_folder)
-
         for blob in blobs:
-            blob_path = Path(blob.name).relative_to(bucket_folder)
-            if blob_path.is_dir():
+            bucket_path = Path(blob.name).relative_to(bucket_folder)
+            if bucket_path.is_dir():
                 continue
-            to_path = to_folder / blob_path
+            to_path = to_folder / bucket_path
             to_path.parent.mkdir(parents=True, exist_ok=True)
+            self.logger.info(
+                f"Downloading blob from bucket {self.bucket!r} path {bucket_path!r}"
+                f"to {to_path}."
+            )
             await run_sync_in_worker_thread(
                 blob.download_to_filename, filename=str(to_path), **download_kwargs
             )
@@ -894,7 +913,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Args:
             from_path: The path to the file to upload from.
             to_path: The path to upload the file to. If not provided, will use
-                the file name of from_path.
+                the file name of from_path; this gets prefixed
+                with the bucket_folder.
             **upload_kwargs: Additional keyword arguments to pass to
                 `Blob.upload_from_filename`.
 
@@ -904,7 +924,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Examples:
             Upload my_folder/notes.txt object to notes.txt.
             ```python
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             gcs_bucket.upload_from_path("notes.txt", "my_folder/notes.txt")
@@ -916,6 +936,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         bucket_path = self._join_bucket_folder(to_path)
         bucket = await self.get_bucket()
         blob = bucket.blob(bucket_path)
+        self.logger.info(
+            f"Uploading from {from_path!r} to the bucket "
+            f"{self.bucket!r} path {bucket_path!r}."
+        )
 
         await run_sync_in_worker_thread(
             blob.upload_from_filename, filename=from_path, **upload_kwargs
@@ -932,7 +956,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         Args:
             from_file_object: The file-like object to upload from.
-            to_path: The path to upload the object to.
+            to_path: The path to upload the object to; this gets prefixed
+                with the bucket_folder.
             **upload_kwargs: Additional keyword arguments to pass to
                 `Blob.upload_from_file`.
 
@@ -943,7 +968,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             Upload my_folder/notes.txt object to a BytesIO object.
             ```python
             from io import BytesIO
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             with open("notes.txt", "rb") as f:
@@ -953,7 +978,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             Upload my_folder/notes.txt object to a BufferedReader.
             ```python
             from io import BufferedReader
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             with open("notes.txt", "rb") as f:
@@ -966,6 +991,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         bucket_path = self._join_bucket_folder(to_path)
         blob = bucket.blob(bucket_path)
+        self.logger.info(
+            f"Uploading from file object to the bucket "
+            f"{self.bucket!r} path {bucket_path!r}."
+        )
 
         await run_sync_in_worker_thread(
             blob.upload_from_file, from_file_object, **upload_kwargs
@@ -980,11 +1009,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         **upload_kwargs: Dict[str, Any],
     ) -> str:
         """
-        Uploads a folder to the object storage service from a path.
+        Uploads files *within* a folder (excluding the folder itself)
+        to the object storage service folder.
 
         Args:
             from_folder: The path to the folder to upload from.
-            to_folder: The path to upload the folder to.
+            to_folder: The path to upload the folder to. If not provided, will default
+                to bucket_folder or the base directory of the bucket.
             **upload_kwargs: Additional keyword arguments to pass to
                 `Blob.upload_from_filename`.
 
@@ -994,25 +1025,31 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Examples:
             Upload my_folder to my_folder.
             ```python
-            from prefect_gcp.cloud_storage import Gcs
+            from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
             gcs_bucket.upload_from_folder("my_folder")
             ```
         """
         from_folder = Path(from_folder)
+        bucket_folder = self._join_bucket_folder(to_folder or "")
 
-        if to_folder is None:
-            to_folder = from_folder.stem
-        bucket_folder = self._join_bucket_folder(to_folder)
-
+        num_uploaded = 0
         bucket = await self.get_bucket()
         for from_path in from_folder.rglob("**/*"):
             if from_path.is_dir():
                 continue
-            to_path = str(Path(bucket_folder) / from_path.relative_to(from_folder))
-            blob = bucket.blob(to_path)
+            bucket_path = str(Path(bucket_folder) / from_path.relative_to(from_folder))
+            self.logger.info(
+                f"Uploading from {str(from_path)!r} to the bucket "
+                f"{self.bucket!r} path {bucket_path!r}."
+            )
+            blob = bucket.blob(bucket_path)
             await run_sync_in_worker_thread(
                 blob.upload_from_filename, filename=from_path, **upload_kwargs
             )
+            num_uploaded += 1
+
+        if num_uploaded == 0:
+            self.logger.warning(f"No files were uploaded from {from_folder}.")
         return bucket_folder
