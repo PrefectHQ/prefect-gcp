@@ -7,7 +7,9 @@ from typing import Any, Dict, Optional, Union
 import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
-from pydantic import Json, root_validator, validator
+from prefect.blocks.fields import SecretDict
+from pydantic import SecretStr, root_validator, validator
+from typing_extensions import Literal
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -90,7 +92,7 @@ class GcpCredentials(Block):
     _block_type_name = "GCP Credentials"
 
     service_account_file: Optional[Path] = None
-    service_account_info: Optional[Union[Dict[str, str], Json]] = None
+    service_account_info: Optional[Union[SecretDict, SecretStr]] = None
     project: Optional[str] = None
 
     _service_account_email: Optional[str] = None
@@ -163,6 +165,31 @@ class GcpCredentials(Block):
         credentials = self.get_credentials_from_service_account()
         await run_sync_in_worker_thread(credentials.refresh, request)
         return credentials.token
+
+    def get_client(
+        self,
+        client_type: Literal[
+            "cloud_storage", "bigquery", "secret_manager", "aiplatform"
+        ],
+    ) -> Union[
+        "StorageClient",
+        "BigQueryClient",
+        "SecretManagerServiceClient",
+        "JobServiceClient",
+    ]:
+        """
+        Method to get a client from the GCP credentials.
+        """
+        client_types = {
+            "cloud_storage": self.get_cloud_storage_client,
+            "bigquery": self.get_bigquery_client,
+            "secret_manager": self.get_secret_manager_client,
+            "aiplatform": self.get_job_service_client,
+        }
+        if client_type not in client_types:
+            client_type_msg = ", ".join(client_types.keys())
+            raise ValueError(f"{client_type} is invalid; choose from {client_type_msg}")
+        return client_types[client_type]()
 
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
