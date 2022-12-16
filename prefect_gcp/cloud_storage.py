@@ -680,8 +680,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```python
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
-            gcs.get_bucket()
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.get_bucket()
             ```
         """
         client = self.gcp_credentials.get_cloud_storage_client()
@@ -706,8 +706,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```python
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
-            gcs.list_blobs("prefect")
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.list_blobs("prefect")
             ```
         """
         client = self.gcp_credentials.get_cloud_storage_client()
@@ -741,8 +741,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```python
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
-            gcs.download_object_to_path("my_folder/notes.txt", "notes.txt")
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.download_object_to_path("my_folder/notes.txt", "notes.txt")
             ```
         """
         if to_path is None:
@@ -781,18 +781,18 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             from io import BytesIO
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
+            gcs_bucket = GcsBucket.load("my-bucket")
             with BytesIO() as buf:
-                gcs.download_object_to_file_object("my_folder/notes.txt", buf)
+                gcs_bucket.download_object_to_file_object("my_folder/notes.txt", buf)
             ```
 
             Download my_folder/notes.txt object to a BufferedWriter.
             ```python
                 from prefect_gcp.cloud_storage import Gcs
 
-                gcs = Gcs.load("my-bucket")
+                gcs_bucket = GcsBucket.load("my-bucket")
                 with open("notes.txt", "wb") as f:
-                    gcs.download_object_to_file_object("my_folder/notes.txt", f)
+                    gcs_bucket.download_object_to_file_object("my_folder/notes.txt", f)
             ```
         """
         bucket = await self.get_bucket()
@@ -827,8 +827,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```python
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
-            gcs.download_folder_to_path("my_folder", "my_folder")
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.download_folder_to_path("my_folder", "my_folder")
             ```
         """
         from_folder = Path(from_folder)
@@ -875,8 +875,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```python
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
-            gcs.upload_from_path("notes.txt", "my_folder/notes.txt")
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.upload_from_path("notes.txt", "my_folder/notes.txt")
             ```
         """
         if to_path is None:
@@ -912,9 +912,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             from io import BytesIO
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
+            gcs_bucket = GcsBucket.load("my-bucket")
             with open("notes.txt", "rb") as f:
-                gcs.upload_from_file_object(f, "my_folder/notes.txt")
+                gcs_bucket.upload_from_file_object(f, "my_folder/notes.txt")
             ```
 
             Upload my_folder/notes.txt object to a BufferedReader.
@@ -922,9 +922,11 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             from io import BufferedReader
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
+            gcs_bucket = GcsBucket.load("my-bucket")
             with open("notes.txt", "rb") as f:
-                gcs.upload_from_file_object(BufferedReader(f), "my_folder/notes.txt")
+                gcs_bucket.upload_from_file_object(
+                    BufferedReader(f), "my_folder/notes.txt"
+                )
             ```
         """
         bucket = await self.get_bucket()
@@ -958,8 +960,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```python
             from prefect_gcp.cloud_storage import Gcs
 
-            gcs = Gcs.load("my-bucket")
-            gcs.upload_from_folder("my_folder")
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.upload_from_folder("my_folder")
             ```
         """
         from_folder = Path(from_folder)
