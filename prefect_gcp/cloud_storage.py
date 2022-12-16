@@ -693,12 +693,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
     async def list_blobs(self, folder: str = "") -> List[Blob]:
         """
         Lists all blobs in the bucket that are in a folder.
+        Folders are not considered blobs.
 
         Args:
             folder: The folder to list blobs from.
 
         Returns:
-            An iterator of blobs.
+            A list of Blob objects.
 
         Examples:
             Get all blobs from a folder named "prefect".
@@ -969,7 +970,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             to_folder = Path(to_folder)
 
         bucket = await self.get_bucket()
-        for from_path in from_folder.glob("**/*"):
+        for from_path in from_folder.rglob("**/*"):
             if from_path.is_dir():
                 continue
             to_path = to_folder / from_path.relative_to(from_folder)
