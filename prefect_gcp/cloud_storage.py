@@ -892,8 +892,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             to_path = to_folder / bucket_path
             to_path.parent.mkdir(parents=True, exist_ok=True)
             self.logger.info(
-                f"Downloading blob from bucket {self.bucket!r} path {bucket_path!r}"
-                f"to {to_path}."
+                f"Downloading blob from bucket {self.bucket!r} path "
+                f"{str(bucket_path)!r} to {to_path}."
             )
             await run_sync_in_worker_thread(
                 blob.download_to_filename, filename=str(to_path), **download_kwargs
