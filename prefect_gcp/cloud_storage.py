@@ -677,9 +677,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         """
         bucket_path = str(bucket_path)
         if bucket_path.startswith(self.bucket_folder):
-            self.logger.warning(
-                f"Bucket path {bucket_path!r} already prefixed with "
-                f"bucket folder {self.bucket_folder}."
+            self.logger.info(
+                f"Bucket path {bucket_path!r} is already prefixed with "
+                f"bucket folder {self.bucket_folder!r}; is this intentional?"
             )
 
         if self.bucket_folder == "":
@@ -712,7 +712,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
     async def list_blobs(self, folder: str = "") -> List[Blob]:
         """
         Lists all blobs in the bucket that are in a folder.
-        Folders are not considered blobs.
+        Folders are not included in the output.
 
         Args:
             folder: The folder to list blobs from.
@@ -730,10 +730,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```
         """
         client = self.gcp_credentials.get_cloud_storage_client()
+
         bucket_path = self._join_bucket_folder(folder)
         blobs = await run_sync_in_worker_thread(
             client.list_blobs, self.bucket, prefix=bucket_path
         )
+
+        # Ignore folders
         return [blob for blob in blobs if not blob.name.endswith("/")]
 
     @sync_compatible
@@ -818,11 +821,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```
         """
         bucket = await self.get_bucket()
+
         bucket_path = self._join_bucket_folder(from_path)
         blob = bucket.blob(bucket_path)
         await run_sync_in_worker_thread(
             blob.download_to_file, file_obj=to_file_object, **download_kwargs
         )
+
         return to_file_object
 
     @sync_compatible
@@ -854,19 +859,17 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             gcs_bucket.download_folder_to_path("my_folder", "my_folder")
             ```
         """
-        from_folder = Path(from_folder)
-
         if to_folder is None:
-            to_folder = Path(from_folder.stem)
-        else:
-            to_folder = Path(to_folder)
+            to_folder = Path(from_folder).stem
+        # don't be fooled by the double Path; stem makes it a string.
+        to_folder = Path(to_folder)
 
-        blobs = await self.list_blobs(folder=str(from_folder))
-
+        blobs = await self.list_blobs(folder=from_folder)
         # do not call self._join_bucket_folder for list_blobs
         # because it's built-in to that method already!
         # however, we still need to do it because we're using relative_to
         bucket_folder = self._join_bucket_folder(from_folder)
+
         for blob in blobs:
             blob_path = Path(blob.name).relative_to(bucket_folder)
             if blob_path.is_dir():
