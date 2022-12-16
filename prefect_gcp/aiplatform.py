@@ -58,24 +58,30 @@ from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from anyio.abc import TaskStatus
-from google.api_core.client_options import ClientOptions
-from google.cloud.aiplatform.gapic import JobServiceClient
-from google.cloud.aiplatform_v1.types.custom_job import (
-    ContainerSpec,
-    CustomJob,
-    CustomJobSpec,
-    Scheduling,
-    WorkerPoolSpec,
-)
-from google.cloud.aiplatform_v1.types.job_service import CancelCustomJobRequest
-from google.cloud.aiplatform_v1.types.job_state import JobState
-from google.cloud.aiplatform_v1.types.machine_resources import MachineSpec
-from google.protobuf.duration_pb2 import Duration
 from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import Field
 from typing_extensions import Literal
+
+# to prevent "Failed to load collection" from surfacing
+# if google-cloud-aiplatform is not installed
+try:
+    from google.api_core.client_options import ClientOptions
+    from google.cloud.aiplatform.gapic import JobServiceClient
+    from google.cloud.aiplatform_v1.types.custom_job import (
+        ContainerSpec,
+        CustomJob,
+        CustomJobSpec,
+        Scheduling,
+        WorkerPoolSpec,
+    )
+    from google.cloud.aiplatform_v1.types.job_service import CancelCustomJobRequest
+    from google.cloud.aiplatform_v1.types.job_state import JobState
+    from google.cloud.aiplatform_v1.types.machine_resources import MachineSpec
+    from google.protobuf.duration_pb2 import Duration
+except ImportError:
+    pass
 
 from prefect_gcp import GcpCredentials
 
@@ -191,7 +197,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
         return str(custom_job)  # outputs a json string
 
-    def _build_job_spec(self) -> CustomJobSpec:
+    def _build_job_spec(self) -> "CustomJobSpec":
         """
         Builds a job spec by gathering details.
         """
@@ -230,8 +236,8 @@ class VertexAICustomTrainingJob(Infrastructure):
         return job_spec
 
     async def _create_and_begin_job(
-        self, job_spec: CustomJobSpec, job_service_client: JobServiceClient
-    ) -> CustomJob:
+        self, job_spec: "CustomJobSpec", job_service_client: "JobServiceClient"
+    ) -> "CustomJob":
         """
         Builds a custom job and begins running it.
         """
@@ -263,11 +269,11 @@ class VertexAICustomTrainingJob(Infrastructure):
     async def _watch_job_run(
         self,
         full_job_name: str,  # different from self.job_name
-        job_service_client: JobServiceClient,
-        current_state: JobState,
-        until_states: Tuple[JobState],
+        job_service_client: "JobServiceClient",
+        current_state: "JobState",
+        until_states: Tuple["JobState"],
         timeout: int = None,
-    ) -> CustomJob:
+    ) -> "CustomJob":
         """
         Polls job run to see if status changed.
         """
@@ -309,7 +315,7 @@ class VertexAICustomTrainingJob(Infrastructure):
 
     @sync_compatible
     async def run(
-        self, task_status: Optional[TaskStatus] = None
+        self, task_status: Optional["TaskStatus"] = None
     ) -> VertexAICustomTrainingJobResult:
         """
         Run the configured task on VertexAI.
@@ -381,7 +387,7 @@ class VertexAICustomTrainingJob(Infrastructure):
             self.logger.info(f"Requested to cancel {identifier}...")
 
     def _kill_job(
-        self, job_service_client: JobServiceClient, full_job_name: str
+        self, job_service_client: "JobServiceClient", full_job_name: str
     ) -> None:
         """
         Thin wrapper around Job.delete, wrapping a try/except since
