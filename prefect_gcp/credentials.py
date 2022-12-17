@@ -2,14 +2,13 @@
 
 import functools
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
 from prefect.blocks.fields import SecretDict
 from pydantic import root_validator, validator
-from typing_extensions import Literal
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
