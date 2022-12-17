@@ -39,9 +39,9 @@ for block in blocks:
     if module_nesting not in module_blocks:
         module_blocks[module_nesting] = []
     module_blocks[module_nesting].append(block_name)
-docs_blocks_listing_path = Path("blocks_listing.md")
+docs_blocks_list_path = Path("blocks_list.md")
 
-with mkdocs_gen_files.open(docs_blocks_listing_path, "w") as generated_file:
+with mkdocs_gen_files.open(docs_blocks_list_path, "w") as generated_file:
     generated_file.write("# Blocks Listing\n")
     generated_file.write(
         "Below is a list of Blocks available for registration in `prefect-gcp`.\n\n"
