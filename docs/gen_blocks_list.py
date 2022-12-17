@@ -42,7 +42,7 @@ for block in blocks:
 docs_blocks_list_path = Path("blocks_list.md")
 
 with mkdocs_gen_files.open(docs_blocks_list_path, "w") as generated_file:
-    generated_file.write("# Blocks Listing\n")
+    generated_file.write("# Blocks List\n")
     generated_file.write(
         "Below is a list of Blocks available for registration in `prefect-gcp`.\n\n"
     )
