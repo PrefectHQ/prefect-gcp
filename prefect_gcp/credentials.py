@@ -166,31 +166,6 @@ class GcpCredentials(Block):
         await run_sync_in_worker_thread(credentials.refresh, request)
         return credentials.token
 
-    def get_client(
-        self,
-        client_type: Literal[
-            "cloud_storage", "bigquery", "secret_manager", "aiplatform"
-        ],
-    ) -> Union[
-        "StorageClient",
-        "BigQueryClient",
-        "SecretManagerServiceClient",
-        "JobServiceClient",
-    ]:
-        """
-        Method to get a client from the GCP credentials.
-        """
-        client_types = {
-            "cloud_storage": self.get_cloud_storage_client,
-            "bigquery": self.get_bigquery_client,
-            "secret_manager": self.get_secret_manager_client,
-            "aiplatform": self.get_job_service_client,
-        }
-        if client_type not in client_types:
-            client_type_msg = ", ".join(client_types.keys())
-            raise ValueError(f"{client_type} is invalid; choose from {client_type_msg}")
-        return client_types[client_type]()
-
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
         self, project: Optional[str] = None
