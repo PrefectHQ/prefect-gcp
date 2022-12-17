@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Made `GcpCredentials.get_access_token` sync compatible - [#80](https://github.com/PrefectHQ/prefect-gcp/pull/80)
-- Breaking: Obfuscated `GcpCredentials.service_account_info` by using SecretDict type - [#88](https://github.com/PrefectHQ/prefect-gcp/pull/88)
+- Breaking: Obfuscated `GcpCredentials.service_account_info` by using `SecretDict` type - [#88](https://github.com/PrefectHQ/prefect-gcp/pull/88)
 
 ### Deprecated
 
