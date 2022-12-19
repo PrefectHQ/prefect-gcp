@@ -61,7 +61,9 @@ pip install "prefect-gcp[aiplatform]"
 
 A list of available blocks in `prefect-gcp` and their setup instructions can be found [here](https://prefecthq.github.io/prefect-gcp/#blocks-catalog/).
 
-### Download blob from bucket
+### Write and run a flow
+
+#### Download blob from bucket
 
 ```python
 from prefect import flow
@@ -78,7 +80,7 @@ def cloud_storage_download_blob_flow():
 cloud_storage_download_blob_flow()
 ```
 
-### Deploy command on Cloud Run
+#### Deploy command on Cloud Run
 
 Save the following as `prefect_gcp_flow.py`:
 
@@ -120,7 +122,7 @@ prefect deployment run cloud-run-job-flow/cloud_run_job_deployment
 
 Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
 
-### Deploy command on Vertex AI as a flow
+#### Deploy command on Vertex AI as a flow
 
 Save the following as `prefect_gcp_flow.py`:
 
