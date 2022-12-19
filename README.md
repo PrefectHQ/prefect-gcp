@@ -80,6 +80,34 @@ def cloud_storage_download_blob_flow():
 cloud_storage_download_blob_flow()
 ```
 
+### Get Google auth credentials from GcpCredentials
+
+To instantiate a Google Cloud client, like `bigquery.Client`, `GcpCredentials` is not a valid input. Instead, use the `get_credentials_from_service_account` method.
+
+```python
+import google.cloud.bigquery
+from prefect import flow
+from prefect_gcp import GcpCredentials
+
+@flow
+def create_bigquery_client():
+    gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
+    google_auth_credentials = gcp_credentials_block.get_credentials_from_service_account()
+    bigquery_client = bigquery.Client(credentials=google_auth_credentials)
+```
+
+Or simply call `get_bigquery_client` from `GcpCredentials`.
+
+```python
+from prefect import flow
+from prefect_gcp import GcpCredentials
+
+@flow
+def create_bigquery_client():
+    gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
+    bigquery_client = gcp_credentials_block.get_bigquery_client()
+```
+
 ### Deploy command on Cloud Run
 
 Save the following as `prefect_gcp_flow.py`:
