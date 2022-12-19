@@ -34,7 +34,6 @@ plugins:
   - gen-files:
       scripts:
         - docs/gen_ref_pages.py
-        - docs/gen_blocks_list.py
   - mkdocstrings:
       handlers:
         python:
@@ -51,7 +50,6 @@ watch:
 
 nav:
     - Home: index.md
-    - Blocks List: blocks_list.md
     - Credentials: credentials.md
     - Cloud Storage: cloud_storage.md
     - BigQuery: bigquery.md
