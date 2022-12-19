@@ -67,7 +67,9 @@ def insert_blocks_catalog(generated_file):
         generated_file.write(
             dedent(
                 f"""
-                To register blocks in this module:
+                To register blocks in this module to
+                [view and edit them](https://orion-docs.prefect.io/ui/blocks/)
+                on Prefect Cloud:
                 ```bash
                 prefect block register -m prefect_gcp.{module_path}
                 ```
