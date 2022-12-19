@@ -59,7 +59,7 @@ To use Vertex AI:
 pip install "prefect-gcp[aiplatform]"
 ```
 
-Then, register to [view the blocks](https://orion-docs.prefect.io/ui/blocks/) on Prefect Cloud. A listing of available blocks in this collection can be found [here](https://prefecthq.github.io/prefect-gcp/blocks_cataloging/).
+Then, register to [view the blocks](https://orion-docs.prefect.io/ui/blocks/) on Prefect Cloud. A listing of available blocks in this collection can be found [here](https://prefecthq.github.io/prefect-gcp/#blocks-catalog/).
 
 ### Download blob from bucket
 
