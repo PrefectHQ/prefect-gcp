@@ -80,6 +80,34 @@ def cloud_storage_download_blob_flow():
 cloud_storage_download_blob_flow()
 ```
 
+### Get Google auth credentials from GcpCredentials
+
+To instantiate a Google Cloud client, like `bigquery.Client`, `GcpCredentials` is not a valid input. Instead, use the `get_credentials_from_service_account` method.
+
+```python
+import google.cloud.bigquery
+from prefect import flow
+from prefect_gcp import GcpCredentials
+
+@flow
+def create_bigquery_client():
+    gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
+    google_auth_credentials = gcp_credentials_block.get_credentials_from_service_account()
+    bigquery_client = bigquery.Client(credentials=google_auth_credentials)
+```
+
+Or simply call `get_bigquery_client` from `GcpCredentials`.
+
+```python
+from prefect import flow
+from prefect_gcp import GcpCredentials
+
+@flow
+def create_bigquery_client():
+    gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
+    bigquery_client = gcp_credentials_block.get_bigquery_client()
+```
+
 ### Deploy command on Cloud Run
 
 Save the following as `prefect_gcp_flow.py`:
@@ -167,6 +195,31 @@ prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
 ```
 
 Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
+
+### Use `with_options` to customize options on any existing task or flow:
+
+```python
+from prefect import flow
+from prefect_gcp import GcpCredentials
+from prefect_gcp.cloud_storage import cloud_storage_download_blob_as_bytes
+
+custom_download = cloud_storage_download_blob_as_bytes.with_options(
+    name="My custom task name",
+    retries=2,
+    retry_delay_seconds=10,
+)
+ 
+ @flow
+ def example_with_options_flow():
+    gcp_credentials = GcpCredentials(
+        service_account_file="/path/to/service/account/keyfile.json")
+    contents = custom_download("bucket", "blob", gcp_credentials)
+    return contents()
+ 
+ example_with_options_flow()
+ ```
+ 
++For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
 
 ## Resources
 
