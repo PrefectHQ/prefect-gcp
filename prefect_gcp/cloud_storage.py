@@ -1,5 +1,6 @@
 """Tasks for interacting with GCP Cloud Storage."""
 
+import asyncio
 import os
 from io import BytesIO
 from pathlib import Path
@@ -756,7 +757,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 `Blob.download_to_filename`.
 
         Returns:
-            The path that the object was downloaded to.
+            The absolute path that the object was downloaded to.
 
         Examples:
             Download my_folder/notes.txt object to notes.txt.
@@ -769,6 +770,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         """
         if to_path is None:
             to_path = Path(from_path).name
+
+        # making path absolute, but converting back to str here
+        # since !r looks nicer that way and filename arg expects str
+        to_path = str(Path(to_path).absolute())
 
         bucket = await self.get_bucket()
         bucket_path = self._join_bucket_folder(from_path)
@@ -858,7 +863,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 `Blob.download_to_filename`.
 
         Returns:
-            The path that the folder was downloaded to.
+            The absolute path that the folder was downloaded to.
 
         Examples:
             Download my_folder to a folder named my_folder.
@@ -871,7 +876,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         """
         if to_folder is None:
             to_folder = ""
-        to_folder = Path(to_folder)
+        to_folder = Path(to_folder).absolute()
 
         blobs = await self.list_blobs(folder=from_folder)
         if len(blobs) == 0:
@@ -885,6 +890,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         # because it's built-in to that method already!
         # however, we still need to do it because we're using relative_to
         bucket_folder = self._join_bucket_folder(from_folder)
+
+        async_coros = []
         for blob in blobs:
             bucket_path = Path(blob.name).relative_to(bucket_folder)
             if bucket_path.is_dir():
@@ -895,9 +902,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 f"Downloading blob from bucket {self.bucket!r} path "
                 f"{str(bucket_path)!r} to {to_path}."
             )
-            await run_sync_in_worker_thread(
-                blob.download_to_filename, filename=str(to_path), **download_kwargs
+            async_coros.append(
+                run_sync_in_worker_thread(
+                    blob.download_to_filename, filename=str(to_path), **download_kwargs
+                )
             )
+        await asyncio.gather(*async_coros)
+
         return to_folder
 
     @sync_compatible
@@ -1036,6 +1047,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         num_uploaded = 0
         bucket = await self.get_bucket()
+
+        async_coros = []
         for from_path in from_folder.rglob("**/*"):
             if from_path.is_dir():
                 continue
@@ -1045,11 +1058,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 f"{self.bucket!r} path {bucket_path!r}."
             )
             blob = bucket.blob(bucket_path)
-            await run_sync_in_worker_thread(
-                blob.upload_from_filename, filename=from_path, **upload_kwargs
+            async_coros.append(
+                run_sync_in_worker_thread(
+                    blob.upload_from_filename, filename=from_path, **upload_kwargs
+                )
             )
             num_uploaded += 1
-
+        await asyncio.gather(*async_coros)
         if num_uploaded == 0:
             self.logger.warning(f"No files were uploaded from {from_folder}.")
         return bucket_folder

@@ -233,10 +233,12 @@ class TestGcsBucket:
     ):
         os.chdir(tmp_path)
         from_path = tmp_path / "from_path"
-        to_path = gcs_bucket_with_bucket_folder.download_object_to_path(from_path)
-        assert isinstance(to_path, Path)
-        assert to_path == Path(from_path.name)
-        assert to_path.read_text() == "abcdef"
+        output_to_path = gcs_bucket_with_bucket_folder.download_object_to_path(
+            from_path
+        )
+        assert isinstance(output_to_path, Path)
+        assert output_to_path == tmp_path / "from_path"
+        assert output_to_path.read_text() == "abcdef"
 
     @pytest.mark.parametrize("type_", [str, Path])
     def test_download_object_to_path_set_to_path(
@@ -278,7 +280,7 @@ class TestGcsBucket:
         os.chdir(tmp_path)
         from_path = "base_folder"
         output_to_path = gcs_bucket_no_bucket_folder.download_folder_to_path(from_path)
-        assert output_to_path == Path(".")
+        assert output_to_path == tmp_path
         assert (output_to_path / "nested_blob.txt").read_text() == "abcdef"
         assert (
             output_to_path / "sub_folder" / "nested_blob.txt"
@@ -292,7 +294,7 @@ class TestGcsBucket:
         output_to_path = gcs_bucket_with_bucket_folder.download_folder_to_path(
             from_path
         )
-        assert output_to_path == Path(".")
+        assert output_to_path == tmp_path
         assert (output_to_path / "nested_blob.txt").read_text() == "abcdef"
         assert (
             output_to_path / "sub_folder" / "nested_blob.txt"
