@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `SecretBlock` methods - [#86](https://github.com/PrefectHQ/prefect-gcp/pull/86)
+
 ### Changed
 
 - Made `GcpCredentials.get_access_token` sync compatible - [#80](https://github.com/PrefectHQ/prefect-gcp/pull/80)
