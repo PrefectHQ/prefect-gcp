@@ -54,16 +54,16 @@ To use Secret Manager:
 pip install "prefect-gcp[secret_manager]"
 ```
 
-Then, register to [view the blocks](https://orion-docs.prefect.io/ui/blocks/) on Prefect Cloud:
-
+To use Vertex AI:
 ```bash
-prefect block register -m prefect_gcp.credentials
-prefect block register -m prefect_gcp.cloud_run
+pip install "prefect-gcp[aiplatform]"
 ```
 
-Note, to use the `load` method on Blocks, you must already have a block document [saved through code](https://orion-docs.prefect.io/concepts/blocks/#saving-blocks) or [saved through the UI](https://orion-docs.prefect.io/ui/blocks/).
+A list of available blocks in `prefect-gcp` and their setup instructions can be found [here](https://prefecthq.github.io/prefect-gcp/#blocks-catalog/).
 
-### Download blob from bucket
+### Write and run a flow
+
+#### Download blob from bucket
 
 ```python
 from prefect import flow
@@ -80,35 +80,7 @@ def cloud_storage_download_blob_flow():
 cloud_storage_download_blob_flow()
 ```
 
-### Get Google auth credentials from GcpCredentials
-
-To instantiate a Google Cloud client, like `bigquery.Client`, `GcpCredentials` is not a valid input. Instead, use the `get_credentials_from_service_account` method.
-
-```python
-import google.cloud.bigquery
-from prefect import flow
-from prefect_gcp import GcpCredentials
-
-@flow
-def create_bigquery_client():
-    gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
-    google_auth_credentials = gcp_credentials_block.get_credentials_from_service_account()
-    bigquery_client = bigquery.Client(credentials=google_auth_credentials)
-```
-
-Or simply call `get_bigquery_client` from `GcpCredentials`.
-
-```python
-from prefect import flow
-from prefect_gcp import GcpCredentials
-
-@flow
-def create_bigquery_client():
-    gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
-    bigquery_client = gcp_credentials_block.get_bigquery_client()
-```
-
-### Deploy command on Cloud Run
+#### Deploy command on Cloud Run
 
 Save the following as `prefect_gcp_flow.py`:
 
@@ -150,7 +122,35 @@ prefect deployment run cloud-run-job-flow/cloud_run_job_deployment
 
 Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
 
-### Deploy command on Vertex AI as a flow
+#### Get Google auth credentials from GcpCredentials
+
+To instantiate a Google Cloud client, like `bigquery.Client`, `GcpCredentials` is not a valid input. Instead, use the `get_credentials_from_service_account` method.
+
+```python
+import google.cloud.bigquery
+from prefect import flow
+from prefect_gcp import GcpCredentials
+
+@flow
+def create_bigquery_client():
+    gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
+    google_auth_credentials = gcp_credentials_block.get_credentials_from_service_account()
+    bigquery_client = bigquery.Client(credentials=google_auth_credentials)
+```
+
+Or simply call `get_bigquery_client` from `GcpCredentials`.
+
+```python
+from prefect import flow
+from prefect_gcp import GcpCredentials
+
+@flow
+def create_bigquery_client():
+    gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
+    bigquery_client = gcp_credentials_block.get_bigquery_client()
+```
+
+#### Deploy command on Vertex AI as a flow
 
 Save the following as `prefect_gcp_flow.py`:
 
