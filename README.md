@@ -168,6 +168,31 @@ prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
 
 Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
 
+### Use `with_options` to customize options on any existing task or flow:
+
+```python
+from prefect import flow
+from prefect_gcp import GcpCredentials
+from prefect_gcp.cloud_storage import cloud_storage_download_blob_as_bytes
+
+custom_download = cloud_storage_download_blob_as_bytes.with_options(
+    name="My custom task name",
+    retries=2,
+    retry_delay_seconds=10,
+)
+ 
+ @flow
+ def example_with_options_flow():
+    gcp_credentials = GcpCredentials(
+        service_account_file="/path/to/service/account/keyfile.json")
+    contents = custom_download("bucket", "blob", gcp_credentials)
+    return contents()
+ 
+ example_with_options_flow()
+ ```
+ 
++For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
+
 ## Resources
 
 If you encounter any bugs while using `prefect-gcp`, feel free to open an issue in the [prefect-gcp](https://github.com/PrefectHQ/prefect-gcp) repository.
