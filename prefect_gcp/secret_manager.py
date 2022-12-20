@@ -290,15 +290,15 @@ class SecretManager(SecretBlock):
 
     gcp_credentials: GcpCredentials
     secret_name: str = Field(default=..., description="Name of the secret to manage.")
+    secret_version: str = "latest"
 
     @sync_compatible
     async def read_secret(
         self,
-        version_id: Union[str, int] = "latest",
     ) -> bytes:
         client = self.gcp_credentials.get_secret_manager_client()
         project = self.gcp_credentials.project
-        name = f"projects/{project}/secrets/{self.secret_name}/versions/{version_id}"
+        name = f"projects/{project}/secrets/{self.secret_name}/versions/{self.secret_version}"  # noqa
         request = AccessSecretVersionRequest(name=name)
 
         self.logger.debug(f"Preparing to read secret data from {name!r}.")
@@ -306,7 +306,10 @@ class SecretManager(SecretBlock):
             client.access_secret_version, request=request
         )
         secret = response.payload.data.decode("UTF-8")
-        self.logger.info(f"The secret {name!r} data was successfully read.")
+        self.logger.info(
+            f"The secret {name!r} data version {self.secret_version!r} "
+            f"was successfully read."
+        )
         return secret
 
     @sync_compatible

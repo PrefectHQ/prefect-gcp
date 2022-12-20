@@ -136,7 +136,7 @@ class BigQueryClient:
         return output
 
 
-class SecretManagerClient:
+class GcpSecretClient:
     def __init__(self, credentials=None, project=None):
         self.credentials = credentials
         self.project = project
@@ -219,7 +219,7 @@ def gcp_credentials(monkeypatch, google_auth, mock_credentials, job_service_clie
     gcp_credentials_mock._service_account_email = "my_service_account_email"
 
     gcp_credentials_mock.cloud_storage_client = CloudStorageClient()
-    gcp_credentials_mock.secret_manager_client = SecretManagerClient()
+    gcp_credentials_mock.secret_manager_client = GcpSecretClient()
     gcp_credentials_mock.job_service_client = job_service_client
     gcp_credentials_mock.job_service_client.__enter__.return_value = job_service_client
 
