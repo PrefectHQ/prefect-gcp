@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Made `GcpCredentials.get_access_token` sync compatible - [#80](https://github.com/PrefectHQ/prefect-gcp/pull/80)
+- Breaking: Obfuscated `GcpCredentials.service_account_info` by using `SecretDict` type - [#88](https://github.com/PrefectHQ/prefect-gcp/pull/88)
 - `GcsBucket` additionally inherits from `ObjectStorageBlock` - [#85](https://github.com/PrefectHQ/prefect-gcp/pull/85)
 
 ### Deprecated
@@ -22,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Warning stating "Failed to load collection 'prefect_gcp_aiplatform'" - [#87](https://github.com/PrefectHQ/prefect-gcp/pull/87)
+- Warning stating `Failed to load collection 'prefect_gcp_aiplatform'` - [#87](https://github.com/PrefectHQ/prefect-gcp/pull/87)
 
 ### Security
 

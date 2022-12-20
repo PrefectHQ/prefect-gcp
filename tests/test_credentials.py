@@ -64,12 +64,12 @@ def test_get_credentials_from_service_account_file_error(oauth2_credentials):
 
 
 def test_get_credentials_from_service_account_both_error(
-    service_account_info_dict, oauth2_credentials
+    service_account_info, oauth2_credentials
 ):
     with pytest.raises(ValueError):
         GcpCredentials(
             service_account_file=SERVICE_ACCOUNT_FILES[0],
-            service_account_info=service_account_info_dict,
+            service_account_info=service_account_info,
         ).get_credentials_from_service_account()
 
 
@@ -149,6 +149,8 @@ class MockTargetConfigs(Block):
         for key in configs.copy():
             if key.startswith("_"):
                 configs.pop(key)
+            elif hasattr(configs[key], "get_secret_value"):
+                configs[key] = configs[key].get_secret_value()
         return configs
 
 
