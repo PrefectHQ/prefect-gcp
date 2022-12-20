@@ -346,6 +346,7 @@ class SecretManager(SecretBlock):
                 client.create_secret, request=create_request
             )
 
+            self.logger.debug(f"Preparing to write secret data to {parent!r} again.")
             response = await run_sync_in_worker_thread(
                 client.add_secret_version, request=add_request
             )

@@ -2,6 +2,7 @@ import pytest
 from prefect import flow
 
 from prefect_gcp.secret_manager import (
+    SecretManager,
     create_secret,
     delete_secret,
     delete_secret_version,
@@ -15,19 +16,20 @@ def test_create_secret(gcp_credentials):
     def test_flow():
         return create_secret("secret_name", gcp_credentials)
 
-    assert test_flow() == "secret_name"
+    assert test_flow() == "projects/gcp_credentials_project/secrets/secret_name"
 
 
 @pytest.mark.parametrize("secret_value", ["secret", b"secret_byte"])
 def test_update_secret(secret_value, gcp_credentials):
     @flow
     def test_flow():
+        create_secret("secret_name", gcp_credentials)
         return update_secret("secret_name", secret_value, gcp_credentials)
 
     if isinstance(secret_value, str):
         secret_value = secret_value.encode("UTF-8")
 
-    assert test_flow() == secret_value
+    assert test_flow() == "projects/gcp_credentials_project/secrets/secret_name"
 
 
 def test_read_secret(gcp_credentials):
@@ -35,7 +37,7 @@ def test_read_secret(gcp_credentials):
     def test_flow():
         return read_secret("secret_name", gcp_credentials)
 
-    expected = "projects/gcp_credentials_project/secrets/secret_name/versions/latest"
+    expected = "secret_data"
     assert test_flow() == expected
 
 
@@ -72,3 +74,27 @@ def test_delete_secret_version_id(project, version_id, gcp_credentials):
         project = project or gcp_credentials.project
         path = f"projects/{project}/secrets/{secret_name}/versions/{version_id}"
         assert test_flow() == path
+
+
+class TestSecretManager:
+    @pytest.fixture
+    def secret_manager(self, gcp_credentials):
+        _secret_manager = SecretManager(
+            gcp_credentials=gcp_credentials, secret_name="my_secret_name"
+        )
+        return _secret_manager
+
+    def test_write_secret(self, secret_manager):
+        expected = "projects/gcp_credentials_project/secrets/my_secret_name"
+        actual = secret_manager.write_secret(secret_data=b"my_secret_data")
+        assert actual == expected
+
+    def test_read_secret(self, secret_manager):
+        expected = "secret_data"
+        actual = secret_manager.read_secret()
+        assert actual == expected
+
+    def test_delete_secret(self, secret_manager):
+        expected = "projects/gcp_credentials_project/secrets/my_secret_name"
+        actual = secret_manager.delete_secret()
+        assert actual == expected
