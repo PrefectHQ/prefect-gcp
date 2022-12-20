@@ -1,8 +1,8 @@
-import json
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from google.api_core.exceptions import NotFound as ApiCoreNotFound
 from google.cloud.aiplatform_v1.types.job_state import JobState
 from google.cloud.exceptions import NotFound
 from prefect.testing.utilities import prefect_test_harness
@@ -146,25 +146,37 @@ class SecretManagerClient:
     def __init__(self, credentials=None, project=None):
         self.credentials = credentials
         self.project = project
+        self._secrets = {}
 
-    def create_secret(self, parent=None, secret_id=None, **kwds):
+    def create_secret(self, request=None, parent=None, secret_id=None, **kwds):
         response = MagicMock()
-        response.name = secret_id
+        if request:
+            parent = request.parent
+            secret_id = request.secret_id
+        name = f"{parent}/secrets/{secret_id}"
+        response.name = name
+        self._secrets[name] = None
         return response
 
-    def add_secret_version(self, parent, payload, **kwds):
+    def add_secret_version(self, request=None, parent=None, payload=None, **kwds):
         response = MagicMock()
-        response.name = payload["data"]
+        if request:
+            parent = request.parent
+
+        if parent not in self._secrets:
+            raise ApiCoreNotFound(f"{parent!r} does not exist.")
+
+        response.name = parent
         return response
 
-    def access_secret_version(self, name, **kwds):
+    def access_secret_version(self, request=None, name=None, **kwds):
         response = MagicMock()
         payload = MagicMock()
-        payload.data = f"{name}".encode()
+        payload.data = "secret_data".encode("utf-8")
         response.payload = payload
         return response
 
-    def delete_secret(self, name, **kwds):
+    def delete_secret(self, request=None, name=None, **kwds):
         return name
 
     def destroy_secret_version(self, name, **kwds):
@@ -231,7 +243,7 @@ def gcp_credentials(monkeypatch, google_auth, mock_credentials, job_service_clie
 
 
 @pytest.fixture()
-def service_account_info_dict(monkeypatch):
+def service_account_info(monkeypatch):
     monkeypatch.setattr(
         "google.auth.crypt._cryptography_rsa.serialization.load_pem_private_key",
         lambda *args, **kwargs: args[0],
@@ -243,14 +255,3 @@ def service_account_info_dict(monkeypatch):
         "private_key": "my-private-key",
     }
     return _service_account_info
-
-
-@pytest.fixture()
-def service_account_info_json(service_account_info_dict):
-    _service_account_info = json.dumps(service_account_info_dict)
-    return _service_account_info
-
-
-@pytest.fixture(params=["service_account_info_dict", "service_account_info_json"])
-def service_account_info(request):
-    return request.getfixturevalue(request.param)
