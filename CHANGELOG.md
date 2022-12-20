@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `SecretBlock` methods - [#86](https://github.com/PrefectHQ/prefect-gcp/pull/86)
+- `SecretBlock` block with `read_secret`, `write_secret`, and `delete_secret` methods - [#86](https://github.com/PrefectHQ/prefect-gcp/pull/86)
 
 ### Changed
 
