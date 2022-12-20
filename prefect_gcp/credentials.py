@@ -2,12 +2,13 @@
 
 import functools
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
-from pydantic import Json, root_validator, validator
+from prefect.blocks.fields import SecretDict
+from pydantic import root_validator, validator
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -90,7 +91,7 @@ class GcpCredentials(Block):
     _block_type_name = "GCP Credentials"
 
     service_account_file: Optional[Path] = None
-    service_account_info: Optional[Union[Dict[str, str], Json]] = None
+    service_account_info: Optional[SecretDict] = None
     project: Optional[str] = None
 
     _service_account_email: Optional[str] = None
@@ -141,7 +142,7 @@ class GcpCredentials(Block):
         """
         if self.service_account_info:
             credentials = Credentials.from_service_account_info(
-                self.service_account_info,
+                self.service_account_info.get_secret_value(),
                 scopes=["https://www.googleapis.com/auth/cloud-platform"],
             )
         elif self.service_account_file:
