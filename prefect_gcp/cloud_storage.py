@@ -1034,7 +1034,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             The path that the folder was uploaded to.
 
         Examples:
-            Upload local folder my_folder to a bucket named my_folder.
+            Upload local folder my_folder to the bucket's folder my_folder.
             ```python
             from prefect_gcp.cloud_storage import GcsBucket
 
