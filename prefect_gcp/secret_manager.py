@@ -286,7 +286,7 @@ async def delete_secret_version(
     return name
 
 
-class SecretManager(SecretBlock):
+class GcpSecret(SecretBlock):
 
     gcp_credentials: GcpCredentials
     secret_name: str = Field(default=..., description="Name of the secret to manage.")
