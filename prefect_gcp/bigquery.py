@@ -1,9 +1,10 @@
 """Tasks for interacting with GCP BigQuery"""
 
 import os
+from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Union
 
 from anyio import to_thread
 from google.cloud.bigquery import (
@@ -16,13 +17,16 @@ from google.cloud.bigquery import (
     Table,
     TimePartitioning,
 )
+from google.cloud.bigquery.dbapi.connection import Connection
+from google.cloud.bigquery.dbapi.cursor import Cursor
+from google.cloud.bigquery.table import Row
 from google.cloud.exceptions import NotFound
 from prefect import get_run_logger, task
+from prefect.blocks.abstract import DatabaseBlock
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
+from pydantic import Field
 
-if TYPE_CHECKING:
-    from google.cloud.bigquery.table import Row
-
-    from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.credentials import GcpCredentials
 
 
 def _result_sync(func, *args, **kwargs):
@@ -513,3 +517,187 @@ async def bigquery_load_file(
         result._completion_lock = None
 
     return result
+
+
+class BigQuery(DatabaseBlock):
+    """
+    A block for querying a database with BigQuery.
+
+    Attributes:
+        gcp_credentials: The credentials to use to authenticate.
+        fetch_size: The number of rows to fetch at a time when calling fetch_many.
+            Note, this parameter is executed on the client side and is not
+            passed to the database. To limit on the server side, add the `LIMIT`
+            clause, or the dialect's equivalent clause, like `TOP`, to the query.
+    """
+
+    gcp_credentials: GcpCredentials
+    fetch_size: int = Field(
+        default=1, description="The number of rows to fetch at a time."
+    )
+
+    _connection: Optional[Connection] = None
+
+    @contextmanager
+    def manage_connection(self) -> Generator[Connection, None, None]:
+        """
+        Get a BigQuery connection and close upon completion.
+
+        Yields:
+            A BigQuery connection.
+        """
+        if self._connection:
+            yield self._connection
+        else:
+            with self.gcp_credentials.get_bigquery_client() as client:
+                connection = Connection(client=client)
+                yield connection
+                connection.close()
+
+    @sync_compatible
+    async def fetch_one(
+        self,
+        operation: str,
+        parameters: Optional[Dict[str, Any]] = None,
+        cursor: Optional[Cursor] = None,
+        **execution_options: Dict[str, Any],
+    ) -> Row:
+        """
+        Fetch a single result from the database.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            parameters: The parameters for the operation.
+            cursor: A cursor to use for the operation; if not provided, will
+                automatically create one.
+            **execution_options: Additional options to pass to `connection.execute`.
+
+        Returns:
+            A tuple containing the data returned by the database,
+                where each row is a tuple and each column is a value in the tuple.
+        """
+        with self.manage_connection() as connection:
+            cursor = cursor or connection.cursor()
+            await run_sync_in_worker_thread(
+                cursor.execute, operation, parameters=parameters, **execution_options
+            )
+            result = cursor.fetchone()
+
+        return result
+
+    @sync_compatible
+    async def fetch_many(
+        self,
+        operation: str,
+        parameters: Optional[Dict[str, Any]] = None,
+        size: Optional[int] = None,
+        cursor: Optional[Cursor] = None,
+        **execution_options: Dict[str, Any],
+    ) -> List[Row]:
+        """
+        Fetch a limited number of results from the database.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            parameters: The parameters for the operation.
+            size: The number of results to return; if None or 0, uses the value of
+                `fetch_size` configured on the block.
+            cursor: A cursor to use for the operation; if not provided, will
+                automatically create one.
+            **execution_options: Additional options to pass to `connection.execute`.
+
+        Returns:
+            A list of tuples containing the data returned by the database,
+                where each row is a tuple and each column is a value in the tuple.
+        """
+        with self.manage_connection() as connection:
+            cursor = cursor or connection.cursor()
+            await run_sync_in_worker_thread(
+                cursor.execute, operation, parameters=parameters, **execution_options
+            )
+            size = size or self.fetch_size
+            result = cursor.fetchmany(size)
+        return result
+
+    @sync_compatible
+    async def fetch_all(
+        self,
+        operation: str,
+        parameters: Optional[Dict[str, Any]] = None,
+        cursor: Optional[Cursor] = None,
+        **execution_options: Dict[str, Any],
+    ) -> List[Row]:
+        """
+        Fetch all results from the database.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            parameters: The parameters for the operation.
+            cursor: A cursor to use for the operation; if not provided, will
+                automatically create one.
+            **execution_options: Additional options to pass to `connection.execute`.
+
+        Returns:
+            A list of tuples containing the data returned by the database,
+                where each row is a tuple and each column is a value in the tuple.
+        """
+        with self.manage_connection() as connection:
+            cursor = cursor or connection.cursor()
+            await run_sync_in_worker_thread(
+                cursor.execute, operation, parameters=parameters, **execution_options
+            )
+            result = cursor.fetchall()
+        return result
+
+    @sync_compatible
+    async def execute(
+        self,
+        operation: str,
+        parameters: Optional[Dict[str, Any]] = None,
+        **execution_options: Dict[str, Any],
+    ) -> None:
+        """
+        Executes an operation on the database. This method is intended to be used
+        for operations that do not return data, such as INSERT, UPDATE, or DELETE.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            parameters: The parameters for the operation.
+            **execution_options: Additional options to pass to `connection.execute`.
+        """
+        with self.manage_connection() as connection:
+            cursor = connection.cursor()
+            await run_sync_in_worker_thread(
+                cursor.execute, operation, parameters=parameters, **execution_options
+            )
+
+    @sync_compatible
+    async def execute_many(
+        self,
+        operation: str,
+        seq_of_parameters: List[Dict[str, Any]],
+    ) -> None:
+        """
+        Executes many operations on the database. This method is intended to be used
+        for operations that do not return data, such as INSERT, UPDATE, or DELETE.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            seq_of_parameters: The sequence of parameters for the operation.
+        """
+        with self.manage_connection() as connection:
+            cursor = connection.cursor()  # this gets closed by connection
+            await run_sync_in_worker_thread(
+                cursor.executemany, operation, seq_of_parameters=seq_of_parameters
+            )
+
+    def __enter__(self):
+        """
+        Start a connection upon entry.
+        """
+        connection = Connection()
+        return connection
+
+    def __exit__(self, *args):
+        self._connection.close()
+        self._connection = None

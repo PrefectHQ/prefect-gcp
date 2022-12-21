@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `list_blobs`, `download_object_to_path`, `download_object_to_file_object`, `download_folder_to_path`, `upload_from_path`, `upload_from_file_object`, `upload_from_folder` methods in `GcsBucket` - [#85](https://github.com/PrefectHQ/prefect-gcp/pull/85)
 - `GcpSecret` block with `read_secret`, `write_secret`, and `delete_secret` methods - [#86](https://github.com/PrefectHQ/prefect-gcp/pull/86)
+- `BigQuery` database block with `manage_connection`, `fetch_one`, `fetch_many`, `fetch_all`, `execute`, `execute_many`, methods - [#88](https://github.com/PrefectHQ/prefect-gcp/pull/88)
 
 ### Changed
 
