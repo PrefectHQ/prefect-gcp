@@ -1,10 +1,9 @@
 """Tasks for interacting with GCP BigQuery"""
 
 import os
-from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 from anyio import to_thread
 from google.cloud.bigquery import (
@@ -24,7 +23,8 @@ from google.cloud.exceptions import NotFound
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import DatabaseBlock
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import Field
+from prefect.utilities.hashing import hash_objects
+from pydantic import Field, PrivateAttr
 
 from prefect_gcp.credentials import GcpCredentials
 
@@ -523,70 +523,119 @@ class BigQuery(DatabaseBlock):
     """
     A block for querying a database with BigQuery.
 
+    Upon instantiating, a connection to BigQuery is established and maintained for the
+    life of the object until the close method is called. It is recommended to use
+    this block as a context manager, which will automatically close the connection
+    and its cursors when the context is exited.
+
     Attributes:
         gcp_credentials: The credentials to use to authenticate.
         fetch_size: The number of rows to fetch at a time when calling fetch_many.
             Note, this parameter is executed on the client side and is not
             passed to the database. To limit on the server side, add the `LIMIT`
             clause, or the dialect's equivalent clause, like `TOP`, to the query.
-    """
+
+    Examples:
+        Context manage a BigQuery block and fetch two new rows at a time:
+        ```python
+        from prefect_gcp.bigquery import BigQuery
+
+        with BigQuery.load("BLOCK_NAME") as bq:
+            operation = "SELECT * FROM `bigquery-public-data.samples.shakespeare` LIMIT 6"
+            for _ in range(0, 3):
+                result = bq.fetch_many(operation, size=2)  # fetch two new rows
+                print(result)
+        ```
+    """  # noqa
 
     gcp_credentials: GcpCredentials
     fetch_size: int = Field(
         default=1, description="The number of rows to fetch at a time."
     )
 
-    _connection: Optional[Connection] = None
+    _connection: Optional[Connection] = PrivateAttr(default=None)
+    _unique_cursors: Dict[str, Cursor] = PrivateAttr(default_factory=dict)
 
-    @contextmanager
-    def manage_connection(self) -> Generator[Connection, None, None]:
-        """
-        Get a BigQuery connection and close upon completion.
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        with self.gcp_credentials.get_bigquery_client() as client:
+            self._connection = Connection(client=client)
 
-        Yields:
-            A BigQuery connection.
+    def _get_cursor(
+        self, inputs: Dict[str, Any]
+    ) -> Generator[Tuple[bool, Cursor], None, None]:
         """
-        if self._connection:
-            yield self._connection
+        Get a BigQuery cursor.
+
+        Args:
+            inputs: The inputs to generate a unique hash, used to decide
+                whether a new cursor should be used.
+
+        Returns:
+            Whether a cursor is new and a BigQuery cursor.
+        """
+        input_hash = hash_objects(inputs)
+        assert input_hash is not None, (
+            "We were not able to hash your inputs, "
+            "which resulted in an unexpected data return; "
+            "please open an issue with a reproducible example."
+        )
+        if input_hash not in self._unique_cursors.keys():
+            new_cursor = self._connection.cursor()
+            self._unique_cursors[input_hash] = new_cursor
+            return True, new_cursor
         else:
-            with self.gcp_credentials.get_bigquery_client() as client:
-                connection = Connection(client=client)
-                yield connection
-                connection.close()
+            existing_cursor = self._unique_cursors[input_hash]
+            return False, existing_cursor
+
+    def reset_cursors(self) -> None:
+        """
+        Tries to close all opened cursors.
+        """
+        input_hashes = tuple(self._unique_cursors.keys())
+        for input_hash in input_hashes:
+            cursor = self._unique_cursors.pop(input_hash)
+            try:
+                cursor.close()
+            except Exception as exc:
+                self.logger.warning(
+                    f"Failed to close cursor for input hash {input_hash}: {exc}"
+                )
 
     @sync_compatible
     async def fetch_one(
         self,
         operation: str,
         parameters: Optional[Dict[str, Any]] = None,
-        cursor: Optional[Cursor] = None,
         **execution_options: Dict[str, Any],
     ) -> Row:
         """
         Fetch a single result from the database.
 
+        Repeated calls using the same inputs to *any* of the fetch methods of this
+        block will skip executing the operation again, and instead,
+        return the next set of results from the previous execution,
+        until the reset_cursors method is called.
+
         Args:
             operation: The SQL query or other operation to be executed.
             parameters: The parameters for the operation.
-            cursor: A cursor to use for the operation; if not provided, will
-                automatically create one.
             **execution_options: Additional options to pass to `connection.execute`.
 
         Returns:
             A tuple containing the data returned by the database,
                 where each row is a tuple and each column is a value in the tuple.
         """
-        with self.manage_connection() as connection:
-            cursor = cursor or connection.cursor()
-            if cursor._query_data is None:
-                await run_sync_in_worker_thread(
-                    cursor.execute,
-                    operation,
-                    parameters=parameters,
-                    **execution_options,
-                )
-            result = cursor.fetchone()
+        inputs = dict(
+            operation=operation,
+            parameters=parameters,
+            **execution_options,
+        )
+        new, cursor = self._get_cursor(inputs)
+        if new:
+            await run_sync_in_worker_thread(cursor.execute, **inputs)
 
+        result = await run_sync_in_worker_thread(cursor.fetchone)
         return result
 
     @sync_compatible
@@ -595,36 +644,38 @@ class BigQuery(DatabaseBlock):
         operation: str,
         parameters: Optional[Dict[str, Any]] = None,
         size: Optional[int] = None,
-        cursor: Optional[Cursor] = None,
         **execution_options: Dict[str, Any],
     ) -> List[Row]:
         """
         Fetch a limited number of results from the database.
+
+        Repeated calls using the same inputs to *any* of the fetch methods of this
+        block will skip executing the operation again, and instead,
+        return the next set of results from the previous execution,
+        until the reset_cursors method is called.
 
         Args:
             operation: The SQL query or other operation to be executed.
             parameters: The parameters for the operation.
             size: The number of results to return; if None or 0, uses the value of
                 `fetch_size` configured on the block.
-            cursor: A cursor to use for the operation; if not provided, will
-                automatically create one.
             **execution_options: Additional options to pass to `connection.execute`.
 
         Returns:
             A list of tuples containing the data returned by the database,
                 where each row is a tuple and each column is a value in the tuple.
         """
-        with self.manage_connection() as connection:
-            cursor = cursor or connection.cursor()
-            if cursor._query_data is None:
-                await run_sync_in_worker_thread(
-                    cursor.execute,
-                    operation,
-                    parameters=parameters,
-                    **execution_options,
-                )
-            size = size or self.fetch_size
-            result = cursor.fetchmany(size)
+        inputs = dict(
+            operation=operation,
+            parameters=parameters,
+            **execution_options,
+        )
+        new, cursor = self._get_cursor(inputs)
+        if new:
+            await run_sync_in_worker_thread(cursor.execute, **inputs)
+
+        size = size or self.fetch_size
+        result = await run_sync_in_worker_thread(cursor.fetchmany, size=size)
         return result
 
     @sync_compatible
@@ -632,29 +683,35 @@ class BigQuery(DatabaseBlock):
         self,
         operation: str,
         parameters: Optional[Dict[str, Any]] = None,
-        cursor: Optional[Cursor] = None,
         **execution_options: Dict[str, Any],
     ) -> List[Row]:
         """
         Fetch all results from the database.
 
+        Repeated calls using the same inputs to *any* of the fetch methods of this
+        block will skip executing the operation again, and instead,
+        return the next set of results from the previous execution,
+        until the reset_cursors method is called.
+
         Args:
             operation: The SQL query or other operation to be executed.
             parameters: The parameters for the operation.
-            cursor: A cursor to use for the operation; if not provided, will
-                automatically create one.
             **execution_options: Additional options to pass to `connection.execute`.
 
         Returns:
             A list of tuples containing the data returned by the database,
                 where each row is a tuple and each column is a value in the tuple.
         """
-        with self.manage_connection() as connection:
-            cursor = cursor or connection.cursor()
-            await run_sync_in_worker_thread(
-                cursor.execute, operation, parameters=parameters, **execution_options
-            )
-            result = cursor.fetchall()
+        inputs = dict(
+            operation=operation,
+            parameters=parameters,
+            **execution_options,
+        )
+        new, cursor = self._get_cursor(inputs)
+        if new:
+            await run_sync_in_worker_thread(cursor.execute, **inputs)
+
+        result = await run_sync_in_worker_thread(cursor.fetchall)
         return result
 
     @sync_compatible
@@ -668,16 +725,21 @@ class BigQuery(DatabaseBlock):
         Executes an operation on the database. This method is intended to be used
         for operations that do not return data, such as INSERT, UPDATE, or DELETE.
 
+        Unlike the fetch methods, this method will always execute the operation
+        upon calling.
+
         Args:
             operation: The SQL query or other operation to be executed.
             parameters: The parameters for the operation.
             **execution_options: Additional options to pass to `connection.execute`.
         """
-        with self.manage_connection() as connection:
-            cursor = connection.cursor()
-            await run_sync_in_worker_thread(
-                cursor.execute, operation, parameters=parameters, **execution_options
-            )
+        inputs = dict(
+            operation=operation,
+            parameters=parameters,
+            **execution_options,
+        )
+        cursor = self._get_cursor(inputs)[1]
+        await run_sync_in_worker_thread(cursor.execute, **inputs)
 
     @sync_compatible
     async def execute_many(
@@ -689,24 +751,37 @@ class BigQuery(DatabaseBlock):
         Executes many operations on the database. This method is intended to be used
         for operations that do not return data, such as INSERT, UPDATE, or DELETE.
 
+        Unlike the fetch methods, this method will always execute the operations
+        upon calling.
+
         Args:
             operation: The SQL query or other operation to be executed.
             seq_of_parameters: The sequence of parameters for the operation.
         """
-        with self.manage_connection() as connection:
-            cursor = connection.cursor()  # this gets closed by connection
-            await run_sync_in_worker_thread(
-                cursor.executemany, operation, seq_of_parameters=seq_of_parameters
-            )
+        inputs = dict(
+            operation=operation,
+            seq_of_parameters=seq_of_parameters,
+        )
+        cursor = self._get_cursor(inputs)[1]
+        await run_sync_in_worker_thread(cursor.executemany, **inputs)
+
+    def close(self):
+        """
+        Closes connection and its cursors.
+        """
+        try:
+            self.reset_cursors()
+        finally:
+            self._connection.close()
 
     def __enter__(self):
         """
         Start a connection upon entry.
         """
-        with self.gcp_credentials.get_bigquery_client() as client:
-            self._connection = Connection(client=client)
         return self
 
     def __exit__(self, *args):
-        self._connection.close()
-        self._connection = None
+        """
+        Closes connection and its cursors upon exit.
+        """
+        self.close()
