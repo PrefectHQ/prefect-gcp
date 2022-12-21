@@ -578,9 +578,13 @@ class BigQuery(DatabaseBlock):
         """
         with self.manage_connection() as connection:
             cursor = cursor or connection.cursor()
-            await run_sync_in_worker_thread(
-                cursor.execute, operation, parameters=parameters, **execution_options
-            )
+            if cursor._query_data is None:
+                await run_sync_in_worker_thread(
+                    cursor.execute,
+                    operation,
+                    parameters=parameters,
+                    **execution_options,
+                )
             result = cursor.fetchone()
 
         return result
@@ -612,9 +616,13 @@ class BigQuery(DatabaseBlock):
         """
         with self.manage_connection() as connection:
             cursor = cursor or connection.cursor()
-            await run_sync_in_worker_thread(
-                cursor.execute, operation, parameters=parameters, **execution_options
-            )
+            if cursor._query_data is None:
+                await run_sync_in_worker_thread(
+                    cursor.execute,
+                    operation,
+                    parameters=parameters,
+                    **execution_options,
+                )
             size = size or self.fetch_size
             result = cursor.fetchmany(size)
         return result
@@ -695,8 +703,9 @@ class BigQuery(DatabaseBlock):
         """
         Start a connection upon entry.
         """
-        connection = Connection()
-        return connection
+        with self.gcp_credentials.get_bigquery_client() as client:
+            self._connection = Connection(client=client)
+        return self
 
     def __exit__(self, *args):
         self._connection.close()
