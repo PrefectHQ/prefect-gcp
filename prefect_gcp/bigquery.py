@@ -3,7 +3,7 @@
 import os
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from anyio import to_thread
 from google.cloud.bigquery import (
@@ -561,9 +561,7 @@ class BigQuery(DatabaseBlock):
         with self.gcp_credentials.get_bigquery_client() as client:
             self._connection = Connection(client=client)
 
-    def _get_cursor(
-        self, inputs: Dict[str, Any]
-    ) -> Generator[Tuple[bool, Cursor], None, None]:
+    def _get_cursor(self, inputs: Dict[str, Any]) -> Tuple[bool, Cursor]:
         """
         Get a BigQuery cursor.
 
@@ -625,6 +623,29 @@ class BigQuery(DatabaseBlock):
         Returns:
             A tuple containing the data returned by the database,
                 where each row is a tuple and each column is a value in the tuple.
+
+        Examples:
+            Execute operation with parameters, fetching one new row at a time:
+            ```python
+            from prefect_gcp.bigquery import BigQuery
+
+            with BigQuery.load("BLOCK_NAME") as bq:
+                operation = '''
+                    SELECT word, word_count
+                    FROM `bigquery-public-data.samples.shakespeare`
+                    WHERE corpus = %(corpus)s
+                    AND word_count >= %(min_word_count)s
+                    ORDER BY word_count DESC
+                    LIMIT 3;
+                '''
+                parameters = {
+                    "corpus": "romeoandjuliet",
+                    "min_word_count": 250,
+                }
+                for _ in range(0, 3):
+                    result = bq.fetch_one(operation, parameters=parameters)
+                    print(result)
+            ```
         """
         inputs = dict(
             operation=operation,
@@ -664,6 +685,29 @@ class BigQuery(DatabaseBlock):
         Returns:
             A list of tuples containing the data returned by the database,
                 where each row is a tuple and each column is a value in the tuple.
+
+        Examples:
+            Execute operation with parameters, fetching two new rows at a time:
+            ```python
+            from prefect_gcp.bigquery import BigQuery
+
+            with BigQuery.load("BLOCK_NAME") as bq:
+                operation = '''
+                    SELECT word, word_count
+                    FROM `bigquery-public-data.samples.shakespeare`
+                    WHERE corpus = %(corpus)s
+                    AND word_count >= %(min_word_count)s
+                    ORDER BY word_count DESC
+                    LIMIT 6;
+                '''
+                parameters = {
+                    "corpus": "romeoandjuliet",
+                    "min_word_count": 250,
+                }
+                for _ in range(0, 3):
+                    result = bq.fetch_many(operation, parameters=parameters, size=2)
+                    print(result)
+            ```
         """
         inputs = dict(
             operation=operation,
@@ -701,6 +745,27 @@ class BigQuery(DatabaseBlock):
         Returns:
             A list of tuples containing the data returned by the database,
                 where each row is a tuple and each column is a value in the tuple.
+
+        Examples:
+            Execute operation with parameters, fetching all rows:
+            ```python
+            from prefect_gcp.bigquery import BigQuery
+
+            with BigQuery.load("BLOCK_NAME") as bq:
+                operation = '''
+                    SELECT word, word_count
+                    FROM `bigquery-public-data.samples.shakespeare`
+                    WHERE corpus = %(corpus)s
+                    AND word_count >= %(min_word_count)s
+                    ORDER BY word_count DESC
+                    LIMIT 3;
+                '''
+                parameters = {
+                    "corpus": "romeoandjuliet",
+                    "min_word_count": 250,
+                }
+                result = bq.fetch_all(operation, parameters=parameters)
+            ```
         """
         inputs = dict(
             operation=operation,
@@ -732,6 +797,26 @@ class BigQuery(DatabaseBlock):
             operation: The SQL query or other operation to be executed.
             parameters: The parameters for the operation.
             **execution_options: Additional options to pass to `connection.execute`.
+
+        Examples:
+            Execute operation with parameters:
+            ```python
+            from prefect_gcp.bigquery import BigQuery
+
+            with BigQuery.load("BLOCK_NAME") as bq:
+                operation = '''
+                    CREATE TABLE mydataset.trips AS (
+                    SELECT
+                        bikeid,
+                        start_time,
+                        duration_minutes
+                    FROM
+                        bigquery-public-data.austin_bikeshare.bikeshare_trips
+                    LIMIT %(limit)s
+                    );
+                '''
+                bq.execute(operation, parameters={"limit": 5})
+            ```
         """
         inputs = dict(
             operation=operation,
@@ -757,6 +842,30 @@ class BigQuery(DatabaseBlock):
         Args:
             operation: The SQL query or other operation to be executed.
             seq_of_parameters: The sequence of parameters for the operation.
+
+        Examples:
+            Create mytable in mydataset and insert two rows into it:
+            ```
+            from prefect_gcp.bigquery import BigQuery
+
+            with BigQuery.load("bigquery") as bq:
+                create_operation = '''
+                CREATE TABLE IF NOT EXISTS mydataset.mytable (
+                    col1 STRING,
+                    col2 INTEGER,
+                    col3 BOOLEAN
+                )
+                '''
+                bq.execute(create_operation)
+                insert_operation = '''
+                INSERT INTO mydataset.mytable (col1, col2, col3) VALUES (%s, %s, %s)
+                '''
+                seq_of_parameters = [
+                    ("a", 1, True),
+                    ("b", 2, False),
+                ]
+                bq.execute_many(insert_operation, seq_of_parameters=seq_of_parameters)
+            ```
         """
         inputs = dict(
             operation=operation,
