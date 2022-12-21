@@ -866,7 +866,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             The absolute path that the folder was downloaded to.
 
         Examples:
-            Download my_folder to a folder named my_folder.
+            Download my_folder to a local folder named my_folder.
             ```python
             from prefect_gcp.cloud_storage import GcsBucket
 
@@ -933,7 +933,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             The path that the object was uploaded to.
 
         Examples:
-            Upload my_folder/notes.txt object to notes.txt.
+            Upload notes.txt to my_folder/notes.txt.
             ```python
             from prefect_gcp.cloud_storage import GcsBucket
 
@@ -986,7 +986,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 gcs_bucket.upload_from_file_object(f, "my_folder/notes.txt")
             ```
 
-            Upload my_folder/notes.txt object to a BufferedReader.
+            Upload BufferedReader object to my_folder/notes.txt.
             ```python
             from io import BufferedReader
             from prefect_gcp.cloud_storage import GcsBucket
@@ -1034,7 +1034,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             The path that the folder was uploaded to.
 
         Examples:
-            Upload my_folder to my_folder.
+            Upload local folder my_folder to the bucket's folder my_folder.
             ```python
             from prefect_gcp.cloud_storage import GcsBucket
 
