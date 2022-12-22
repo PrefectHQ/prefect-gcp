@@ -190,12 +190,10 @@ class TestBigQueryWarehouse:
         assert warehouse._connection is None
         assert warehouse._unique_cursors == {}
 
-    def test_get_open_connection(self, bigquery_warehouse):
-        assert (
-            bigquery_warehouse.get_open_connection() == bigquery_warehouse._connection
-        )
+    def test_get_connection(self, bigquery_warehouse):
+        assert bigquery_warehouse.get_connection() == bigquery_warehouse._connection
         bigquery_warehouse.close()
-        assert bigquery_warehouse.get_open_connection() is None
+        assert bigquery_warehouse.get_connection() is None
 
     def test_cursor_lifecycle(self, bigquery_warehouse, mock_connection):
         # check if uses the same cursor

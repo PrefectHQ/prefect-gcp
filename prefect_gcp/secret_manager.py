@@ -296,9 +296,13 @@ class GcpSecret(SecretBlock):
         secret_version: Version number of the secret to use, or "latest".
     """
 
+    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+
     gcp_credentials: GcpCredentials
     secret_name: str = Field(default=..., description="Name of the secret to manage.")
-    secret_version: str = "latest"
+    secret_version: str = Field(
+        default="latest", description="Version number of the secret to use."
+    )
 
     @sync_compatible
     async def read_secret(self) -> bytes:

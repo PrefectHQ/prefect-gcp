@@ -83,7 +83,7 @@ try:
 except ImportError:
     pass
 
-from prefect_gcp import GcpCredentials
+from prefect_gcp.credentials import GcpCredentials
 
 
 class VertexAICustomTrainingJobResult(InfrastructureResult):
@@ -120,7 +120,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         description=(
             "The image to use for a new Vertex AI custom training job. This value must "
             "refer to an image within either Google Container Registry "
-            "or Google Artifact Registry, like `gcr.io/<project_name>/<repo>/`"
+            "or Google Artifact Registry, like `gcr.io/<project_name>/<repo>/`."
         ),
     )
     env: Dict[str, str] = Field(

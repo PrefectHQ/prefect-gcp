@@ -24,7 +24,7 @@ from prefect import get_run_logger, task
 from prefect.blocks.abstract import DatabaseBlock
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from prefect.utilities.hashing import hash_objects
-from pydantic import Field, PrivateAttr
+from pydantic import Field
 
 from prefect_gcp.credentials import GcpCredentials
 
@@ -40,7 +40,7 @@ def _result_sync(func, *args, **kwargs):
 @task
 async def bigquery_query(
     query: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     query_params: Optional[List[tuple]] = None,  # 3-tuples
     dry_run_max_bytes: Optional[int] = None,
     dataset: Optional[str] = None,
@@ -162,7 +162,7 @@ async def bigquery_query(
 async def bigquery_create_table(
     dataset: str,
     table: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     schema: Optional[List[SchemaField]] = None,
     clustering_fields: List[str] = None,
     time_partitioning: TimePartitioning = None,
@@ -257,7 +257,7 @@ async def bigquery_insert_stream(
     dataset: str,
     table: str,
     records: List[dict],
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
     location: str = "US",
 ) -> List:
@@ -332,7 +332,7 @@ async def bigquery_load_cloud_storage(
     dataset: str,
     table: str,
     uri: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     schema: Optional[List[SchemaField]] = None,
     job_config: Optional[dict] = None,
     project: Optional[str] = None,
@@ -420,7 +420,7 @@ async def bigquery_load_file(
     dataset: str,
     table: str,
     path: Union[str, Path],
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     schema: Optional[List[SchemaField]] = None,
     job_config: Optional[dict] = None,
     rewind: bool = False,
@@ -525,8 +525,13 @@ class BigQueryWarehouse(DatabaseBlock):
 
     Upon instantiating, a connection to BigQuery is established
     and maintained for the life of the object until the close method is called.
+
     It is recommended to use this block as a context manager, which will automatically
     close the connection and its cursors when the context is exited.
+
+    It is also recommended that this block is loaded and consumed within a single task
+    or flow because if the block is passed across separate tasks and flows,
+    the state of the block's connection and cursor could be lost.
 
     Attributes:
         gcp_credentials: The credentials to use to authenticate.
@@ -534,34 +539,34 @@ class BigQueryWarehouse(DatabaseBlock):
             Note, this parameter is executed on the client side and is not
             passed to the database. To limit on the server side, add the `LIMIT`
             clause, or the dialect's equivalent clause, like `TOP`, to the query.
-
-    Examples:
-        Context manage a BigQueryWarehouse block and fetch two new rows at a time:
-        ```python
-        from prefect_gcp.bigquery import BigQueryWarehouse
-
-        with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
-            operation = "SELECT * FROM `bigquery-public-data.samples.shakespeare` LIMIT 6"
-            for _ in range(0, 3):
-                result = warehouse.fetch_many(operation, size=2)  # fetch two new rows
-                print(result)
-        ```
     """  # noqa
+
+    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
 
     gcp_credentials: GcpCredentials
     fetch_size: int = Field(
         default=1, description="The number of rows to fetch at a time."
     )
 
-    _connection: Optional[Connection] = PrivateAttr(default=None)
-    _unique_cursors: Dict[str, Cursor] = PrivateAttr(default_factory=dict)
+    _connection: Optional[Connection] = None
+    _unique_cursors: Dict[str, Cursor] = None
 
-    def __init__(self, **kwargs: Any):
-        super().__init__(**kwargs)
+    def _start_connection(self):
+        """
+        Starts a connection.
+        """
         with self.gcp_credentials.get_bigquery_client() as client:
             self._connection = Connection(client=client)
 
-    def get_open_connection(self) -> Connection:
+    def block_initialization(self) -> None:
+        super().block_initialization()
+        if self._connection is None:
+            self._start_connection()
+
+        if self._unique_cursors is None:
+            self._unique_cursors = {}
+
+    def get_connection(self) -> Connection:
         """
         Get the opened connection to BigQuery.
         """
@@ -894,8 +899,9 @@ class BigQueryWarehouse(DatabaseBlock):
         try:
             self.reset_cursors()
         finally:
-            self._connection.close()
-            self._connection = None
+            if self._connection is not None:
+                self._connection.close()
+                self._connection = None
 
     def __enter__(self):
         """
@@ -908,3 +914,15 @@ class BigQueryWarehouse(DatabaseBlock):
         Closes connection and its cursors upon exit.
         """
         self.close()
+
+    def __getstate__(self):
+        """ """
+        data = self.__dict__.copy()
+        data.update({k: None for k in {"_connection", "_unique_cursors"}})
+        return data
+
+    def __setstate__(self, data: dict):
+        """ """
+        self.__dict__.update(data)
+        self._unique_cursors = {}
+        self._start_connection()
