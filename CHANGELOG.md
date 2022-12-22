@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## 0.2.0
+
+Released on December 22nd, 2022.
+
+### Added
+
 - `list_blobs`, `download_object_to_path`, `download_object_to_file_object`, `download_folder_to_path`, `upload_from_path`, `upload_from_file_object`, `upload_from_folder` methods in `GcsBucket` - [#85](https://github.com/PrefectHQ/prefect-gcp/pull/85)
 - `GcpSecret` block with `read_secret`, `write_secret`, and `delete_secret` methods - [#86](https://github.com/PrefectHQ/prefect-gcp/pull/86)
 - `BigQueryWarehouse` block with `get_connection`, `fetch_one`, `fetch_many`, `fetch_all`, `execute`, `execute_many`, methods - [#88](https://github.com/PrefectHQ/prefect-gcp/pull/88)
@@ -19,16 +35,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Breaking: Obfuscated `GcpCredentials.service_account_info` by using `SecretDict` type - [#88](https://github.com/PrefectHQ/prefect-gcp/pull/88)
 - `GcsBucket` additionally inherits from `ObjectStorageBlock` - [#85](https://github.com/PrefectHQ/prefect-gcp/pull/85)
 - Expose all blocks available in the collection to top level init - [#88](https://github.com/PrefectHQ/prefect-gcp/pull/88)
-
-### Deprecated
-
-### Removed
+- Inherit `CredentialsBlock` in `GcpCredentials` - [#92](https://github.com/PrefectHQ/prefect-gcp/pull/92)
 
 ### Fixed
 
 - Warning stating `Failed to load collection 'prefect_gcp_aiplatform'` - [#87](https://github.com/PrefectHQ/prefect-gcp/pull/87)
-
-### Security
 
 ## 0.1.8
 
