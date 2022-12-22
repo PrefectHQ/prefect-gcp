@@ -8,6 +8,7 @@ from prefect import flow, task
 from prefect.blocks.core import Block
 
 from prefect_gcp import GcpCredentials
+from prefect_gcp.credentials import ClientType
 
 
 def _get_first_file_in_root():
@@ -209,3 +210,19 @@ async def test_get_access_token_async(gcp_credentials):
 def test_get_access_token_sync_compatible(gcp_credentials):
     token = gcp_credentials.get_access_token()
     assert token == "my-token"
+
+
+@pytest.mark.parametrize("input_type", [None, str])
+@pytest.mark.parametrize(
+    "client_type",
+    [
+        ClientType.BIGQUERY,
+        ClientType.CLOUD_STORAGE,
+        ClientType.AIPLATFORM,
+        ClientType.SECRET_MANAGER,
+    ],
+)
+def test_get_client(gcp_credentials, input_type, client_type):
+    if input_type is not None:
+        client_type = input_type(client_type.value)
+    assert gcp_credentials.get_client(client_type=client_type)
