@@ -1,12 +1,14 @@
 """Module handling GCP credentials."""
 
 import functools
+from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
+from prefect.blocks.abstract import CredentialsBlock
 from prefect.blocks.fields import SecretDict
 from pydantic import root_validator, validator
 
@@ -30,7 +32,6 @@ try:
 except ModuleNotFoundError:
     pass
 
-from prefect.blocks.core import Block
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 
 
@@ -65,7 +66,15 @@ def _raise_help_msg(key: str):
     return outer
 
 
-class GcpCredentials(Block):
+class ClientType(Enum):
+
+    CLOUD_STORAGE = "cloud_storage"
+    BIGQUERY = "bigquery"
+    SECRET_MANAGER = "secret_manager"
+    AIPLATFORM = "job_service"  # vertex ai
+
+
+class GcpCredentials(CredentialsBlock):
     """
     Block used to manage authentication with GCP. GCP authentication is
     handled via the `google.oauth2` module or through the CLI.
@@ -164,6 +173,31 @@ class GcpCredentials(Block):
         credentials = self.get_credentials_from_service_account()
         await run_sync_in_worker_thread(credentials.refresh, request)
         return credentials.token
+
+    def get_client(
+        self,
+        client_type: Union[str, ClientType],
+        **get_client_kwargs: Dict[str, Any],
+    ) -> Any:
+        """
+        Helper method to dynamically get a client type.
+
+        Args:
+            client: The name of the client to get.
+            **get_client_kwargs: Additional keyword arguments to pass to the
+                `get_*_client` method.
+
+        Returns:
+            An authenticated client.
+
+        Raises:
+            ValueError: if the client is not supported.
+        """
+        if isinstance(client_type, str):
+            client_type = ClientType(client_type)
+        client_type = client_type.value
+        get_client_method = getattr(self, f"get_{client_type}_client")
+        return get_client_method(**get_client_kwargs)
 
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
