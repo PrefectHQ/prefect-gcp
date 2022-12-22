@@ -89,7 +89,6 @@ class GcpCredentials(Block):
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "GCP Credentials"
 
-    _block_schema_version = "0.1.9"
     service_account_file: Optional[Path] = Field(
         default=None, description="Path to the service account JSON keyfile."
     )
