@@ -1,4 +1,4 @@
-"""Tasks for interacting with GCP BigQueryWarehouse"""
+"""Tasks for interacting with GCP BigQuery"""
 
 import os
 from functools import partial
@@ -51,12 +51,12 @@ async def bigquery_query(
     location: str = "US",
 ) -> List["Row"]:
     """
-    Runs a BigQueryWarehouse query.
+    Runs a BigQuery query.
 
     Args:
         query: String of the query to execute.
         gcp_credentials: Credentials to use for authentication with GCP.
-        query_params: List of 3-tuples specifying BigQueryWarehouse query parameters; currently
+        query_params: List of 3-tuples specifying BigQuery query parameters; currently
             only scalar query parameters are supported.  See the
             [Google documentation](https://cloud.google.com/bigquery/docs/parameterized-queries#bigquery-query-params-python)
             for more details on how both the query and the query parameters should be formatted.
@@ -72,7 +72,7 @@ async def bigquery_query(
         job_config: Dictionary of job configuration parameters;
             note that the parameters provided here must be pickleable
             (e.g., dataset references will be rejected).
-        project: The project to initialize the BigQueryWarehouse Client with; if not
+        project: The project to initialize the BigQuery Client with; if not
             provided, will default to the one inferred from your credentials.
         location: Location of the dataset that will be queried.
 
@@ -113,7 +113,7 @@ async def bigquery_query(
         ```
     """  # noqa
     logger = get_run_logger()
-    logger.info("Running BigQueryWarehouse query")
+    logger.info("Running BigQuery query")
 
     client = gcp_credentials.get_bigquery_client(project=project, location=location)
 
@@ -171,7 +171,7 @@ async def bigquery_create_table(
     external_config: Optional[ExternalConfig] = None,
 ) -> str:
     """
-    Creates table in BigQueryWarehouse.
+    Creates table in BigQuery.
     Args:
         dataset: Name of a dataset in that the table will be created.
         table: Name of a table to create.
@@ -180,7 +180,7 @@ async def bigquery_create_table(
         clustering_fields: List of fields to cluster the table by.
         time_partitioning: `bigquery.TimePartitioning` object specifying a partitioning
             of the newly created table
-        project: Project to initialize the BigQueryWarehouse Client with; if
+        project: Project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
         location: The location of the dataset that will be written to.
         external_config: The [external data source](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_table#nested_external_data_configuration).  # noqa
@@ -262,17 +262,17 @@ async def bigquery_insert_stream(
     location: str = "US",
 ) -> List:
     """
-    Insert records in a Google BigQueryWarehouse table via the [streaming
+    Insert records in a Google BigQuery table via the [streaming
     API](https://cloud.google.com/bigquery/streaming-data-into-bigquery).
 
     Args:
         dataset: Name of a dataset where the records will be written to.
         table: Name of a table to write to.
-        records: The list of records to insert as rows into the BigQueryWarehouse table;
+        records: The list of records to insert as rows into the BigQuery table;
             each item in the list should be a dictionary whose keys correspond to
             columns in the table.
         gcp_credentials: Credentials to use for authentication with GCP.
-        project: The project to initialize the BigQueryWarehouse Client with; if
+        project: The project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
         location: Location of the dataset that will be written to.
 
@@ -350,7 +350,7 @@ async def bigquery_load_cloud_storage(
         job_config: Dictionary of job configuration parameters;
             note that the parameters provided here must be pickleable
             (e.g., dataset references will be rejected).
-        project: The project to initialize the BigQueryWarehouse Client with; if
+        project: The project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
         location: Location of the dataset that will be written to.
 
@@ -429,7 +429,7 @@ async def bigquery_load_file(
     location: str = "US",
 ) -> LoadJob:
     """
-    Loads file into BigQueryWarehouse.
+    Loads file into BigQuery.
 
     Args:
         dataset: ID of a destination dataset to write the records to;
@@ -446,7 +446,7 @@ async def bigquery_load_file(
             before reading the file.
         size: Number of bytes to read from the file handle. If size is None or large,
             resumable upload will be used. Otherwise, multipart upload will be used.
-        project: Project to initialize the BigQueryWarehouse Client with; if
+        project: Project to initialize the BigQuery Client with; if
             not provided, will default to the one inferred from your credentials.
         location: location of the dataset that will be written to.
 
@@ -521,9 +521,9 @@ async def bigquery_load_file(
 
 class BigQueryWarehouse(DatabaseBlock):
     """
-    A block for querying a database with BigQueryWarehouse.
+    A block for querying a database with BigQuery.
 
-    Upon instantiating, a connection to BigQueryWarehouse is established
+    Upon instantiating, a connection to BigQuery is established
     and maintained for the life of the object until the close method is called.
     It is recommended to use this block as a context manager, which will automatically
     close the connection and its cursors when the context is exited.
@@ -855,7 +855,7 @@ class BigQueryWarehouse(DatabaseBlock):
 
         Examples:
             Create mytable in mydataset and insert two rows into it:
-            ```
+            ```python
             from prefect_gcp.bigquery import BigQueryWarehouse
 
             with BigQueryWarehouse.load("bigquery") as warehouse:
