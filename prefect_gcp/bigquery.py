@@ -1,4 +1,4 @@
-"""Tasks for interacting with GCP BigQuery"""
+"""Tasks for interacting with GCP BigQueryWarehouse"""
 
 import os
 from functools import partial
@@ -51,12 +51,12 @@ async def bigquery_query(
     location: str = "US",
 ) -> List["Row"]:
     """
-    Runs a BigQuery query.
+    Runs a BigQueryWarehouse query.
 
     Args:
         query: String of the query to execute.
         gcp_credentials: Credentials to use for authentication with GCP.
-        query_params: List of 3-tuples specifying BigQuery query parameters; currently
+        query_params: List of 3-tuples specifying BigQueryWarehouse query parameters; currently
             only scalar query parameters are supported.  See the
             [Google documentation](https://cloud.google.com/bigquery/docs/parameterized-queries#bigquery-query-params-python)
             for more details on how both the query and the query parameters should be formatted.
@@ -72,7 +72,7 @@ async def bigquery_query(
         job_config: Dictionary of job configuration parameters;
             note that the parameters provided here must be pickleable
             (e.g., dataset references will be rejected).
-        project: The project to initialize the BigQuery Client with; if not
+        project: The project to initialize the BigQueryWarehouse Client with; if not
             provided, will default to the one inferred from your credentials.
         location: Location of the dataset that will be queried.
 
@@ -113,7 +113,7 @@ async def bigquery_query(
         ```
     """  # noqa
     logger = get_run_logger()
-    logger.info("Running BigQuery query")
+    logger.info("Running BigQueryWarehouse query")
 
     client = gcp_credentials.get_bigquery_client(project=project, location=location)
 
@@ -171,7 +171,7 @@ async def bigquery_create_table(
     external_config: Optional[ExternalConfig] = None,
 ) -> str:
     """
-    Creates table in BigQuery.
+    Creates table in BigQueryWarehouse.
     Args:
         dataset: Name of a dataset in that the table will be created.
         table: Name of a table to create.
@@ -180,7 +180,7 @@ async def bigquery_create_table(
         clustering_fields: List of fields to cluster the table by.
         time_partitioning: `bigquery.TimePartitioning` object specifying a partitioning
             of the newly created table
-        project: Project to initialize the BigQuery Client with; if
+        project: Project to initialize the BigQueryWarehouse Client with; if
             not provided, will default to the one inferred from your credentials.
         location: The location of the dataset that will be written to.
         external_config: The [external data source](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_table#nested_external_data_configuration).  # noqa
@@ -262,17 +262,17 @@ async def bigquery_insert_stream(
     location: str = "US",
 ) -> List:
     """
-    Insert records in a Google BigQuery table via the [streaming
+    Insert records in a Google BigQueryWarehouse table via the [streaming
     API](https://cloud.google.com/bigquery/streaming-data-into-bigquery).
 
     Args:
         dataset: Name of a dataset where the records will be written to.
         table: Name of a table to write to.
-        records: The list of records to insert as rows into the BigQuery table;
+        records: The list of records to insert as rows into the BigQueryWarehouse table;
             each item in the list should be a dictionary whose keys correspond to
             columns in the table.
         gcp_credentials: Credentials to use for authentication with GCP.
-        project: The project to initialize the BigQuery Client with; if
+        project: The project to initialize the BigQueryWarehouse Client with; if
             not provided, will default to the one inferred from your credentials.
         location: Location of the dataset that will be written to.
 
@@ -350,7 +350,7 @@ async def bigquery_load_cloud_storage(
         job_config: Dictionary of job configuration parameters;
             note that the parameters provided here must be pickleable
             (e.g., dataset references will be rejected).
-        project: The project to initialize the BigQuery Client with; if
+        project: The project to initialize the BigQueryWarehouse Client with; if
             not provided, will default to the one inferred from your credentials.
         location: Location of the dataset that will be written to.
 
@@ -429,7 +429,7 @@ async def bigquery_load_file(
     location: str = "US",
 ) -> LoadJob:
     """
-    Loads file into BigQuery.
+    Loads file into BigQueryWarehouse.
 
     Args:
         dataset: ID of a destination dataset to write the records to;
@@ -446,7 +446,7 @@ async def bigquery_load_file(
             before reading the file.
         size: Number of bytes to read from the file handle. If size is None or large,
             resumable upload will be used. Otherwise, multipart upload will be used.
-        project: Project to initialize the BigQuery Client with; if
+        project: Project to initialize the BigQueryWarehouse Client with; if
             not provided, will default to the one inferred from your credentials.
         location: location of the dataset that will be written to.
 
@@ -519,14 +519,14 @@ async def bigquery_load_file(
     return result
 
 
-class BigQuery(DatabaseBlock):
+class BigQueryWarehouse(DatabaseBlock):
     """
-    A block for querying a database with BigQuery.
+    A block for querying a database with BigQueryWarehouse.
 
-    Upon instantiating, a connection to BigQuery is established and maintained for the
-    life of the object until the close method is called. It is recommended to use
-    this block as a context manager, which will automatically close the connection
-    and its cursors when the context is exited.
+    Upon instantiating, a connection to BigQueryWarehouse is established
+    and maintained for the life of the object until the close method is called.
+    It is recommended to use this block as a context manager, which will automatically
+    close the connection and its cursors when the context is exited.
 
     Attributes:
         gcp_credentials: The credentials to use to authenticate.
@@ -536,14 +536,14 @@ class BigQuery(DatabaseBlock):
             clause, or the dialect's equivalent clause, like `TOP`, to the query.
 
     Examples:
-        Context manage a BigQuery block and fetch two new rows at a time:
+        Context manage a BigQueryWarehouse block and fetch two new rows at a time:
         ```python
-        from prefect_gcp.bigquery import BigQuery
+        from prefect_gcp.bigquery import BigQueryWarehouse
 
-        with BigQuery.load("BLOCK_NAME") as bq:
+        with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
             operation = "SELECT * FROM `bigquery-public-data.samples.shakespeare` LIMIT 6"
             for _ in range(0, 3):
-                result = bq.fetch_many(operation, size=2)  # fetch two new rows
+                result = warehouse.fetch_many(operation, size=2)  # fetch two new rows
                 print(result)
         ```
     """  # noqa
@@ -560,6 +560,12 @@ class BigQuery(DatabaseBlock):
         super().__init__(**kwargs)
         with self.gcp_credentials.get_bigquery_client() as client:
             self._connection = Connection(client=client)
+
+    def get_open_connection(self) -> Connection:
+        """
+        Get the opened connection to BigQuery.
+        """
+        return self._connection
 
     def _get_cursor(self, inputs: Dict[str, Any]) -> Tuple[bool, Cursor]:
         """
@@ -597,7 +603,7 @@ class BigQuery(DatabaseBlock):
                 cursor.close()
             except Exception as exc:
                 self.logger.warning(
-                    f"Failed to close cursor for input hash {input_hash}: {exc}"
+                    f"Failed to close cursor for input hash {input_hash!r}: {exc}"
                 )
 
     @sync_compatible
@@ -627,9 +633,9 @@ class BigQuery(DatabaseBlock):
         Examples:
             Execute operation with parameters, fetching one new row at a time:
             ```python
-            from prefect_gcp.bigquery import BigQuery
+            from prefect_gcp.bigquery import BigQueryWarehouse
 
-            with BigQuery.load("BLOCK_NAME") as bq:
+            with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
                 operation = '''
                     SELECT word, word_count
                     FROM `bigquery-public-data.samples.shakespeare`
@@ -643,7 +649,7 @@ class BigQuery(DatabaseBlock):
                     "min_word_count": 250,
                 }
                 for _ in range(0, 3):
-                    result = bq.fetch_one(operation, parameters=parameters)
+                    result = warehouse.fetch_one(operation, parameters=parameters)
                     print(result)
             ```
         """
@@ -689,9 +695,9 @@ class BigQuery(DatabaseBlock):
         Examples:
             Execute operation with parameters, fetching two new rows at a time:
             ```python
-            from prefect_gcp.bigquery import BigQuery
+            from prefect_gcp.bigquery import BigQueryWarehouse
 
-            with BigQuery.load("BLOCK_NAME") as bq:
+            with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
                 operation = '''
                     SELECT word, word_count
                     FROM `bigquery-public-data.samples.shakespeare`
@@ -705,7 +711,11 @@ class BigQuery(DatabaseBlock):
                     "min_word_count": 250,
                 }
                 for _ in range(0, 3):
-                    result = bq.fetch_many(operation, parameters=parameters, size=2)
+                    result = warehouse.fetch_many(
+                        operation,
+                        parameters=parameters,
+                        size=2
+                    )
                     print(result)
             ```
         """
@@ -749,9 +759,9 @@ class BigQuery(DatabaseBlock):
         Examples:
             Execute operation with parameters, fetching all rows:
             ```python
-            from prefect_gcp.bigquery import BigQuery
+            from prefect_gcp.bigquery import BigQueryWarehouse
 
-            with BigQuery.load("BLOCK_NAME") as bq:
+            with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
                 operation = '''
                     SELECT word, word_count
                     FROM `bigquery-public-data.samples.shakespeare`
@@ -764,7 +774,7 @@ class BigQuery(DatabaseBlock):
                     "corpus": "romeoandjuliet",
                     "min_word_count": 250,
                 }
-                result = bq.fetch_all(operation, parameters=parameters)
+                result = warehouse.fetch_all(operation, parameters=parameters)
             ```
         """
         inputs = dict(
@@ -801,9 +811,9 @@ class BigQuery(DatabaseBlock):
         Examples:
             Execute operation with parameters:
             ```python
-            from prefect_gcp.bigquery import BigQuery
+            from prefect_gcp.bigquery import BigQueryWarehouse
 
-            with BigQuery.load("BLOCK_NAME") as bq:
+            with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
                 operation = '''
                     CREATE TABLE mydataset.trips AS (
                     SELECT
@@ -815,7 +825,7 @@ class BigQuery(DatabaseBlock):
                     LIMIT %(limit)s
                     );
                 '''
-                bq.execute(operation, parameters={"limit": 5})
+                warehouse.execute(operation, parameters={"limit": 5})
             ```
         """
         inputs = dict(
@@ -846,9 +856,9 @@ class BigQuery(DatabaseBlock):
         Examples:
             Create mytable in mydataset and insert two rows into it:
             ```
-            from prefect_gcp.bigquery import BigQuery
+            from prefect_gcp.bigquery import BigQueryWarehouse
 
-            with BigQuery.load("bigquery") as bq:
+            with BigQueryWarehouse.load("bigquery") as warehouse:
                 create_operation = '''
                 CREATE TABLE IF NOT EXISTS mydataset.mytable (
                     col1 STRING,
@@ -856,7 +866,7 @@ class BigQuery(DatabaseBlock):
                     col3 BOOLEAN
                 )
                 '''
-                bq.execute(create_operation)
+                warehouse.execute(create_operation)
                 insert_operation = '''
                 INSERT INTO mydataset.mytable (col1, col2, col3) VALUES (%s, %s, %s)
                 '''
@@ -864,7 +874,10 @@ class BigQuery(DatabaseBlock):
                     ("a", 1, True),
                     ("b", 2, False),
                 ]
-                bq.execute_many(insert_operation, seq_of_parameters=seq_of_parameters)
+                warehouse.execute_many(
+                    insert_operation,
+                    seq_of_parameters=seq_of_parameters
+                )
             ```
         """
         inputs = dict(
@@ -882,6 +895,7 @@ class BigQuery(DatabaseBlock):
             self.reset_cursors()
         finally:
             self._connection.close()
+            self._connection = None
 
     def __enter__(self):
         """

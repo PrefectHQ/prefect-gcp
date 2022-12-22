@@ -1,10 +1,13 @@
 import os
+from unittest.mock import MagicMock
 
 import pytest
 from google.cloud.bigquery import ExternalConfig, SchemaField
+from google.cloud.bigquery.dbapi.connection import Connection
 from prefect import flow
 
 from prefect_gcp.bigquery import (
+    BigQueryWarehouse,
     bigquery_create_table,
     bigquery_insert_stream,
     bigquery_load_cloud_storage,
@@ -143,3 +146,133 @@ def test_bigquery_load_file(gcp_credentials):
     assert result.output == "file"
     assert result._client is None
     assert result._completion_lock is None
+
+
+class TestBigQueryWarehouse:
+    @pytest.fixture
+    def mock_connection(self):
+        mock_cursor = MagicMock()
+        results = iter([0, 1, 2, 3, 4])
+        mock_cursor.fetchone.side_effect = lambda: (next(results),)
+        mock_cursor.fetchmany.side_effect = lambda size: list(
+            (next(results),) for i in range(size)
+        )
+        mock_cursor.fetchall.side_effect = lambda: [(result,) for result in results]
+
+        mock_connection = MagicMock()
+        mock_connection.cursor.return_value = mock_cursor
+        return mock_connection
+
+    @pytest.fixture
+    def bigquery_warehouse(self, gcp_credentials):
+        return BigQueryWarehouse(gcp_credentials=gcp_credentials, fetch_size=2)
+
+    def test_init(self, bigquery_warehouse):
+        assert isinstance(bigquery_warehouse._connection, Connection)
+        assert isinstance(bigquery_warehouse._unique_cursors, dict)
+        assert bigquery_warehouse.fetch_size == 2
+
+    def test_close(self, bigquery_warehouse, mock_connection):
+        bigquery_warehouse._connection = mock_connection
+        assert bigquery_warehouse._connection is not None
+        bigquery_warehouse.close()
+        assert bigquery_warehouse._unique_cursors == {}
+        assert mock_connection._connection.close.called_once()
+        assert bigquery_warehouse._connection is None
+
+    def test_context_management(self, gcp_credentials):
+        with BigQueryWarehouse(
+            gcp_credentials=gcp_credentials, fetch_size=2
+        ) as warehouse:
+            assert isinstance(warehouse._connection, Connection)
+            assert isinstance(warehouse._unique_cursors, dict)
+            assert warehouse.fetch_size == 2
+        assert warehouse._connection is None
+        assert warehouse._unique_cursors == {}
+
+    def test_get_open_connection(self, bigquery_warehouse):
+        assert (
+            bigquery_warehouse.get_open_connection() == bigquery_warehouse._connection
+        )
+        bigquery_warehouse.close()
+        assert bigquery_warehouse.get_open_connection() is None
+
+    def test_cursor_lifecycle(self, bigquery_warehouse, mock_connection):
+        # check if uses the same cursor
+        bigquery_warehouse._connection = mock_connection
+        result = bigquery_warehouse.fetch_one("operation", parameters={"a": "b"})
+        assert result == (0,)
+
+        result = bigquery_warehouse.fetch_one("operation", parameters={"a": "b"})
+        assert result == (1,)
+
+        # cursor only created once
+        assert bigquery_warehouse._connection.cursor.call_count == 1
+        assert len(bigquery_warehouse._unique_cursors) == 1
+
+        # until inputs change, then new cursor is created
+        result = bigquery_warehouse.fetch_one("operation", parameters={"a": "c"})
+        assert bigquery_warehouse._connection.cursor.call_count == 2
+        assert len(bigquery_warehouse._unique_cursors) == 2
+
+        # check resetting
+        cursors = bigquery_warehouse._unique_cursors
+        bigquery_warehouse.reset_cursors()
+        for cursor in cursors:
+            assert cursor.close.call_count == 1
+        assert bigquery_warehouse._unique_cursors == {}
+
+    def test_fetch_one(self, bigquery_warehouse, mock_connection):
+        bigquery_warehouse._connection = mock_connection
+        result = bigquery_warehouse.fetch_one("operation", parameters={"a": "b"})
+        assert result == (0,)
+
+        result = bigquery_warehouse.fetch_one("operation", parameters={"a": "b"})
+        assert result == (1,)
+
+    def test_fetch_many(self, bigquery_warehouse, mock_connection):
+        bigquery_warehouse._connection = mock_connection
+        result = bigquery_warehouse.fetch_many("operation", parameters={"a": "b"})
+        assert result == [(0,), (1,)]
+
+        result = bigquery_warehouse.fetch_many(
+            "operation", parameters={"a": "b"}, size=3
+        )
+        assert result == [(2,), (3,), (4,)]
+
+    def test_fetch_all(self, bigquery_warehouse, mock_connection):
+        bigquery_warehouse._connection = mock_connection
+        result = bigquery_warehouse.fetch_all("operation", parameters={"a": "b"})
+        assert result == [(0,), (1,), (2,), (3,), (4,)]
+
+        result = bigquery_warehouse.fetch_all("operation", parameters={"a": "b"})
+        assert result == []
+
+    def test_fetch_methods(self, bigquery_warehouse, mock_connection):
+        bigquery_warehouse._connection = mock_connection
+        result = bigquery_warehouse.fetch_one("operation", parameters={"a": "b"})
+        assert result == (0,)
+
+        result = bigquery_warehouse.fetch_many("operation", parameters={"a": "b"})
+        assert result == [(1,), (2,)]
+
+        result = bigquery_warehouse.fetch_all("operation", parameters={"a": "b"})
+        assert result == [(3,), (4,)]
+
+    def test_execute(self, bigquery_warehouse, mock_connection):
+        bigquery_warehouse._connection = mock_connection
+        result = bigquery_warehouse.execute("operation", parameters={"a": "b"})
+        assert result is None
+        assert mock_connection.cursor().execute.call_once_with(
+            "operation", parameters={"a": "b"}
+        )
+
+    def test_execute_many(self, bigquery_warehouse, mock_connection):
+        bigquery_warehouse._connection = mock_connection
+        result = bigquery_warehouse.execute_many(
+            "operation", seq_of_parameters=[{"a": "b"}, {"c", "d"}]
+        )
+        assert result is None
+        assert mock_connection.cursor().executemany.call_once_with(
+            "operation", seq_of_parameters=[{"a": "b"}, {"c", "d"}]
+        )

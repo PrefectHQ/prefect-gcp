@@ -94,10 +94,17 @@ class LoadJob:
         self._completion_lock = "completion_lock"
 
 
-class BigQueryClient:
-    def __init__(self, credentials=None, project=None):
+class BigQueryClient(MagicMock):
+    def __init__(self, credentials=None, project=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.credentials = credentials
         self.project = project
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        pass
 
     def query(self, query, **kwargs):
         response = MagicMock()
