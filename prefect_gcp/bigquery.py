@@ -541,6 +541,7 @@ class BigQueryWarehouse(DatabaseBlock):
             clause, or the dialect's equivalent clause, like `TOP`, to the query.
     """  # noqa
 
+    _block_type_name="BigQuery Warehouse"
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
 
     gcp_credentials: GcpCredentials
