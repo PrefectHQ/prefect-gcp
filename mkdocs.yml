@@ -44,6 +44,7 @@ plugins:
             show_bases: True
             show_signature: False
             heading_level: 1
+            filters: ["!^_[^_]", "!^__[^__]"]
 watch:
     - prefect_gcp/
     - README.md

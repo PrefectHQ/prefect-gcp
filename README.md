@@ -67,17 +67,15 @@ A list of available blocks in `prefect-gcp` and their setup instructions can be 
 
 ```python
 from prefect import flow
-from prefect_gcp import GcpCredentials
-from prefect_gcp.cloud_storage import cloud_storage_download_blob_as_bytes
+from prefect_gcp.cloud_storage import GcsBucket
 
 @flow
-def cloud_storage_download_blob_flow():
-    gcp_credentials = GcpCredentials(
-        service_account_file="/path/to/service/account/keyfile.json")
-    contents = cloud_storage_download_blob_as_bytes("bucket", "blob", gcp_credentials)
-    return contents
+def donwload_flow():
+    gcs_bucket = GcsBucket.load("my-bucket")
+    path = gcs_bucket.download_object_to_path("my_folder/notes.txt", "notes.txt")
+    return path
 
-cloud_storage_download_blob_flow()
+download_flow()
 ```
 
 #### Deploy command on Cloud Run
