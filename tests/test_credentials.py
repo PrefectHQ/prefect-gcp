@@ -226,3 +226,8 @@ def test_get_client(gcp_credentials, input_type, client_type):
     if input_type is not None:
         client_type = input_type(client_type.value)
     assert gcp_credentials.get_client(client_type=client_type)
+
+
+def test_get_client_error(gcp_credentials):
+    with pytest.raises(ValueError, match="'cool' is not a valid ClientType"):
+        assert gcp_credentials.get_client(client_type="cool")
