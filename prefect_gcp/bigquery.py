@@ -3,7 +3,7 @@
 import os
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from anyio import to_thread
 from google.cloud.bigquery import (
@@ -16,13 +16,17 @@ from google.cloud.bigquery import (
     Table,
     TimePartitioning,
 )
+from google.cloud.bigquery.dbapi.connection import Connection
+from google.cloud.bigquery.dbapi.cursor import Cursor
+from google.cloud.bigquery.table import Row
 from google.cloud.exceptions import NotFound
 from prefect import get_run_logger, task
+from prefect.blocks.abstract import DatabaseBlock
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
+from prefect.utilities.hashing import hash_objects
+from pydantic import Field
 
-if TYPE_CHECKING:
-    from google.cloud.bigquery.table import Row
-
-    from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.credentials import GcpCredentials
 
 
 def _result_sync(func, *args, **kwargs):
@@ -36,7 +40,7 @@ def _result_sync(func, *args, **kwargs):
 @task
 async def bigquery_query(
     query: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     query_params: Optional[List[tuple]] = None,  # 3-tuples
     dry_run_max_bytes: Optional[int] = None,
     dataset: Optional[str] = None,
@@ -158,7 +162,7 @@ async def bigquery_query(
 async def bigquery_create_table(
     dataset: str,
     table: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     schema: Optional[List[SchemaField]] = None,
     clustering_fields: List[str] = None,
     time_partitioning: TimePartitioning = None,
@@ -253,7 +257,7 @@ async def bigquery_insert_stream(
     dataset: str,
     table: str,
     records: List[dict],
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
     location: str = "US",
 ) -> List:
@@ -328,7 +332,7 @@ async def bigquery_load_cloud_storage(
     dataset: str,
     table: str,
     uri: str,
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     schema: Optional[List[SchemaField]] = None,
     job_config: Optional[dict] = None,
     project: Optional[str] = None,
@@ -416,7 +420,7 @@ async def bigquery_load_file(
     dataset: str,
     table: str,
     path: Union[str, Path],
-    gcp_credentials: "GcpCredentials",
+    gcp_credentials: GcpCredentials,
     schema: Optional[List[SchemaField]] = None,
     job_config: Optional[dict] = None,
     rewind: bool = False,
@@ -513,3 +517,413 @@ async def bigquery_load_file(
         result._completion_lock = None
 
     return result
+
+
+class BigQueryWarehouse(DatabaseBlock):
+    """
+    A block for querying a database with BigQuery.
+
+    Upon instantiating, a connection to BigQuery is established
+    and maintained for the life of the object until the close method is called.
+
+    It is recommended to use this block as a context manager, which will automatically
+    close the connection and its cursors when the context is exited.
+
+    It is also recommended that this block is loaded and consumed within a single task
+    or flow because if the block is passed across separate tasks and flows,
+    the state of the block's connection and cursor could be lost.
+
+    Attributes:
+        gcp_credentials: The credentials to use to authenticate.
+        fetch_size: The number of rows to fetch at a time when calling fetch_many.
+            Note, this parameter is executed on the client side and is not
+            passed to the database. To limit on the server side, add the `LIMIT`
+            clause, or the dialect's equivalent clause, like `TOP`, to the query.
+    """  # noqa
+
+    _block_type_name = "BigQuery Warehouse"
+    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+
+    gcp_credentials: GcpCredentials
+    fetch_size: int = Field(
+        default=1, description="The number of rows to fetch at a time."
+    )
+
+    _connection: Optional[Connection] = None
+    _unique_cursors: Dict[str, Cursor] = None
+
+    def _start_connection(self):
+        """
+        Starts a connection.
+        """
+        with self.gcp_credentials.get_bigquery_client() as client:
+            self._connection = Connection(client=client)
+
+    def block_initialization(self) -> None:
+        super().block_initialization()
+        if self._connection is None:
+            self._start_connection()
+
+        if self._unique_cursors is None:
+            self._unique_cursors = {}
+
+    def get_connection(self) -> Connection:
+        """
+        Get the opened connection to BigQuery.
+        """
+        return self._connection
+
+    def _get_cursor(self, inputs: Dict[str, Any]) -> Tuple[bool, Cursor]:
+        """
+        Get a BigQuery cursor.
+
+        Args:
+            inputs: The inputs to generate a unique hash, used to decide
+                whether a new cursor should be used.
+
+        Returns:
+            Whether a cursor is new and a BigQuery cursor.
+        """
+        input_hash = hash_objects(inputs)
+        assert input_hash is not None, (
+            "We were not able to hash your inputs, "
+            "which resulted in an unexpected data return; "
+            "please open an issue with a reproducible example."
+        )
+        if input_hash not in self._unique_cursors.keys():
+            new_cursor = self._connection.cursor()
+            self._unique_cursors[input_hash] = new_cursor
+            return True, new_cursor
+        else:
+            existing_cursor = self._unique_cursors[input_hash]
+            return False, existing_cursor
+
+    def reset_cursors(self) -> None:
+        """
+        Tries to close all opened cursors.
+        """
+        input_hashes = tuple(self._unique_cursors.keys())
+        for input_hash in input_hashes:
+            cursor = self._unique_cursors.pop(input_hash)
+            try:
+                cursor.close()
+            except Exception as exc:
+                self.logger.warning(
+                    f"Failed to close cursor for input hash {input_hash!r}: {exc}"
+                )
+
+    @sync_compatible
+    async def fetch_one(
+        self,
+        operation: str,
+        parameters: Optional[Dict[str, Any]] = None,
+        **execution_options: Dict[str, Any],
+    ) -> Row:
+        """
+        Fetch a single result from the database.
+
+        Repeated calls using the same inputs to *any* of the fetch methods of this
+        block will skip executing the operation again, and instead,
+        return the next set of results from the previous execution,
+        until the reset_cursors method is called.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            parameters: The parameters for the operation.
+            **execution_options: Additional options to pass to `connection.execute`.
+
+        Returns:
+            A tuple containing the data returned by the database,
+                where each row is a tuple and each column is a value in the tuple.
+
+        Examples:
+            Execute operation with parameters, fetching one new row at a time:
+            ```python
+            from prefect_gcp.bigquery import BigQueryWarehouse
+
+            with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
+                operation = '''
+                    SELECT word, word_count
+                    FROM `bigquery-public-data.samples.shakespeare`
+                    WHERE corpus = %(corpus)s
+                    AND word_count >= %(min_word_count)s
+                    ORDER BY word_count DESC
+                    LIMIT 3;
+                '''
+                parameters = {
+                    "corpus": "romeoandjuliet",
+                    "min_word_count": 250,
+                }
+                for _ in range(0, 3):
+                    result = warehouse.fetch_one(operation, parameters=parameters)
+                    print(result)
+            ```
+        """
+        inputs = dict(
+            operation=operation,
+            parameters=parameters,
+            **execution_options,
+        )
+        new, cursor = self._get_cursor(inputs)
+        if new:
+            await run_sync_in_worker_thread(cursor.execute, **inputs)
+
+        result = await run_sync_in_worker_thread(cursor.fetchone)
+        return result
+
+    @sync_compatible
+    async def fetch_many(
+        self,
+        operation: str,
+        parameters: Optional[Dict[str, Any]] = None,
+        size: Optional[int] = None,
+        **execution_options: Dict[str, Any],
+    ) -> List[Row]:
+        """
+        Fetch a limited number of results from the database.
+
+        Repeated calls using the same inputs to *any* of the fetch methods of this
+        block will skip executing the operation again, and instead,
+        return the next set of results from the previous execution,
+        until the reset_cursors method is called.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            parameters: The parameters for the operation.
+            size: The number of results to return; if None or 0, uses the value of
+                `fetch_size` configured on the block.
+            **execution_options: Additional options to pass to `connection.execute`.
+
+        Returns:
+            A list of tuples containing the data returned by the database,
+                where each row is a tuple and each column is a value in the tuple.
+
+        Examples:
+            Execute operation with parameters, fetching two new rows at a time:
+            ```python
+            from prefect_gcp.bigquery import BigQueryWarehouse
+
+            with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
+                operation = '''
+                    SELECT word, word_count
+                    FROM `bigquery-public-data.samples.shakespeare`
+                    WHERE corpus = %(corpus)s
+                    AND word_count >= %(min_word_count)s
+                    ORDER BY word_count DESC
+                    LIMIT 6;
+                '''
+                parameters = {
+                    "corpus": "romeoandjuliet",
+                    "min_word_count": 250,
+                }
+                for _ in range(0, 3):
+                    result = warehouse.fetch_many(
+                        operation,
+                        parameters=parameters,
+                        size=2
+                    )
+                    print(result)
+            ```
+        """
+        inputs = dict(
+            operation=operation,
+            parameters=parameters,
+            **execution_options,
+        )
+        new, cursor = self._get_cursor(inputs)
+        if new:
+            await run_sync_in_worker_thread(cursor.execute, **inputs)
+
+        size = size or self.fetch_size
+        result = await run_sync_in_worker_thread(cursor.fetchmany, size=size)
+        return result
+
+    @sync_compatible
+    async def fetch_all(
+        self,
+        operation: str,
+        parameters: Optional[Dict[str, Any]] = None,
+        **execution_options: Dict[str, Any],
+    ) -> List[Row]:
+        """
+        Fetch all results from the database.
+
+        Repeated calls using the same inputs to *any* of the fetch methods of this
+        block will skip executing the operation again, and instead,
+        return the next set of results from the previous execution,
+        until the reset_cursors method is called.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            parameters: The parameters for the operation.
+            **execution_options: Additional options to pass to `connection.execute`.
+
+        Returns:
+            A list of tuples containing the data returned by the database,
+                where each row is a tuple and each column is a value in the tuple.
+
+        Examples:
+            Execute operation with parameters, fetching all rows:
+            ```python
+            from prefect_gcp.bigquery import BigQueryWarehouse
+
+            with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
+                operation = '''
+                    SELECT word, word_count
+                    FROM `bigquery-public-data.samples.shakespeare`
+                    WHERE corpus = %(corpus)s
+                    AND word_count >= %(min_word_count)s
+                    ORDER BY word_count DESC
+                    LIMIT 3;
+                '''
+                parameters = {
+                    "corpus": "romeoandjuliet",
+                    "min_word_count": 250,
+                }
+                result = warehouse.fetch_all(operation, parameters=parameters)
+            ```
+        """
+        inputs = dict(
+            operation=operation,
+            parameters=parameters,
+            **execution_options,
+        )
+        new, cursor = self._get_cursor(inputs)
+        if new:
+            await run_sync_in_worker_thread(cursor.execute, **inputs)
+
+        result = await run_sync_in_worker_thread(cursor.fetchall)
+        return result
+
+    @sync_compatible
+    async def execute(
+        self,
+        operation: str,
+        parameters: Optional[Dict[str, Any]] = None,
+        **execution_options: Dict[str, Any],
+    ) -> None:
+        """
+        Executes an operation on the database. This method is intended to be used
+        for operations that do not return data, such as INSERT, UPDATE, or DELETE.
+
+        Unlike the fetch methods, this method will always execute the operation
+        upon calling.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            parameters: The parameters for the operation.
+            **execution_options: Additional options to pass to `connection.execute`.
+
+        Examples:
+            Execute operation with parameters:
+            ```python
+            from prefect_gcp.bigquery import BigQueryWarehouse
+
+            with BigQueryWarehouse.load("BLOCK_NAME") as warehouse:
+                operation = '''
+                    CREATE TABLE mydataset.trips AS (
+                    SELECT
+                        bikeid,
+                        start_time,
+                        duration_minutes
+                    FROM
+                        bigquery-public-data.austin_bikeshare.bikeshare_trips
+                    LIMIT %(limit)s
+                    );
+                '''
+                warehouse.execute(operation, parameters={"limit": 5})
+            ```
+        """
+        inputs = dict(
+            operation=operation,
+            parameters=parameters,
+            **execution_options,
+        )
+        cursor = self._get_cursor(inputs)[1]
+        await run_sync_in_worker_thread(cursor.execute, **inputs)
+
+    @sync_compatible
+    async def execute_many(
+        self,
+        operation: str,
+        seq_of_parameters: List[Dict[str, Any]],
+    ) -> None:
+        """
+        Executes many operations on the database. This method is intended to be used
+        for operations that do not return data, such as INSERT, UPDATE, or DELETE.
+
+        Unlike the fetch methods, this method will always execute the operations
+        upon calling.
+
+        Args:
+            operation: The SQL query or other operation to be executed.
+            seq_of_parameters: The sequence of parameters for the operation.
+
+        Examples:
+            Create mytable in mydataset and insert two rows into it:
+            ```python
+            from prefect_gcp.bigquery import BigQueryWarehouse
+
+            with BigQueryWarehouse.load("bigquery") as warehouse:
+                create_operation = '''
+                CREATE TABLE IF NOT EXISTS mydataset.mytable (
+                    col1 STRING,
+                    col2 INTEGER,
+                    col3 BOOLEAN
+                )
+                '''
+                warehouse.execute(create_operation)
+                insert_operation = '''
+                INSERT INTO mydataset.mytable (col1, col2, col3) VALUES (%s, %s, %s)
+                '''
+                seq_of_parameters = [
+                    ("a", 1, True),
+                    ("b", 2, False),
+                ]
+                warehouse.execute_many(
+                    insert_operation,
+                    seq_of_parameters=seq_of_parameters
+                )
+            ```
+        """
+        inputs = dict(
+            operation=operation,
+            seq_of_parameters=seq_of_parameters,
+        )
+        cursor = self._get_cursor(inputs)[1]
+        await run_sync_in_worker_thread(cursor.executemany, **inputs)
+
+    def close(self):
+        """
+        Closes connection and its cursors.
+        """
+        try:
+            self.reset_cursors()
+        finally:
+            if self._connection is not None:
+                self._connection.close()
+                self._connection = None
+
+    def __enter__(self):
+        """
+        Start a connection upon entry.
+        """
+        return self
+
+    def __exit__(self, *args):
+        """
+        Closes connection and its cursors upon exit.
+        """
+        self.close()
+
+    def __getstate__(self):
+        """ """
+        data = self.__dict__.copy()
+        data.update({k: None for k in {"_connection", "_unique_cursors"}})
+        return data
+
+    def __setstate__(self, data: dict):
+        """ """
+        self.__dict__.update(data)
+        self._unique_cursors = {}
+        self._start_connection()

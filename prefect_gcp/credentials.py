@@ -10,7 +10,8 @@ import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
 from prefect.blocks.abstract import CredentialsBlock
 from prefect.blocks.fields import SecretDict
-from pydantic import root_validator, validator
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
+from pydantic import Field, root_validator, validator
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -31,8 +32,6 @@ try:
     from google.cloud.aiplatform.gapic import JobServiceClient
 except ModuleNotFoundError:
     pass
-
-from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 
 
 def _raise_help_msg(key: str):
@@ -86,7 +85,7 @@ class GcpCredentials(CredentialsBlock):
 
     Attributes:
         service_account_file: Path to the service account JSON keyfile.
-        service_account_info: The contents of the keyfile as a dict or JSON string.
+        service_account_info: The contents of the keyfile as a dict.
 
     Example:
         Load GCP credentials stored in a `GCP Credentials` Block:
@@ -99,9 +98,15 @@ class GcpCredentials(CredentialsBlock):
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "GCP Credentials"
 
-    service_account_file: Optional[Path] = None
-    service_account_info: Optional[SecretDict] = None
-    project: Optional[str] = None
+    service_account_file: Optional[Path] = Field(
+        default=None, description="Path to the service account JSON keyfile."
+    )
+    service_account_info: Optional[SecretDict] = Field(
+        default=None, description="The contents of the keyfile as a dict."
+    )
+    project: Optional[str] = Field(
+        default=None, description="The GCP project to use for the client."
+    )
 
     _service_account_email: Optional[str] = None
 
