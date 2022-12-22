@@ -276,6 +276,14 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#write-and-run-a-flow" class="md-nav__link">
+    Write and run a flow
+  </a>
+  
+    <nav class="md-nav" aria-label="Write and run a flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#download-blob-from-bucket" class="md-nav__link">
     Download blob from bucket
   </a>
@@ -290,8 +298,62 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#get-google-auth-credentials-from-gcpcredentials" class="md-nav__link">
+    Get Google auth credentials from GcpCredentials
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#deploy-command-on-vertex-ai-as-a-flow" class="md-nav__link">
     Deploy command on Vertex AI as a flow
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-with_options-to-customize-options-on-any-existing-task-or-flow" class="md-nav__link">
+    Use with_options to customize options on any existing task or flow:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bigquery-module" class="md-nav__link">
+    Bigquery Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-run-module" class="md-nav__link">
+    Cloud Run Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-storage-module" class="md-nav__link">
+    Cloud Storage Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials-module" class="md-nav__link">
+    Credentials Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secret-manager-module" class="md-nav__link">
+    Secret Manager Module
   </a>
   
 </li>
@@ -469,6 +531,14 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#write-and-run-a-flow" class="md-nav__link">
+    Write and run a flow
+  </a>
+  
+    <nav class="md-nav" aria-label="Write and run a flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#download-blob-from-bucket" class="md-nav__link">
     Download blob from bucket
   </a>
@@ -483,8 +553,62 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#get-google-auth-credentials-from-gcpcredentials" class="md-nav__link">
+    Get Google auth credentials from GcpCredentials
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#deploy-command-on-vertex-ai-as-a-flow" class="md-nav__link">
     Deploy command on Vertex AI as a flow
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-with_options-to-customize-options-on-any-existing-task-or-flow" class="md-nav__link">
+    Use with_options to customize options on any existing task or flow:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bigquery-module" class="md-nav__link">
+    Bigquery Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-run-module" class="md-nav__link">
+    Cloud Run Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-storage-module" class="md-nav__link">
+    Cloud Storage Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials-module" class="md-nav__link">
+    Credentials Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secret-manager-module" class="md-nav__link">
+    Secret Manager Module
   </a>
   
 </li>
@@ -565,26 +689,24 @@
 <p>To use Secret Manager:
 <div class="highlight"><pre><span></span><code>pip install <span class="s2">&quot;prefect-gcp[secret_manager]&quot;</span>
 </code></pre></div></p>
-<p>Then, register to <a href="https://orion-docs.prefect.io/ui/blocks/">view the blocks</a> on Prefect Cloud:</p>
-<div class="highlight"><pre><span></span><code>prefect block register -m prefect_gcp.credentials
-prefect block register -m prefect_gcp.cloud_run
-</code></pre></div>
-<p>Note, to use the <code>load</code> method on Blocks, you must already have a block document <a href="https://orion-docs.prefect.io/concepts/blocks/#saving-blocks">saved through code</a> or <a href="https://orion-docs.prefect.io/ui/blocks/">saved through the UI</a>.</p>
-<h3 id="download-blob-from-bucket">Download blob from bucket</h3>
+<p>To use Vertex AI:
+<div class="highlight"><pre><span></span><code>pip install <span class="s2">&quot;prefect-gcp[aiplatform]&quot;</span>
+</code></pre></div></p>
+<p>A list of available blocks in <code>prefect-gcp</code> and their setup instructions can be found <a href="https://prefecthq.github.io/prefect-gcp/#blocks-catalog/">here</a>.</p>
+<h3 id="write-and-run-a-flow">Write and run a flow</h3>
+<h4 id="download-blob-from-bucket">Download blob from bucket</h4>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_download_blob_as_bytes</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
 
 <span class="nd">@flow</span>
-<span class="k">def</span> <span class="nf">cloud_storage_download_blob_flow</span><span class="p">():</span>
-    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
-        <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
-    <span class="n">contents</span> <span class="o">=</span> <span class="n">cloud_storage_download_blob_as_bytes</span><span class="p">(</span><span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">contents</span>
+<span class="k">def</span> <span class="nf">donwload_flow</span><span class="p">():</span>
+    <span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_path</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;notes.txt&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span>
 
-<span class="n">cloud_storage_download_blob_flow</span><span class="p">()</span>
+<span class="n">download_flow</span><span class="p">()</span>
 </code></pre></div>
-<h3 id="deploy-command-on-cloud-run">Deploy command on Cloud Run</h3>
+<h4 id="deploy-command-on-cloud-run">Deploy command on Cloud Run</h4>
 <p>Save the following as <code>prefect_gcp_flow.py</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
 <span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
@@ -616,7 +738,28 @@ prefect block register -m prefect_gcp.cloud_run
 <div class="highlight"><pre><span></span><code>prefect deployment run cloud-run-job-flow/cloud_run_job_deployment
 </code></pre></div></p>
 <p>Visit <a href="https://docs.prefect.io/tutorials/deployments/">Prefect Deployments</a> for more information about deployments.</p>
-<h3 id="deploy-command-on-vertex-ai-as-a-flow">Deploy command on Vertex AI as a flow</h3>
+<h4 id="get-google-auth-credentials-from-gcpcredentials">Get Google auth credentials from GcpCredentials</h4>
+<p>To instantiate a Google Cloud client, like <code>bigquery.Client</code>, <code>GcpCredentials</code> is not a valid input. Instead, use the <code>get_credentials_from_service_account</code> method.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">google.cloud.bigquery</span>
+<span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">create_bigquery_client</span><span class="p">():</span>
+    <span class="n">gcp_credentials_block</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;BLOCK_NAME&quot;</span><span class="p">)</span>
+    <span class="n">google_auth_credentials</span> <span class="o">=</span> <span class="n">gcp_credentials_block</span><span class="o">.</span><span class="n">get_credentials_from_service_account</span><span class="p">()</span>
+    <span class="n">bigquery_client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">credentials</span><span class="o">=</span><span class="n">google_auth_credentials</span><span class="p">)</span>
+</code></pre></div>
+<p>Or simply call <code>get_bigquery_client</code> from <code>GcpCredentials</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">create_bigquery_client</span><span class="p">():</span>
+    <span class="n">gcp_credentials_block</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;BLOCK_NAME&quot;</span><span class="p">)</span>
+    <span class="n">bigquery_client</span> <span class="o">=</span> <span class="n">gcp_credentials_block</span><span class="o">.</span><span class="n">get_bigquery_client</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="deploy-command-on-vertex-ai-as-a-flow">Deploy command on Vertex AI as a flow</h4>
 <p>Save the following as <code>prefect_gcp_flow.py</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
 <span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
@@ -651,6 +794,143 @@ prefect block register -m prefect_gcp.cloud_run
 <div class="highlight"><pre><span></span><code>prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
 </code></pre></div></p>
 <p>Visit <a href="https://docs.prefect.io/tutorials/deployments/">Prefect Deployments</a> for more information about deployments.</p>
+<h3 id="use-with_options-to-customize-options-on-any-existing-task-or-flow">Use <code>with_options</code> to customize options on any existing task or flow:</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">cloud_storage_download_blob_as_bytes</span>
+
+<span class="n">custom_download</span> <span class="o">=</span> <span class="n">cloud_storage_download_blob_as_bytes</span><span class="o">.</span><span class="n">with_options</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;My custom task name&quot;</span><span class="p">,</span>
+    <span class="n">retries</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">retry_delay_seconds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+
+ <span class="nd">@flow</span>
+ <span class="k">def</span> <span class="nf">example_with_options_flow</span><span class="p">():</span>
+    <span class="n">gcp_credentials</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="s2">&quot;/path/to/service/account/keyfile.json&quot;</span><span class="p">)</span>
+    <span class="n">contents</span> <span class="o">=</span> <span class="n">custom_download</span><span class="p">(</span><span class="s2">&quot;bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;blob&quot;</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">contents</span><span class="p">()</span>
+
+ <span class="n">example_with_options_flow</span><span class="p">()</span>
+ <span class="err">```</span>
+
+<span class="o">+</span><span class="n">For</span> <span class="n">more</span> <span class="n">tips</span> <span class="n">on</span> <span class="n">how</span> <span class="n">to</span> <span class="n">use</span> <span class="n">tasks</span> <span class="ow">and</span> <span class="n">flows</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">check</span> <span class="n">out</span> <span class="p">[</span><span class="n">Using</span> <span class="n">Collections</span><span class="p">](</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">orion</span><span class="o">-</span><span class="n">docs</span><span class="o">.</span><span class="n">prefect</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">collections</span><span class="o">/</span><span class="n">usage</span><span class="o">/</span><span class="p">)</span><span class="err">!</span>
+
+<span class="c1">## Blocks Catalog</span>
+<span class="n">Below</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">Blocks</span> <span class="n">available</span> <span class="k">for</span> <span class="n">registration</span> <span class="ow">in</span> <span class="err">`</span><span class="n">prefect</span><span class="o">-</span><span class="n">gcp</span><span class="err">`</span><span class="o">.</span>
+
+<span class="n">Note</span><span class="p">,</span> <span class="n">to</span> <span class="n">use</span> <span class="n">the</span> <span class="err">`</span><span class="n">load</span><span class="err">`</span> <span class="n">method</span> <span class="n">on</span> <span class="n">Blocks</span><span class="p">,</span> <span class="n">you</span> <span class="n">must</span> <span class="n">already</span> <span class="n">have</span> <span class="n">a</span> <span class="n">block</span> <span class="n">document</span> <span class="p">[</span><span class="n">saved</span> <span class="n">through</span> <span class="n">code</span><span class="p">](</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">orion</span><span class="o">-</span><span class="n">docs</span><span class="o">.</span><span class="n">prefect</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">concepts</span><span class="o">/</span><span class="n">blocks</span><span class="o">/</span><span class="c1">#saving-blocks) or [saved through the UI](https://orion-docs.prefect.io/ui/blocks/).</span>
+<span class="c1">### Aiplatform Module</span>
+<span class="o">**</span><span class="p">[</span><span class="n">VertexAICustomTrainingJob</span><span class="p">][</span><span class="n">prefect_gcp</span><span class="o">.</span><span class="n">aiplatform</span><span class="o">.</span><span class="n">VertexAICustomTrainingJob</span><span class="p">]</span><span class="o">**</span>
+
+<span class="n">To</span> <span class="n">register</span> <span class="n">blocks</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">module</span> <span class="n">to</span>
+<span class="p">[</span><span class="n">view</span> <span class="ow">and</span> <span class="n">edit</span> <span class="n">them</span><span class="p">](</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">orion</span><span class="o">-</span><span class="n">docs</span><span class="o">.</span><span class="n">prefect</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">ui</span><span class="o">/</span><span class="n">blocks</span><span class="o">/</span><span class="p">)</span>
+<span class="n">on</span> <span class="n">Prefect</span> <span class="n">Cloud</span><span class="p">:</span>
+<span class="err">```</span><span class="n">bash</span>
+<span class="n">prefect</span> <span class="n">block</span> <span class="n">register</span> <span class="o">-</span><span class="n">m</span> <span class="n">prefect_gcp</span><span class="o">.</span><span class="n">aiplatform</span>
+</code></pre></div>
+<p>To load the VertexAICustomTrainingJob:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.aiplatform</span> <span class="kn">import</span> <span class="n">VertexAICustomTrainingJob</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
+    <span class="n">my_block</span> <span class="o">=</span> <span class="n">VertexAICustomTrainingJob</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
+
+<span class="n">my_flow</span><span class="p">()</span>
+</code></pre></div>
+</details></p>
+<h3 id="bigquery-module">Bigquery Module</h3>
+<p><strong><a class="autorefs autorefs-internal" href="bigquery/#prefect_gcp.bigquery.BigQueryWarehouse">BigQueryWarehouse</a></strong></p>
+<p>To register blocks in this module to
+<a href="https://orion-docs.prefect.io/ui/blocks/">view and edit them</a>
+on Prefect Cloud:
+<div class="highlight"><pre><span></span><code>prefect block register -m prefect_gcp.bigquery
+</code></pre></div></p>
+<p>To load the BigQueryWarehouse:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.bigquery</span> <span class="kn">import</span> <span class="n">BigQueryWarehouse</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
+    <span class="n">my_block</span> <span class="o">=</span> <span class="n">BigQueryWarehouse</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
+
+<span class="n">my_flow</span><span class="p">()</span>
+</code></pre></div>
+</details></p>
+<h3 id="cloud-run-module">Cloud Run Module</h3>
+<p><strong><a class="autorefs autorefs-internal" href="cloud_run/#prefect_gcp.cloud_run.CloudRunJob">CloudRunJob</a></strong></p>
+<p>To register blocks in this module to
+<a href="https://orion-docs.prefect.io/ui/blocks/">view and edit them</a>
+on Prefect Cloud:
+<div class="highlight"><pre><span></span><code>prefect block register -m prefect_gcp.cloud_run
+</code></pre></div></p>
+<p>To load the CloudRunJob:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_run</span> <span class="kn">import</span> <span class="n">CloudRunJob</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
+    <span class="n">my_block</span> <span class="o">=</span> <span class="n">CloudRunJob</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
+
+<span class="n">my_flow</span><span class="p">()</span>
+</code></pre></div>
+</details></p>
+<h3 id="cloud-storage-module">Cloud Storage Module</h3>
+<p><strong><a class="autorefs autorefs-internal" href="cloud_storage/#prefect_gcp.cloud_storage.GcsBucket">GcsBucket</a></strong></p>
+<p>To register blocks in this module to
+<a href="https://orion-docs.prefect.io/ui/blocks/">view and edit them</a>
+on Prefect Cloud:
+<div class="highlight"><pre><span></span><code>prefect block register -m prefect_gcp.cloud_storage
+</code></pre></div></p>
+<p>To load the GcsBucket:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
+    <span class="n">my_block</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
+
+<span class="n">my_flow</span><span class="p">()</span>
+</code></pre></div>
+</details></p>
+<h3 id="credentials-module">Credentials Module</h3>
+<p><strong><a class="autorefs autorefs-internal" href="credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a></strong></p>
+<p>To register blocks in this module to
+<a href="https://orion-docs.prefect.io/ui/blocks/">view and edit them</a>
+on Prefect Cloud:
+<div class="highlight"><pre><span></span><code>prefect block register -m prefect_gcp.credentials
+</code></pre></div></p>
+<p>To load the GcpCredentials:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
+    <span class="n">my_block</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
+
+<span class="n">my_flow</span><span class="p">()</span>
+</code></pre></div>
+</details></p>
+<h3 id="secret-manager-module">Secret Manager Module</h3>
+<p><strong><a class="autorefs autorefs-internal" href="secret_manager/#prefect_gcp.secret_manager.GcpSecret">GcpSecret</a></strong></p>
+<p>To register blocks in this module to
+<a href="https://orion-docs.prefect.io/ui/blocks/">view and edit them</a>
+on Prefect Cloud:
+<div class="highlight"><pre><span></span><code>prefect block register -m prefect_gcp.secret_manager
+</code></pre></div></p>
+<p>To load the GcpSecret:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.secret_manager</span> <span class="kn">import</span> <span class="n">GcpSecret</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
+    <span class="n">my_block</span> <span class="o">=</span> <span class="n">GcpSecret</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
+
+<span class="n">my_flow</span><span class="p">()</span>
+</code></pre></div>
+</details></p>
 <h2 id="resources">Resources</h2>
 <p>If you encounter any bugs while using <code>prefect-gcp</code>, feel free to open an issue in the <a href="https://github.com/PrefectHQ/prefect-gcp">prefect-gcp</a> repository.</p>
 <p>If you have any questions or issues while using <code>prefect-gcp</code>, you can find help in either the <a href="https://discourse.prefect.io/">Prefect Discourse forum</a> or the <a href="https://prefect.io/slack">Prefect Slack community</a>.</p>

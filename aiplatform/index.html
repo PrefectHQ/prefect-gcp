@@ -823,7 +823,7 @@ VertexAICustomTrainingJob            (<span title="prefect.infrastructure.base.I
         <span class="n">description</span><span class="o">=</span><span class="p">(</span>
             <span class="s2">&quot;The image to use for a new Vertex AI custom training job. This value must &quot;</span>
             <span class="s2">&quot;refer to an image within either Google Container Registry &quot;</span>
-            <span class="s2">&quot;or Google Artifact Registry, like `gcr.io/&lt;project_name&gt;/&lt;repo&gt;/`&quot;</span>
+            <span class="s2">&quot;or Google Artifact Registry, like `gcr.io/&lt;project_name&gt;/&lt;repo&gt;/`.&quot;</span>
         <span class="p">),</span>
     <span class="p">)</span>
     <span class="n">env</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
@@ -900,7 +900,7 @@ VertexAICustomTrainingJob            (<span title="prefect.infrastructure.base.I
         <span class="n">custom_job</span> <span class="o">=</span> <span class="n">CustomJob</span><span class="p">(</span><span class="n">display_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">job_name</span><span class="p">,</span> <span class="n">job_spec</span><span class="o">=</span><span class="n">job_spec</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">custom_job</span><span class="p">)</span>  <span class="c1"># outputs a json string</span>
 
-    <span class="k">def</span> <span class="nf">_build_job_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CustomJobSpec</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_build_job_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CustomJobSpec&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Builds a job spec by gathering details.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -939,8 +939,8 @@ VertexAICustomTrainingJob            (<span title="prefect.infrastructure.base.I
         <span class="k">return</span> <span class="n">job_spec</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_create_and_begin_job</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">job_spec</span><span class="p">:</span> <span class="n">CustomJobSpec</span><span class="p">,</span> <span class="n">job_service_client</span><span class="p">:</span> <span class="n">JobServiceClient</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CustomJob</span><span class="p">:</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">job_spec</span><span class="p">:</span> <span class="s2">&quot;CustomJobSpec&quot;</span><span class="p">,</span> <span class="n">job_service_client</span><span class="p">:</span> <span class="s2">&quot;JobServiceClient&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CustomJob&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Builds a custom job and begins running it.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -972,11 +972,11 @@ VertexAICustomTrainingJob            (<span title="prefect.infrastructure.base.I
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_watch_job_run</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">full_job_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>  <span class="c1"># different from self.job_name</span>
-        <span class="n">job_service_client</span><span class="p">:</span> <span class="n">JobServiceClient</span><span class="p">,</span>
-        <span class="n">current_state</span><span class="p">:</span> <span class="n">JobState</span><span class="p">,</span>
-        <span class="n">until_states</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">JobState</span><span class="p">],</span>
+        <span class="n">job_service_client</span><span class="p">:</span> <span class="s2">&quot;JobServiceClient&quot;</span><span class="p">,</span>
+        <span class="n">current_state</span><span class="p">:</span> <span class="s2">&quot;JobState&quot;</span><span class="p">,</span>
+        <span class="n">until_states</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;JobState&quot;</span><span class="p">],</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CustomJob</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CustomJob&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Polls job run to see if status changed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1018,7 +1018,7 @@ VertexAICustomTrainingJob            (<span title="prefect.infrastructure.base.I
 
     <span class="nd">@sync_compatible</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">task_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TaskStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">task_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;TaskStatus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VertexAICustomTrainingJobResult</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run the configured task on VertexAI.</span>
@@ -1090,7 +1090,7 @@ VertexAICustomTrainingJob            (<span title="prefect.infrastructure.base.I
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Requested to cancel </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_kill_job</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">job_service_client</span><span class="p">:</span> <span class="n">JobServiceClient</span><span class="p">,</span> <span class="n">full_job_name</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">job_service_client</span><span class="p">:</span> <span class="s2">&quot;JobServiceClient&quot;</span><span class="p">,</span> <span class="n">full_job_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Thin wrapper around Job.delete, wrapping a try/except since</span>
@@ -1130,7 +1130,6 @@ VertexAICustomTrainingJob            (<span title="prefect.infrastructure.base.I
 
 
 <h4 id="prefect_gcp.aiplatform.VertexAICustomTrainingJob-attributes">Attributes</h4>
-
 
   <div class="doc doc-object doc-attribute">
 
@@ -1192,7 +1191,7 @@ VertexAICustomTrainingJob            (<span title="prefect.infrastructure.base.I
 
     <div class="doc doc-contents ">
 
-      <p>The image to use for a new Vertex AI custom training job. This value must refer to an image within either Google Container Registry or Google Artifact Registry, like <code>gcr.io/&lt;project_name&gt;/&lt;repo&gt;/</code></p>
+      <p>The image to use for a new Vertex AI custom training job. This value must refer to an image within either Google Container Registry or Google Artifact Registry, like <code>gcr.io/&lt;project_name&gt;/&lt;repo&gt;/</code>.</p>
     </div>
 
   </div>
@@ -1379,9 +1378,7 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 
 
 
-
 <h4 id="prefect_gcp.aiplatform.VertexAICustomTrainingJob-methods">Methods</h4>
-
 
   <div class="doc doc-object doc-method">
 
@@ -1528,7 +1525,7 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
   <tbody>
       <tr>
         <td><code>task_status</code></td>
-        <td><code>Optional[anyio.abc.TaskStatus]</code></td>
+        <td><code>Optional[TaskStatus]</code></td>
         <td><p>An optional <code>TaskStatus</code> to update when the container starts.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -1553,7 +1550,7 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
           <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span> <span class="n">task_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TaskStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">task_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;TaskStatus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VertexAICustomTrainingJobResult</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the configured task on VertexAI.</span>
@@ -1643,24 +1640,6 @@ VertexAICustomTrainingJobResult            (<span title="prefect.infrastructure.
 </code></pre></div>
         </details>
 
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
 
     </div>
 

@@ -335,8 +335,43 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.download_folder_to_path" class="md-nav__link">
+    download_folder_to_path()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.download_object_to_file_object" class="md-nav__link">
+    download_object_to_file_object()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.download_object_to_path" class="md-nav__link">
+    download_object_to_path()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.get_bucket" class="md-nav__link">
+    get_bucket()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#prefect_gcp.cloud_storage.GcsBucket.get_directory" class="md-nav__link">
     get_directory()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.list_blobs" class="md-nav__link">
+    list_blobs()
   </a>
   
 </li>
@@ -351,6 +386,27 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.cloud_storage.GcsBucket.read_path" class="md-nav__link">
     read_path()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.upload_from_file_object" class="md-nav__link">
+    upload_from_file_object()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.upload_from_folder" class="md-nav__link">
+    upload_from_folder()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.upload_from_path" class="md-nav__link">
+    upload_from_path()
   </a>
   
 </li>
@@ -585,8 +641,43 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.download_folder_to_path" class="md-nav__link">
+    download_folder_to_path()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.download_object_to_file_object" class="md-nav__link">
+    download_object_to_file_object()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.download_object_to_path" class="md-nav__link">
+    download_object_to_path()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.get_bucket" class="md-nav__link">
+    get_bucket()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#prefect_gcp.cloud_storage.GcsBucket.get_directory" class="md-nav__link">
     get_directory()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.list_blobs" class="md-nav__link">
+    list_blobs()
   </a>
   
 </li>
@@ -601,6 +692,27 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.cloud_storage.GcsBucket.read_path" class="md-nav__link">
     read_path()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.upload_from_file_object" class="md-nav__link">
+    upload_from_file_object()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.upload_from_folder" class="md-nav__link">
+    upload_from_folder()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_storage.GcsBucket.upload_from_path" class="md-nav__link">
+    upload_from_path()
   </a>
   
 </li>
@@ -733,7 +845,7 @@
 
 <h3 id="prefect_gcp.cloud_storage.GcsBucket" class="doc doc-heading">
         <code>
-GcsBucket            (<span title="prefect.filesystems.WritableDeploymentStorage">WritableDeploymentStorage</span>, <span title="prefect.filesystems.WritableFileSystem">WritableFileSystem</span>)
+GcsBucket            (<span title="prefect.filesystems.WritableDeploymentStorage">WritableDeploymentStorage</span>, <span title="prefect.filesystems.WritableFileSystem">WritableFileSystem</span>, <span title="prefect.blocks.abstract.ObjectStorageBlock">ObjectStorageBlock</span>)
         </code>
 
 
@@ -777,13 +889,13 @@ for reading and writing objects.</p></td>
 </table>
 <p><strong>Examples:</strong></p>
     <p>Load stored GCP Cloud Storage Bucket:
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucketBucket</span>
 <span class="n">gcp_cloud_storage_bucket_block</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;BLOCK_NAME&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">GcsBucket</span><span class="p">(</span><span class="n">WritableDeploymentStorage</span><span class="p">,</span> <span class="n">WritableFileSystem</span><span class="p">):</span>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">GcsBucket</span><span class="p">(</span><span class="n">WritableDeploymentStorage</span><span class="p">,</span> <span class="n">WritableFileSystem</span><span class="p">,</span> <span class="n">ObjectStorageBlock</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Block used to store data using GCP Cloud Storage Buckets.</span>
 
@@ -796,7 +908,7 @@ for reading and writing objects.</p></td>
 <span class="sd">    Example:</span>
 <span class="sd">        Load stored GCP Cloud Storage Bucket:</span>
 <span class="sd">        ```python</span>
-<span class="sd">        from prefect_gcp import GcsBucket</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucketBucket</span>
 <span class="sd">        gcp_cloud_storage_bucket_block = GcsBucket.load(&quot;BLOCK_NAME&quot;)</span>
 <span class="sd">        ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -985,6 +1097,408 @@ for reading and writing objects.</p></td>
                 <span class="n">gcp_credentials</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">path</span>
+
+    <span class="c1"># NEW BLOCK INTERFACE METHODS BELOW</span>
+    <span class="k">def</span> <span class="nf">_join_bucket_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Joins the base bucket folder to the bucket path.</span>
+
+<span class="sd">        NOTE: If a method reuses another method in this class, be careful to not</span>
+<span class="sd">        call this  twice because it&#39;ll join the bucket folder twice.</span>
+<span class="sd">        See https://github.com/PrefectHQ/prefect-aws/issues/141 for a past issue.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bucket_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket_folder</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">bucket_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket_folder</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Bucket path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2"> is already prefixed with &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;bucket folder </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket_folder</span><span class="si">!r}</span><span class="s2">; is this intentional?&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket_folder</span><span class="p">)</span> <span class="o">/</span> <span class="n">bucket_path</span><span class="p">)</span>
+
+    <span class="nd">@sync_compatible</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Bucket&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the bucket object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The bucket object.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Get the bucket object.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            gcs_bucket.get_bucket()</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Getting bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">()</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bucket</span>
+
+    <span class="nd">@sync_compatible</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">list_blobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Blob</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lists all blobs in the bucket that are in a folder.</span>
+<span class="sd">        Folders are not included in the output.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            folder: The folder to list blobs from.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of Blob objects.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Get all blobs from a folder named &quot;prefect&quot;.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            gcs_bucket.list_blobs(&quot;prefect&quot;)</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">()</span>
+
+        <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Listing blobs in bucket </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">blobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">list_blobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">bucket_path</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Ignore folders</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">blob</span> <span class="k">for</span> <span class="n">blob</span> <span class="ow">in</span> <span class="n">blobs</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">blob</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)]</span>
+
+    <span class="nd">@sync_compatible</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">download_object_to_path</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">from_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">to_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">download_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Downloads an object from the object storage service to a path.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            from_path: The path to the blob to download; this gets prefixed</span>
+<span class="sd">                with the bucket_folder.</span>
+<span class="sd">            to_path: The path to download the blob to. If not provided, the</span>
+<span class="sd">                blob&#39;s name will be used.</span>
+<span class="sd">            **download_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">                `Blob.download_to_filename`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The absolute path that the object was downloaded to.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Download my_folder/notes.txt object to notes.txt.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            gcs_bucket.download_object_to_path(&quot;my_folder/notes.txt&quot;, &quot;notes.txt&quot;)</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">to_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">to_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="c1"># making path absolute, but converting back to str here</span>
+        <span class="c1"># since !r looks nicer that way and filename arg expects str</span>
+        <span class="n">to_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">())</span>
+
+        <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+        <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Downloading blob from bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;to </span><span class="si">{</span><span class="n">to_path</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+            <span class="n">blob</span><span class="o">.</span><span class="n">download_to_filename</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">to_path</span><span class="p">,</span> <span class="o">**</span><span class="n">download_kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span>
+
+    <span class="nd">@sync_compatible</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">download_object_to_file_object</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">from_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">to_file_object</span><span class="p">:</span> <span class="n">BinaryIO</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">download_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BinaryIO</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Downloads an object from the object storage service to a file-like object,</span>
+<span class="sd">        which can be a BytesIO object or a BufferedWriter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            from_path: The path to the blob to download from; this gets prefixed</span>
+<span class="sd">                with the bucket_folder.</span>
+<span class="sd">            to_file_object: The file-like object to download the blob to.</span>
+<span class="sd">            **download_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">                `Blob.download_to_file`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The file-like object that the object was downloaded to.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Download my_folder/notes.txt object to a BytesIO object.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from io import BytesIO</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            with BytesIO() as buf:</span>
+<span class="sd">                gcs_bucket.download_object_to_file_object(&quot;my_folder/notes.txt&quot;, buf)</span>
+<span class="sd">            ```</span>
+
+<span class="sd">            Download my_folder/notes.txt object to a BufferedWriter.</span>
+<span class="sd">            ```python</span>
+<span class="sd">                from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">                gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">                with open(&quot;notes.txt&quot;, &quot;wb&quot;) as f:</span>
+<span class="sd">                    gcs_bucket.download_object_to_file_object(&quot;my_folder/notes.txt&quot;, f)</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+
+        <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Downloading blob from bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;to file object.&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+            <span class="n">blob</span><span class="o">.</span><span class="n">download_to_file</span><span class="p">,</span> <span class="n">file_obj</span><span class="o">=</span><span class="n">to_file_object</span><span class="p">,</span> <span class="o">**</span><span class="n">download_kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">to_file_object</span>
+
+    <span class="nd">@sync_compatible</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">download_folder_to_path</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">from_folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">to_folder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">download_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Downloads objects *within* a folder (excluding the folder itself)</span>
+<span class="sd">        from the object storage service to a folder.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            from_folder: The path to the folder to download from; this gets prefixed</span>
+<span class="sd">                with the bucket_folder.</span>
+<span class="sd">            to_folder: The path to download the folder to. If not provided, will default</span>
+<span class="sd">                to the current directory.</span>
+<span class="sd">            **download_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">                `Blob.download_to_filename`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The absolute path that the folder was downloaded to.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Download my_folder to a local folder named my_folder.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            gcs_bucket.download_folder_to_path(&quot;my_folder&quot;, &quot;my_folder&quot;)</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">to_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">to_folder</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">to_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">to_folder</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+
+        <span class="n">blobs</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_blobs</span><span class="p">(</span><span class="n">folder</span><span class="o">=</span><span class="n">from_folder</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blobs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No blobs were downloaded from &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">from_folder</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">to_folder</span>
+
+        <span class="c1"># do not call self._join_bucket_folder for list_blobs</span>
+        <span class="c1"># because it&#39;s built-in to that method already!</span>
+        <span class="c1"># however, we still need to do it because we&#39;re using relative_to</span>
+        <span class="n">bucket_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">from_folder</span><span class="p">)</span>
+
+        <span class="n">async_coros</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">blob</span> <span class="ow">in</span> <span class="n">blobs</span><span class="p">:</span>
+            <span class="n">bucket_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">blob</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">bucket_folder</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bucket_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="n">to_path</span> <span class="o">=</span> <span class="n">to_folder</span> <span class="o">/</span> <span class="n">bucket_path</span>
+            <span class="n">to_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Downloading blob from bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> to </span><span class="si">{</span><span class="n">to_path</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">async_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+                    <span class="n">blob</span><span class="o">.</span><span class="n">download_to_filename</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">to_path</span><span class="p">),</span> <span class="o">**</span><span class="n">download_kwargs</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">async_coros</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">to_folder</span>
+
+    <span class="nd">@sync_compatible</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">upload_from_path</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">from_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">to_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">upload_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uploads an object from a path to the object storage service.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            from_path: The path to the file to upload from.</span>
+<span class="sd">            to_path: The path to upload the file to. If not provided, will use</span>
+<span class="sd">                the file name of from_path; this gets prefixed</span>
+<span class="sd">                with the bucket_folder.</span>
+<span class="sd">            **upload_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">                `Blob.upload_from_filename`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The path that the object was uploaded to.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Upload notes.txt to my_folder/notes.txt.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            gcs_bucket.upload_from_path(&quot;notes.txt&quot;, &quot;my_folder/notes.txt&quot;)</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">to_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">to_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Uploading from </span><span class="si">{</span><span class="n">from_path</span><span class="si">!r}</span><span class="s2"> to the bucket &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+            <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_filename</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">from_path</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">bucket_path</span>
+
+    <span class="nd">@sync_compatible</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">upload_from_file_object</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">from_file_object</span><span class="p">:</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">to_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uploads an object to the object storage service from a file-like object,</span>
+<span class="sd">        which can be a BytesIO object or a BufferedReader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            from_file_object: The file-like object to upload from.</span>
+<span class="sd">            to_path: The path to upload the object to; this gets prefixed</span>
+<span class="sd">                with the bucket_folder.</span>
+<span class="sd">            **upload_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">                `Blob.upload_from_file`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The path that the object was uploaded to.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Upload my_folder/notes.txt object to a BytesIO object.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from io import BytesIO</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            with open(&quot;notes.txt&quot;, &quot;rb&quot;) as f:</span>
+<span class="sd">                gcs_bucket.upload_from_file_object(f, &quot;my_folder/notes.txt&quot;)</span>
+<span class="sd">            ```</span>
+
+<span class="sd">            Upload BufferedReader object to my_folder/notes.txt.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from io import BufferedReader</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            with open(&quot;notes.txt&quot;, &quot;rb&quot;) as f:</span>
+<span class="sd">                gcs_bucket.upload_from_file_object(</span>
+<span class="sd">                    BufferedReader(f), &quot;my_folder/notes.txt&quot;</span>
+<span class="sd">                )</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+
+        <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Uploading from file object to the bucket &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+            <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">,</span> <span class="n">from_file_object</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">bucket_path</span>
+
+    <span class="nd">@sync_compatible</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">upload_from_folder</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">from_folder</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">to_folder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">upload_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uploads files *within* a folder (excluding the folder itself)</span>
+<span class="sd">        to the object storage service folder.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            from_folder: The path to the folder to upload from.</span>
+<span class="sd">            to_folder: The path to upload the folder to. If not provided, will default</span>
+<span class="sd">                to bucket_folder or the base directory of the bucket.</span>
+<span class="sd">            **upload_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">                `Blob.upload_from_filename`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The path that the folder was uploaded to.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Upload local folder my_folder to the bucket&#39;s folder my_folder.</span>
+<span class="sd">            ```python</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            gcs_bucket.upload_from_folder(&quot;my_folder&quot;)</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">from_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">from_folder</span><span class="p">)</span>
+        <span class="n">bucket_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">to_folder</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">num_uploaded</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+
+        <span class="n">async_coros</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">from_path</span> <span class="ow">in</span> <span class="n">from_folder</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">&quot;**/*&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">from_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="n">bucket_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">bucket_folder</span><span class="p">)</span> <span class="o">/</span> <span class="n">from_path</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">from_folder</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Uploading from </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> to the bucket &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+            <span class="n">async_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+                    <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_filename</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">from_path</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">num_uploaded</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">async_coros</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_uploaded</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No files were uploaded from </span><span class="si">{</span><span class="n">from_folder</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bucket_folder</span>
 </code></pre></div>
         </details>
 
@@ -996,7 +1510,6 @@ for reading and writing objects.</p></td>
 
 
 <h4 id="prefect_gcp.cloud_storage.GcsBucket-attributes">Attributes</h4>
-
 
   <div class="doc doc-object doc-attribute">
 
@@ -1066,8 +1579,509 @@ for reading and writing objects.</p></td>
 
 
 
-
 <h4 id="prefect_gcp.cloud_storage.GcsBucket-methods">Methods</h4>
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="prefect_gcp.cloud_storage.GcsBucket.download_folder_to_path" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">download_folder_to_path</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Downloads objects <em>within</em> a folder (excluding the folder itself)
+from the object storage service to a folder.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>from_folder</code></td>
+        <td><code>str</code></td>
+        <td><p>The path to the folder to download from; this gets prefixed
+with the bucket_folder.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>to_folder</code></td>
+        <td><code>Union[str, pathlib.Path]</code></td>
+        <td><p>The path to download the folder to. If not provided, will default
+to the current directory.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>**download_kwargs</code></td>
+        <td><code>Dict[str, Any]</code></td>
+        <td><p>Additional keyword arguments to pass to
+<code>Blob.download_to_filename</code>.</p></td>
+        <td><code>{}</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Path</code></td>
+      <td><p>The absolute path that the folder was downloaded to.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Download my_folder to a local folder named my_folder.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_folder_to_path</span><span class="p">(</span><span class="s2">&quot;my_folder&quot;</span><span class="p">,</span> <span class="s2">&quot;my_folder&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">download_folder_to_path</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">from_folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">to_folder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">download_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downloads objects *within* a folder (excluding the folder itself)</span>
+<span class="sd">    from the object storage service to a folder.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        from_folder: The path to the folder to download from; this gets prefixed</span>
+<span class="sd">            with the bucket_folder.</span>
+<span class="sd">        to_folder: The path to download the folder to. If not provided, will default</span>
+<span class="sd">            to the current directory.</span>
+<span class="sd">        **download_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">            `Blob.download_to_filename`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The absolute path that the folder was downloaded to.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Download my_folder to a local folder named my_folder.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        gcs_bucket.download_folder_to_path(&quot;my_folder&quot;, &quot;my_folder&quot;)</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">to_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">to_folder</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">to_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">to_folder</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+
+    <span class="n">blobs</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_blobs</span><span class="p">(</span><span class="n">folder</span><span class="o">=</span><span class="n">from_folder</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blobs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No blobs were downloaded from &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">from_folder</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">to_folder</span>
+
+    <span class="c1"># do not call self._join_bucket_folder for list_blobs</span>
+    <span class="c1"># because it&#39;s built-in to that method already!</span>
+    <span class="c1"># however, we still need to do it because we&#39;re using relative_to</span>
+    <span class="n">bucket_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">from_folder</span><span class="p">)</span>
+
+    <span class="n">async_coros</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">blob</span> <span class="ow">in</span> <span class="n">blobs</span><span class="p">:</span>
+        <span class="n">bucket_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">blob</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">bucket_folder</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bucket_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="n">to_path</span> <span class="o">=</span> <span class="n">to_folder</span> <span class="o">/</span> <span class="n">bucket_path</span>
+        <span class="n">to_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Downloading blob from bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> to </span><span class="si">{</span><span class="n">to_path</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">async_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+                <span class="n">blob</span><span class="o">.</span><span class="n">download_to_filename</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">to_path</span><span class="p">),</span> <span class="o">**</span><span class="n">download_kwargs</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">async_coros</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">to_folder</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="prefect_gcp.cloud_storage.GcsBucket.download_object_to_file_object" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">download_object_to_file_object</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Downloads an object from the object storage service to a file-like object,
+which can be a BytesIO object or a BufferedWriter.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>from_path</code></td>
+        <td><code>str</code></td>
+        <td><p>The path to the blob to download from; this gets prefixed
+with the bucket_folder.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>to_file_object</code></td>
+        <td><code>BinaryIO</code></td>
+        <td><p>The file-like object to download the blob to.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>**download_kwargs</code></td>
+        <td><code>Dict[str, Any]</code></td>
+        <td><p>Additional keyword arguments to pass to
+<code>Blob.download_to_file</code>.</p></td>
+        <td><code>{}</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>BinaryIO</code></td>
+      <td><p>The file-like object that the object was downloaded to.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Download my_folder/notes.txt object to a BytesIO object.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">:</span>
+    <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_file_object</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Download my_folder/notes.txt object to a BufferedWriter.
+<div class="highlight"><pre><span></span><code>    <span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+    <span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_file_object</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">download_object_to_file_object</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">from_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">to_file_object</span><span class="p">:</span> <span class="n">BinaryIO</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">download_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BinaryIO</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downloads an object from the object storage service to a file-like object,</span>
+<span class="sd">    which can be a BytesIO object or a BufferedWriter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        from_path: The path to the blob to download from; this gets prefixed</span>
+<span class="sd">            with the bucket_folder.</span>
+<span class="sd">        to_file_object: The file-like object to download the blob to.</span>
+<span class="sd">        **download_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">            `Blob.download_to_file`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The file-like object that the object was downloaded to.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Download my_folder/notes.txt object to a BytesIO object.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from io import BytesIO</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        with BytesIO() as buf:</span>
+<span class="sd">            gcs_bucket.download_object_to_file_object(&quot;my_folder/notes.txt&quot;, buf)</span>
+<span class="sd">        ```</span>
+
+<span class="sd">        Download my_folder/notes.txt object to a BufferedWriter.</span>
+<span class="sd">        ```python</span>
+<span class="sd">            from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">            gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">            with open(&quot;notes.txt&quot;, &quot;wb&quot;) as f:</span>
+<span class="sd">                gcs_bucket.download_object_to_file_object(&quot;my_folder/notes.txt&quot;, f)</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+
+    <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Downloading blob from bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;to file object.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+        <span class="n">blob</span><span class="o">.</span><span class="n">download_to_file</span><span class="p">,</span> <span class="n">file_obj</span><span class="o">=</span><span class="n">to_file_object</span><span class="p">,</span> <span class="o">**</span><span class="n">download_kwargs</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">to_file_object</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="prefect_gcp.cloud_storage.GcsBucket.download_object_to_path" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">download_object_to_path</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Downloads an object from the object storage service to a path.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>from_path</code></td>
+        <td><code>str</code></td>
+        <td><p>The path to the blob to download; this gets prefixed
+with the bucket_folder.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>to_path</code></td>
+        <td><code>Union[str, pathlib.Path]</code></td>
+        <td><p>The path to download the blob to. If not provided, the
+blob's name will be used.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>**download_kwargs</code></td>
+        <td><code>Dict[str, Any]</code></td>
+        <td><p>Additional keyword arguments to pass to
+<code>Blob.download_to_filename</code>.</p></td>
+        <td><code>{}</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Path</code></td>
+      <td><p>The absolute path that the object was downloaded to.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Download my_folder/notes.txt object to notes.txt.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_path</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;notes.txt&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">download_object_to_path</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">from_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">to_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">download_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downloads an object from the object storage service to a path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        from_path: The path to the blob to download; this gets prefixed</span>
+<span class="sd">            with the bucket_folder.</span>
+<span class="sd">        to_path: The path to download the blob to. If not provided, the</span>
+<span class="sd">            blob&#39;s name will be used.</span>
+<span class="sd">        **download_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">            `Blob.download_to_filename`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The absolute path that the object was downloaded to.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Download my_folder/notes.txt object to notes.txt.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        gcs_bucket.download_object_to_path(&quot;my_folder/notes.txt&quot;, &quot;notes.txt&quot;)</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">to_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">to_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="c1"># making path absolute, but converting back to str here</span>
+    <span class="c1"># since !r looks nicer that way and filename arg expects str</span>
+    <span class="n">to_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">())</span>
+
+    <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+    <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Downloading blob from bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;to </span><span class="si">{</span><span class="n">to_path</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+        <span class="n">blob</span><span class="o">.</span><span class="n">download_to_filename</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">to_path</span><span class="p">,</span> <span class="o">**</span><span class="n">download_kwargs</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="prefect_gcp.cloud_storage.GcsBucket.get_bucket" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_bucket</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Returns the bucket object.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Bucket</code></td>
+      <td><p>The bucket object.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Get the bucket object.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Bucket&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the bucket object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The bucket object.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Get the bucket object.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        gcs_bucket.get_bucket()</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Getting bucket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">()</span>
+    <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bucket</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
 
 
   <div class="doc doc-object doc-method">
@@ -1163,6 +2177,107 @@ Defaults to the current working directory.</p></td>
                 <span class="n">path</span><span class="o">=</span><span class="n">local_file_path</span><span class="p">,</span>
                 <span class="n">gcp_credentials</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span><span class="p">,</span>
             <span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="prefect_gcp.cloud_storage.GcsBucket.list_blobs" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">list_blobs</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Lists all blobs in the bucket that are in a folder.
+Folders are not included in the output.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>folder</code></td>
+        <td><code>str</code></td>
+        <td><p>The folder to list blobs from.</p></td>
+        <td><code>&#39;&#39;</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>List[google.cloud.storage.blob.Blob]</code></td>
+      <td><p>A list of Blob objects.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Get all blobs from a folder named "prefect".
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">list_blobs</span><span class="p">(</span><span class="s2">&quot;prefect&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">list_blobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Blob</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lists all blobs in the bucket that are in a folder.</span>
+<span class="sd">    Folders are not included in the output.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        folder: The folder to list blobs from.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of Blob objects.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Get all blobs from a folder named &quot;prefect&quot;.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        gcs_bucket.list_blobs(&quot;prefect&quot;)</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">()</span>
+
+    <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Listing blobs in bucket </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="n">blobs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">list_blobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">bucket_path</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Ignore folders</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">blob</span> <span class="k">for</span> <span class="n">blob</span> <span class="ow">in</span> <span class="n">blobs</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">blob</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)]</span>
 </code></pre></div>
         </details>
     </div>
@@ -1374,6 +2489,425 @@ path to the key in GCS.</p>
             <span class="n">bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="n">blob</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">gcp_credentials</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">contents</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="prefect_gcp.cloud_storage.GcsBucket.upload_from_file_object" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">upload_from_file_object</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Uploads an object to the object storage service from a file-like object,
+which can be a BytesIO object or a BufferedReader.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>from_file_object</code></td>
+        <td><code>BinaryIO</code></td>
+        <td><p>The file-like object to upload from.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>to_path</code></td>
+        <td><code>str</code></td>
+        <td><p>The path to upload the object to; this gets prefixed
+with the bucket_folder.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>**upload_kwargs</code></td>
+        <td></td>
+        <td><p>Additional keyword arguments to pass to
+<code>Blob.upload_from_file</code>.</p></td>
+        <td><code>{}</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>str</code></td>
+      <td><p>The path that the object was uploaded to.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Upload my_folder/notes.txt object to a BytesIO object.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_file_object</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Upload BufferedReader object to my_folder/notes.txt.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BufferedReader</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_file_object</span><span class="p">(</span>
+        <span class="n">BufferedReader</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s2">&quot;my_folder/notes.txt&quot;</span>
+    <span class="p">)</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">upload_from_file_object</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">from_file_object</span><span class="p">:</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">to_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uploads an object to the object storage service from a file-like object,</span>
+<span class="sd">    which can be a BytesIO object or a BufferedReader.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        from_file_object: The file-like object to upload from.</span>
+<span class="sd">        to_path: The path to upload the object to; this gets prefixed</span>
+<span class="sd">            with the bucket_folder.</span>
+<span class="sd">        **upload_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">            `Blob.upload_from_file`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The path that the object was uploaded to.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Upload my_folder/notes.txt object to a BytesIO object.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from io import BytesIO</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        with open(&quot;notes.txt&quot;, &quot;rb&quot;) as f:</span>
+<span class="sd">            gcs_bucket.upload_from_file_object(f, &quot;my_folder/notes.txt&quot;)</span>
+<span class="sd">        ```</span>
+
+<span class="sd">        Upload BufferedReader object to my_folder/notes.txt.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from io import BufferedReader</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        with open(&quot;notes.txt&quot;, &quot;rb&quot;) as f:</span>
+<span class="sd">            gcs_bucket.upload_from_file_object(</span>
+<span class="sd">                BufferedReader(f), &quot;my_folder/notes.txt&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+
+    <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Uploading from file object to the bucket &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+        <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">,</span> <span class="n">from_file_object</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">bucket_path</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="prefect_gcp.cloud_storage.GcsBucket.upload_from_folder" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">upload_from_folder</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Uploads files <em>within</em> a folder (excluding the folder itself)
+to the object storage service folder.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>from_folder</code></td>
+        <td><code>Union[str, pathlib.Path]</code></td>
+        <td><p>The path to the folder to upload from.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>to_folder</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>The path to upload the folder to. If not provided, will default
+to bucket_folder or the base directory of the bucket.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>**upload_kwargs</code></td>
+        <td><code>Dict[str, Any]</code></td>
+        <td><p>Additional keyword arguments to pass to
+<code>Blob.upload_from_filename</code>.</p></td>
+        <td><code>{}</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>str</code></td>
+      <td><p>The path that the folder was uploaded to.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Upload local folder my_folder to the bucket's folder my_folder.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_folder</span><span class="p">(</span><span class="s2">&quot;my_folder&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">upload_from_folder</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">from_folder</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">to_folder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">upload_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uploads files *within* a folder (excluding the folder itself)</span>
+<span class="sd">    to the object storage service folder.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        from_folder: The path to the folder to upload from.</span>
+<span class="sd">        to_folder: The path to upload the folder to. If not provided, will default</span>
+<span class="sd">            to bucket_folder or the base directory of the bucket.</span>
+<span class="sd">        **upload_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">            `Blob.upload_from_filename`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The path that the folder was uploaded to.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Upload local folder my_folder to the bucket&#39;s folder my_folder.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        gcs_bucket.upload_from_folder(&quot;my_folder&quot;)</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">from_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">from_folder</span><span class="p">)</span>
+    <span class="n">bucket_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">to_folder</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">num_uploaded</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+
+    <span class="n">async_coros</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">from_path</span> <span class="ow">in</span> <span class="n">from_folder</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">&quot;**/*&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">from_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="n">bucket_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">bucket_folder</span><span class="p">)</span> <span class="o">/</span> <span class="n">from_path</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">from_folder</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Uploading from </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> to the bucket &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+        <span class="n">async_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+                <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_filename</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">from_path</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">num_uploaded</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">async_coros</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">num_uploaded</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No files were uploaded from </span><span class="si">{</span><span class="n">from_folder</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bucket_folder</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h5 id="prefect_gcp.cloud_storage.GcsBucket.upload_from_path" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">upload_from_path</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>Uploads an object from a path to the object storage service.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>from_path</code></td>
+        <td><code>Union[str, pathlib.Path]</code></td>
+        <td><p>The path to the file to upload from.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>to_path</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>The path to upload the file to. If not provided, will use
+the file name of from_path; this gets prefixed
+with the bucket_folder.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>**upload_kwargs</code></td>
+        <td><code>Dict[str, Any]</code></td>
+        <td><p>Additional keyword arguments to pass to
+<code>Blob.upload_from_filename</code>.</p></td>
+        <td><code>{}</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>str</code></td>
+      <td><p>The path that the object was uploaded to.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Examples:</strong></p>
+    <p>Upload notes.txt to my_folder/notes.txt.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_path</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+
+        <details class="quote">
+          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">upload_from_path</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">from_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">to_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">upload_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uploads an object from a path to the object storage service.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        from_path: The path to the file to upload from.</span>
+<span class="sd">        to_path: The path to upload the file to. If not provided, will use</span>
+<span class="sd">            the file name of from_path; this gets prefixed</span>
+<span class="sd">            with the bucket_folder.</span>
+<span class="sd">        **upload_kwargs: Additional keyword arguments to pass to</span>
+<span class="sd">            `Blob.upload_from_filename`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The path that the object was uploaded to.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Upload notes.txt to my_folder/notes.txt.</span>
+<span class="sd">        ```python</span>
+<span class="sd">        from prefect_gcp.cloud_storage import GcsBucket</span>
+
+<span class="sd">        gcs_bucket = GcsBucket.load(&quot;my-bucket&quot;)</span>
+<span class="sd">        gcs_bucket.upload_from_path(&quot;notes.txt&quot;, &quot;my_folder/notes.txt&quot;)</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">to_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">to_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">from_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="n">bucket_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_bucket_folder</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span>
+    <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">bucket_path</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Uploading from </span><span class="si">{</span><span class="n">from_path</span><span class="si">!r}</span><span class="s2"> to the bucket &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="si">!r}</span><span class="s2"> path </span><span class="si">{</span><span class="n">bucket_path</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+        <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_filename</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">from_path</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">bucket_path</span>
 </code></pre></div>
         </details>
     </div>
