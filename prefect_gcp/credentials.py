@@ -1,6 +1,7 @@
 """Module handling GCP credentials."""
 
 import functools
+import json
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
@@ -136,6 +137,21 @@ class GcpCredentials(CredentialsBlock):
         if not service_account_file.exists():
             raise ValueError("The provided path to the service account is invalid")
         return service_account_file
+
+    @validator("service_account_info", pre=True)
+    def _convert_json_string_json_service_account_info(cls, value):
+        """
+        Converts service account info provided as a json formatted string
+        to a dictionary
+        """
+        if isinstance(value, str):
+            try:
+                service_account_info = json.loads(value)
+                return service_account_info
+            except Exception:
+                raise ValueError("Unable to decode service_account_info")
+        else:
+            return value
 
     def block_initialization(self):
         credentials = self.get_credentials_from_service_account()
