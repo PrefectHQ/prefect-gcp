@@ -140,7 +140,10 @@ class GcpCredentials(CredentialsBlock):
 
     @validator("service_account_info", pre=True)
     def _convert_json_string_json_service_account_info(cls, value):
-        """Converts service account info provided as a json formatted string to a dictionary"""
+        """
+        Converts service account info provided as a json formatted string
+        to a dictionary
+        """
         if isinstance(value, str):
             try:
                 service_account_info = json.loads(value)
