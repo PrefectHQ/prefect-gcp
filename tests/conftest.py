@@ -271,10 +271,12 @@ def service_account_info_json(monkeypatch):
         "google.auth.crypt._cryptography_rsa.serialization.load_pem_private_key",
         lambda *args, **kwargs: args[0],
     )
-    _service_account_info = json.dumps({
-        "project_id": "my_project",
-        "token_uri": "my-token-uri",
-        "client_email": "my-client-email",
-        "private_key": "my-private-key",
-    })
+    _service_account_info = json.dumps(
+        {
+            "project_id": "my_project",
+            "token_uri": "my-token-uri",
+            "client_email": "my-client-email",
+            "private_key": "my-private-key",
+        }
+    )
     return _service_account_info
