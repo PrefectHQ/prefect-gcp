@@ -64,6 +64,21 @@ def test_get_credentials_from_service_account_file_error(oauth2_credentials):
         ).get_credentials_from_service_account()
 
 
+def test_able_to_load_credentials_from_json_string(service_account_info_json):
+    gcp_credentials = GcpCredentials(service_account_info=service_account_info_json)
+    assert gcp_credentials.service_account_info.get_secret_value() == {
+        "project_id": "my_project",
+        "token_uri": "my-token-uri",
+        "client_email": "my-client-email",
+        "private_key": "my-private-key",
+    }
+
+
+def test_raise_on_invalid_json_credentials():
+    with pytest.raises(ValueError):
+        GcpCredentials(service_account_info="not json")
+
+
 def test_get_credentials_from_service_account_both_error(
     service_account_info, oauth2_credentials
 ):

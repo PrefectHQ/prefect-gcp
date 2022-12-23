@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.2.1
+
+Released on December 23rd, 2022.
+
+### Changed
+
+- Adds handling for ` service_account_info` supplied to `GcpCredentials` as a json formatted string - [#94](https://github.com/PrefectHQ/prefect-gcp/pull/94)
+
 ## 0.2.0
 
 Released on December 22nd, 2022.
