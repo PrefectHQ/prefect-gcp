@@ -204,7 +204,7 @@ class GcpCredentials(CredentialsBlock):
         Helper method to dynamically get a client type.
 
         Args:
-            client: The name of the client to get.
+            client_type: The name of the client to get.
             **get_client_kwargs: Additional keyword arguments to pass to the
                 `get_*_client` method.
 
