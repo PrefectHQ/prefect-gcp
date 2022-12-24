@@ -214,10 +214,10 @@ custom_download = cloud_storage_download_blob_as_bytes.with_options(
     contents = custom_download("bucket", "blob", gcp_credentials)
     return contents()
  
- example_with_options_flow()
- ```
+example_with_options_flow()
+```
  
-+For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
+For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
 
 ## Resources
 
