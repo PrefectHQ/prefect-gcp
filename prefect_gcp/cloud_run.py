@@ -570,6 +570,9 @@ class CloudRunJob(Infrastructure):
         # env and command here
         containers = [self._add_container_settings({"image": self.image})]
 
+        # apply this timeout to each task
+        timeout_seconds = str(self.timeout or 600)  # default to 10min
+
         body = {
             "apiVersion": "run.googleapis.com/v1",
             "kind": "Job",
@@ -578,7 +581,10 @@ class CloudRunJob(Infrastructure):
                 "template": {  # ExecutionTemplateSpec
                     "spec": {  # ExecutionSpec
                         "template": {  # TaskTemplateSpec
-                            "spec": {"containers": containers}  # TaskSpec
+                            "spec": {
+                                "containers": containers,
+                                "timeoutSeconds": timeout_seconds,
+                            }  # TaskSpec
                         }
                     },
                 }
