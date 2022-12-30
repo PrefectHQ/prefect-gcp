@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The `CloudRunJob` timeout parameter is now passed to the GCP TaskSpec. This allows Cloud Run tasks to run for longer than their default of 10min. [#99](https://github.com/PrefectHQ/prefect-gcp/pull/99)
+
 ### Deprecated
 
 ### Removed
