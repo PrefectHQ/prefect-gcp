@@ -494,6 +494,14 @@ class TestCloudRunJobContainerSettings:
             "requests": {"cpu": expected_cpu, "memory": str(memory) + memory_unit},
         }
 
+    def test_timeout_added_correctly(self, cloud_run_job):
+        timeout = 10
+        cloud_run_job.timeout = timeout
+        result = cloud_run_job._jobs_body()
+        assert result["spec"]["template"]["spec"]["template"]["spec"][
+            "timeoutSeconds"
+        ] == str(timeout)
+
     def test_memory_validation_succeeds(self, gcp_credentials):
         """Make sure that memory validation doesn't fail when valid params provided."""
         CloudRunJob(
