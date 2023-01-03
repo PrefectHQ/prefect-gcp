@@ -3,23 +3,27 @@ from typing import Optional, Union
 
 from anyio import to_thread
 from google.api_core.exceptions import NotFound
-from google.cloud.secretmanager_v1.types.resources import (
-    Replication,
-    Secret,
-    SecretPayload,
-)
-from google.cloud.secretmanager_v1.types.service import (
-    AccessSecretVersionRequest,
-    AddSecretVersionRequest,
-    CreateSecretRequest,
-    DeleteSecretRequest,
-)
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import SecretBlock
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import Field
 
 from prefect_gcp.credentials import GcpCredentials
+
+try:
+    from google.cloud.secretmanager_v1.types.resources import (
+        Replication,
+        Secret,
+        SecretPayload,
+    )
+    from google.cloud.secretmanager_v1.types.service import (
+        AccessSecretVersionRequest,
+        AddSecretVersionRequest,
+        CreateSecretRequest,
+        DeleteSecretRequest,
+    )
+except ModuleNotFoundError:
+    pass
 
 
 @task

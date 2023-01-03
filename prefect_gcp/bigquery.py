@@ -6,19 +6,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from anyio import to_thread
-from google.cloud.bigquery import (
-    ExternalConfig,
-    LoadJob,
-    LoadJobConfig,
-    QueryJobConfig,
-    ScalarQueryParameter,
-    SchemaField,
-    Table,
-    TimePartitioning,
-)
-from google.cloud.bigquery.dbapi.connection import Connection
-from google.cloud.bigquery.dbapi.cursor import Cursor
-from google.cloud.bigquery.table import Row
 from google.cloud.exceptions import NotFound
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import DatabaseBlock
@@ -27,6 +14,23 @@ from prefect.utilities.hashing import hash_objects
 from pydantic import Field
 
 from prefect_gcp.credentials import GcpCredentials
+
+try:
+    from google.cloud.bigquery import (
+        ExternalConfig,
+        LoadJob,
+        LoadJobConfig,
+        QueryJobConfig,
+        ScalarQueryParameter,
+        SchemaField,
+        Table,
+        TimePartitioning,
+    )
+    from google.cloud.bigquery.dbapi.connection import Connection
+    from google.cloud.bigquery.dbapi.cursor import Cursor
+    from google.cloud.bigquery.table import Row
+except ModuleNotFoundError:
+    pass
 
 
 def _result_sync(func, *args, **kwargs):
