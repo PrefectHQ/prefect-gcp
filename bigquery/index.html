@@ -10,8 +10,14 @@
       
         <link rel="canonical" href="https://PrefectHQ.github.io/prefect-gcp/bigquery/">
       
+      
+        <link rel="prev" href="../cloud_storage/">
+      
+      
+        <link rel="next" href="../secret_manager/">
+      
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.1">
     
     
       
@@ -19,15 +25,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.975780f9.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.3bd4f189.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
-        
-          
-          
-          <meta name="theme-color" content="#2094f3">
-        
       
       
 
@@ -710,10 +711,9 @@
                 
                   
 
-  <a href="https://github.com/PrefectHQ/prefect-gcp/edit/main/docs/bigquery.md" title="Edit this page" class="md-content__button md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+  
+  
+
 
 
 <div class="doc doc-object doc-module">
@@ -796,7 +796,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">BigQueryWarehouse</span><span class="p">(</span><span class="n">DatabaseBlock</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A block for querying a database with BigQuery.</span>
 
 <span class="sd">    Upon instantiating, a connection to BigQuery is established</span>
@@ -829,7 +829,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
     <span class="n">_unique_cursors</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Cursor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_start_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Starts a connection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span><span class="o">.</span><span class="n">get_bigquery_client</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
@@ -844,13 +844,13 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
             <span class="bp">self</span><span class="o">.</span><span class="n">_unique_cursors</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the opened connection to BigQuery.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span>
 
     <span class="k">def</span> <span class="nf">_get_cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Cursor</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get a BigQuery cursor.</span>
 
 <span class="sd">        Args:</span>
@@ -875,7 +875,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
             <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">existing_cursor</span>
 
     <span class="k">def</span> <span class="nf">reset_cursors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Tries to close all opened cursors.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">input_hashes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unique_cursors</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -895,7 +895,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">execution_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Row</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fetch a single result from the database.</span>
 
 <span class="sd">        Repeated calls using the same inputs to *any* of the fetch methods of this</span>
@@ -955,7 +955,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">execution_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Row</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fetch a limited number of results from the database.</span>
 
 <span class="sd">        Repeated calls using the same inputs to *any* of the fetch methods of this</span>
@@ -1021,7 +1021,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">execution_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Row</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fetch all results from the database.</span>
 
 <span class="sd">        Repeated calls using the same inputs to *any* of the fetch methods of this</span>
@@ -1078,7 +1078,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">execution_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Executes an operation on the database. This method is intended to be used</span>
 <span class="sd">        for operations that do not return data, such as INSERT, UPDATE, or DELETE.</span>
 
@@ -1124,7 +1124,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">seq_of_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Executes many operations on the database. This method is intended to be used</span>
 <span class="sd">        for operations that do not return data, such as INSERT, UPDATE, or DELETE.</span>
 
@@ -1170,7 +1170,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Closes connection and its cursors.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -1181,25 +1181,25 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
                 <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Start a connection upon entry.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Closes connection and its cursors upon exit.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;_connection&quot;</span><span class="p">,</span> <span class="s2">&quot;_unique_cursors&quot;</span><span class="p">}})</span>
         <span class="k">return</span> <span class="n">data</span>
 
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_unique_cursors</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_start_connection</span><span class="p">()</span>
@@ -1259,7 +1259,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Closes connection and its cursors.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
@@ -1340,7 +1340,7 @@ upon calling.</p>
 <span class="s1">            duration_minutes</span>
 <span class="s1">        FROM</span>
 <span class="s1">            bigquery-public-data.austin_bikeshare.bikeshare_trips</span>
-<span class="s1">        LIMIT </span><span class="si">%(limit)s</span><span class="s1"></span>
+<span class="s1">        LIMIT </span><span class="si">%(limit)s</span>
 <span class="s1">        );</span>
 <span class="s1">    &#39;&#39;&#39;</span>
     <span class="n">warehouse</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
@@ -1355,7 +1355,7 @@ upon calling.</p>
     <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">execution_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Executes an operation on the database. This method is intended to be used</span>
 <span class="sd">    for operations that do not return data, such as INSERT, UPDATE, or DELETE.</span>
 
@@ -1481,7 +1481,7 @@ upon calling.</p>
     <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">seq_of_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Executes many operations on the database. This method is intended to be used</span>
 <span class="sd">    for operations that do not return data, such as INSERT, UPDATE, or DELETE.</span>
 
@@ -1609,8 +1609,8 @@ until the reset_cursors method is called.</p>
     <span class="n">operation</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
 <span class="s1">        SELECT word, word_count</span>
 <span class="s1">        FROM `bigquery-public-data.samples.shakespeare`</span>
-<span class="s1">        WHERE corpus = </span><span class="si">%(corpus)s</span><span class="s1"></span>
-<span class="s1">        AND word_count &gt;= </span><span class="si">%(min_word_count)s</span><span class="s1"></span>
+<span class="s1">        WHERE corpus = </span><span class="si">%(corpus)s</span>
+<span class="s1">        AND word_count &gt;= </span><span class="si">%(min_word_count)s</span>
 <span class="s1">        ORDER BY word_count DESC</span>
 <span class="s1">        LIMIT 3;</span>
 <span class="s1">    &#39;&#39;&#39;</span>
@@ -1630,7 +1630,7 @@ until the reset_cursors method is called.</p>
     <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">execution_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Row</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch all results from the database.</span>
 
 <span class="sd">    Repeated calls using the same inputs to *any* of the fetch methods of this</span>
@@ -1770,8 +1770,8 @@ until the reset_cursors method is called.</p>
     <span class="n">operation</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
 <span class="s1">        SELECT word, word_count</span>
 <span class="s1">        FROM `bigquery-public-data.samples.shakespeare`</span>
-<span class="s1">        WHERE corpus = </span><span class="si">%(corpus)s</span><span class="s1"></span>
-<span class="s1">        AND word_count &gt;= </span><span class="si">%(min_word_count)s</span><span class="s1"></span>
+<span class="s1">        WHERE corpus = </span><span class="si">%(corpus)s</span>
+<span class="s1">        AND word_count &gt;= </span><span class="si">%(min_word_count)s</span>
 <span class="s1">        ORDER BY word_count DESC</span>
 <span class="s1">        LIMIT 6;</span>
 <span class="s1">    &#39;&#39;&#39;</span>
@@ -1798,7 +1798,7 @@ until the reset_cursors method is called.</p>
     <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">execution_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Row</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch a limited number of results from the database.</span>
 
 <span class="sd">    Repeated calls using the same inputs to *any* of the fetch methods of this</span>
@@ -1940,8 +1940,8 @@ until the reset_cursors method is called.</p>
     <span class="n">operation</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
 <span class="s1">        SELECT word, word_count</span>
 <span class="s1">        FROM `bigquery-public-data.samples.shakespeare`</span>
-<span class="s1">        WHERE corpus = </span><span class="si">%(corpus)s</span><span class="s1"></span>
-<span class="s1">        AND word_count &gt;= </span><span class="si">%(min_word_count)s</span><span class="s1"></span>
+<span class="s1">        WHERE corpus = </span><span class="si">%(corpus)s</span>
+<span class="s1">        AND word_count &gt;= </span><span class="si">%(min_word_count)s</span>
 <span class="s1">        ORDER BY word_count DESC</span>
 <span class="s1">        LIMIT 3;</span>
 <span class="s1">    &#39;&#39;&#39;</span>
@@ -1963,7 +1963,7 @@ until the reset_cursors method is called.</p>
     <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">execution_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Row</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch a single result from the database.</span>
 
 <span class="sd">    Repeated calls using the same inputs to *any* of the fetch methods of this</span>
@@ -2039,7 +2039,7 @@ until the reset_cursors method is called.</p>
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Connection</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the opened connection to BigQuery.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span>
@@ -2068,7 +2068,7 @@ until the reset_cursors method is called.</p>
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">reset_cursors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tries to close all opened cursors.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">input_hashes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unique_cursors</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -2237,7 +2237,7 @@ not provided, will default to the one inferred from your credentials.</p></td>
     <span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
     <span class="n">external_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExternalConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates table in BigQuery.</span>
 <span class="sd">    Args:</span>
 <span class="sd">        dataset: Name of a dataset in that the table will be created.</span>
@@ -2445,7 +2445,7 @@ not provided, will default to the one inferred from your credentials.</p></td>
     <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Insert records in a Google BigQuery table via the [streaming</span>
 <span class="sd">    API](https://cloud.google.com/bigquery/streaming-data-into-bigquery).</span>
 
@@ -2646,7 +2646,7 @@ not provided, will default to the one inferred from your credentials.</p></td>
     <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadJob</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run method for this Task.  Invoked by _calling_ this</span>
 <span class="sd">    Task within a Flow context, after initialization.</span>
 <span class="sd">    Args:</span>
@@ -2876,7 +2876,7 @@ not provided, will default to the one inferred from your credentials.</p></td>
     <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadJob</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loads file into BigQuery.</span>
 
 <span class="sd">    Args:</span>
@@ -3136,7 +3136,7 @@ matching the query criteria.</p></td>
     <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Row&quot;</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Runs a BigQuery query.</span>
 
 <span class="sd">    Args:</span>
@@ -3274,42 +3274,6 @@ matching the query criteria.</p></td>
       
         <footer class="md-footer">
   
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="../cloud_storage/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Cloud Storage" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Cloud Storage
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../secret_manager/" class="md-footer__link md-footer__link--next" aria-label="Next: Secret Manager" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Secret Manager
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
-  
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
@@ -3331,12 +3295,11 @@ matching the query criteria.</p></td>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.12658920.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cf534bf.min.js"></script>
       
-    
     
   </body>
 </html>

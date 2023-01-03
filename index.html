@@ -10,8 +10,12 @@
       
         <link rel="canonical" href="https://PrefectHQ.github.io/prefect-gcp/">
       
+      
+      
+        <link rel="next" href="credentials/">
+      
       <link rel="icon" href="img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.1">
     
     
       
@@ -19,15 +23,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.975780f9.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.3bd4f189.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.2505c338.min.css">
-        
-          
-          
-          <meta name="theme-color" content="#2094f3">
-        
       
       
 
@@ -686,10 +685,9 @@
                 
                   
 
-  <a href="https://github.com/PrefectHQ/prefect-gcp/edit/main/docs/README.md" title="Edit this page" class="md-content__button md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+  
+  
+
 
 
 <h1 id="prefect-gcp">prefect-gcp</h1>
@@ -718,19 +716,19 @@
 <p>These tasks are designed to work with Prefect 2.0. For more information about how to use Prefect, please refer to the <a href="https://orion-docs.prefect.io/">Prefect documentation</a>.</p>
 <h3 id="installation">Installation</h3>
 <p>To use <code>prefect-gcp</code> and Cloud Run:</p>
-<div class="highlight"><pre><span></span><code>pip install prefect-gcp
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>prefect-gcp
 </code></pre></div>
 <p>To use Cloud Storage:
-<div class="highlight"><pre><span></span><code>pip install <span class="s2">&quot;prefect-gcp[cloud_storage]&quot;</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;prefect-gcp[cloud_storage]&quot;</span>
 </code></pre></div></p>
 <p>To use BigQuery:</p>
-<div class="highlight"><pre><span></span><code>pip install <span class="s2">&quot;prefect-gcp[bigquery]&quot;</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;prefect-gcp[bigquery]&quot;</span>
 </code></pre></div>
 <p>To use Secret Manager:
-<div class="highlight"><pre><span></span><code>pip install <span class="s2">&quot;prefect-gcp[secret_manager]&quot;</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;prefect-gcp[secret_manager]&quot;</span>
 </code></pre></div></p>
 <p>To use Vertex AI:
-<div class="highlight"><pre><span></span><code>pip install <span class="s2">&quot;prefect-gcp[aiplatform]&quot;</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;prefect-gcp[aiplatform]&quot;</span>
 </code></pre></div></p>
 <p>A list of available blocks in <code>prefect-gcp</code> and their setup instructions can be found <a href="https://prefecthq.github.io/prefect-gcp/#blocks-catalog/">here</a>.</p>
 <h3 id="write-and-run-a-flow">Write and run a flow</h3>
@@ -775,7 +773,7 @@
 <span class="n">deployment</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 </code></pre></div>
 <p>Run the deployment either on the UI or through the CLI:
-<div class="highlight"><pre><span></span><code>prefect deployment run cloud-run-job-flow/cloud_run_job_deployment
+<div class="highlight"><pre><span></span><code>prefect<span class="w"> </span>deployment<span class="w"> </span>run<span class="w"> </span>cloud-run-job-flow/cloud_run_job_deployment
 </code></pre></div></p>
 <p>Visit <a href="https://docs.prefect.io/tutorials/deployments/">Prefect Deployments</a> for more information about deployments.</p>
 <h4 id="get-google-auth-credentials-from-gcpcredentials">Get Google auth credentials from GcpCredentials</h4>
@@ -831,7 +829,7 @@
 <span class="n">deployment</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 </code></pre></div>
 <p>Run the deployment either on the UI or through the CLI:
-<div class="highlight"><pre><span></span><code>prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
+<div class="highlight"><pre><span></span><code>prefect<span class="w"> </span>deployment<span class="w"> </span>run<span class="w"> </span>vertex-ai-job-flow/vertex-ai-job-deployment
 </code></pre></div></p>
 <p>Visit <a href="https://docs.prefect.io/tutorials/deployments/">Prefect Deployments</a> for more information about deployments.</p>
 <h4 id="use-with_options-to-customize-options-on-any-existing-task-or-flow">Use <code>with_options</code> to customize options on any existing task or flow</h4>
@@ -860,7 +858,7 @@
 <p>To register blocks in this module to
 <a href="https://orion-docs.prefect.io/ui/blocks/">view and edit them</a>
 on Prefect Cloud:
-<div class="highlight"><pre><span></span><code>prefect block register -m prefect_gcp
+<div class="highlight"><pre><span></span><code>prefect<span class="w"> </span>block<span class="w"> </span>register<span class="w"> </span>-m<span class="w"> </span>prefect_gcp
 </code></pre></div>
 Note, to use the <code>load</code> method on Blocks, you must already have a block document <a href="https://orion-docs.prefect.io/concepts/blocks/#saving-blocks">saved through code</a> or <a href="https://orion-docs.prefect.io/ui/blocks/">saved through the UI</a>.</p>
 <h3 id="credentials-module">Credentials Module</h3>
@@ -941,14 +939,14 @@ Note, to use the <code>load</code> method on Blocks, you must already have a blo
 <p>Feel free to ⭐️ or watch <a href="https://github.com/PrefectHQ/prefect-gcp"><code>prefect-gcp</code></a> for updates too!</p>
 <h2 id="development">Development</h2>
 <p>If you'd like to install a version of <code>prefect-gcp</code> for development, clone the repository and perform an editable install with <code>pip</code>:</p>
-<div class="highlight"><pre><span></span><code>git clone https://github.com/PrefectHQ/prefect-gcp.git
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/PrefectHQ/prefect-gcp.git
 
-<span class="nb">cd</span> prefect-gcp/
+<span class="nb">cd</span><span class="w"> </span>prefect-gcp/
 
-pip install -e <span class="s2">&quot;.[dev]&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
 
 <span class="c1"># Install linting pre-commit hooks</span>
-pre-commit install
+pre-commit<span class="w"> </span>install
 </code></pre></div>
 
 
@@ -965,27 +963,6 @@ pre-commit install
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-      
-        
-        <a href="credentials/" class="md-footer__link md-footer__link--next" aria-label="Next: Credentials" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Credentials
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -1008,12 +985,11 @@ pre-commit install
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.12658920.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      <script src="assets/javascripts/bundle.5cf534bf.min.js"></script>
       
-    
     
   </body>
 </html>
