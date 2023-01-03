@@ -80,7 +80,7 @@ try:
     from google.cloud.aiplatform_v1.types.job_state import JobState
     from google.cloud.aiplatform_v1.types.machine_resources import MachineSpec
     from google.protobuf.duration_pb2 import Duration
-except ImportError:
+except ModuleNotFoundError:
     pass
 
 from prefect_gcp.credentials import GcpCredentials

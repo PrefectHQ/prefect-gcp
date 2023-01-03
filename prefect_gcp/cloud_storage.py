@@ -7,8 +7,6 @@ from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
-from google.cloud.storage import Bucket
-from google.cloud.storage.blob import Blob
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import ObjectStorageBlock
 from prefect.filesystems import WritableDeploymentStorage, WritableFileSystem
@@ -20,6 +18,12 @@ from pydantic import Field, validator
 # cannot be type_checking only or else `fields = cls.schema()` raises
 # TypeError: issubclass() arg 1 must be a class
 from prefect_gcp.credentials import GcpCredentials
+
+try:
+    from google.cloud.storage import Bucket
+    from google.cloud.storage.blob import Blob
+except ModuleNotFoundError:
+    pass
 
 
 @task
