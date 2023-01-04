@@ -70,7 +70,7 @@ from prefect import flow
 from prefect_gcp.cloud_storage import GcsBucket
 
 @flow
-def donwload_flow():
+def download_flow():
     gcs_bucket = GcsBucket.load("my-bucket")
     path = gcs_bucket.download_object_to_path("my_folder/notes.txt", "notes.txt")
     return path
