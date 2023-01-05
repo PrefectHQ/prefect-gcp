@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from anyio import to_thread
-from google.cloud.exceptions import NotFound
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import DatabaseBlock
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
@@ -29,6 +28,7 @@ try:
     from google.cloud.bigquery.dbapi.connection import Connection
     from google.cloud.bigquery.dbapi.cursor import Cursor
     from google.cloud.bigquery.table import Row
+    from google.cloud.exceptions import NotFound
 except ModuleNotFoundError:
     pass
 
