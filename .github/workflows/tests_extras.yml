@@ -1,10 +1,10 @@
-name: Tests Extras Imports
+name: Extras
 
 on: [pull_request]
 
 jobs:
   run-extras-tests:
-    name: Tests extras imports individually
+    name: Run Imports
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -33,4 +33,4 @@ jobs:
         env:
           PREFECT_ORION_DATABASE_CONNECTION_URL: "sqlite+aiosqlite:///./orion-tests.db"
         run: |
-          run: python -c "import prefect_gcp.${{ matrix.extras }}; print(prefect_gcp)"
+          python -c "import prefect_gcp.${{ matrix.extras }}; print(prefect_gcp)"
