@@ -341,7 +341,7 @@ async def bigquery_load_cloud_storage(
     job_config: Optional[dict] = None,
     project: Optional[str] = None,
     location: str = "US",
-) -> LoadJob:
+) -> "LoadJob":
     """
     Run method for this Task.  Invoked by _calling_ this
     Task within a Flow context, after initialization.
@@ -431,7 +431,7 @@ async def bigquery_load_file(
     size: Optional[int] = None,
     project: Optional[str] = None,
     location: str = "US",
-) -> LoadJob:
+) -> "LoadJob":
     """
     Loads file into BigQuery.
 
