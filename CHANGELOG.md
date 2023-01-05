@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Wrapping type annotations in quotes to prevent them from loading if the object is not found - [#105](https://github.com/PrefectHQ/prefect-gcp/pull/105)
+
 ### Security
 
 ## 0.2.2
@@ -25,11 +27,11 @@ Released on January 3rd, 2022.
 
 ### Added
 
-- The `CloudRunJob` timeout parameter is now passed to the GCP TaskSpec. This allows Cloud Run tasks to run for longer than their default of 10min. [#99](https://github.com/PrefectHQ/prefect-gcp/pull/99)
+- The `CloudRunJob` timeout parameter is now passed to the GCP TaskSpec. This allows Cloud Run tasks to run for longer than their default of 10min - [#99](https://github.com/PrefectHQ/prefect-gcp/pull/99)
 
 ### Fixed
 
-- Improper imports on the top level. [#100](https://github.com/PrefectHQ/prefect-gcp/pull/100)
+- Improper imports on the top level - [#100](https://github.com/PrefectHQ/prefect-gcp/pull/100)
 
 ## 0.2.1
 
