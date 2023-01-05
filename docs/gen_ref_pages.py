@@ -8,37 +8,23 @@ from textwrap import dedent
 
 import mkdocs_gen_files
 from prefect.blocks.core import Block
+from prefect.utilities.dispatch import get_registry_for_type
 from prefect.utilities.importtools import to_qualified_name
 
 COLLECTION_NAME = "prefect_gcp"
 
 
-def inheritors(klass):
-    """
-    Finds all classes that inherit from a given class.
-    Taken from: https://stackoverflow.com/questions/5881873
-    """
-    subclasses = set()
-    work = [klass]
-    while work:
-        parent = work.pop()
-        for child in parent.__subclasses__():
-            if child not in subclasses:
-                subclasses.add(child)
-                work.append(child)
-    return subclasses
-
-
 def find_module_blocks():
-    blocks = sorted(inheritors(Block), key=to_qualified_name)
+    blocks = get_registry_for_type(Block)
+    collection_blocks = [
+        block
+        for block in blocks.values()
+        if to_qualified_name(block).startswith(COLLECTION_NAME)
+    ]
     module_blocks = {}
-    for block in blocks:
-        block_path = to_qualified_name(block)
-        if not block_path.startswith(COLLECTION_NAME):
-            continue
-        name_components = block_path.split(".")
-        module_nesting = tuple(name_components[1:-1])
-        block_name = name_components[-1]
+    for block in collection_blocks:
+        block_name = block.__name__
+        module_nesting = tuple(to_qualified_name(block).split(".")[1:-1])
         if module_nesting not in module_blocks:
             module_blocks[module_nesting] = []
         module_blocks[module_nesting].append(block_name)
@@ -49,7 +35,18 @@ def insert_blocks_catalog(generated_file):
     module_blocks = find_module_blocks()
     generated_file.write("## Blocks Catalog\n")
     generated_file.write(
-        "Below is a list of Blocks available for registration in `prefect-gcp`.\n\n"
+        dedent(
+            """
+            Below is a list of Blocks available for registration in `prefect-gcp`.
+
+            To register blocks in this module to
+            [view and edit them](https://orion-docs.prefect.io/ui/blocks/)
+            on Prefect Cloud:
+            ```bash
+            prefect block register -m prefect_gcp
+            ```
+            """
+        )
     )
     generated_file.write(
         "Note, to use the `load` method on Blocks, you must already have a block document "  # noqa
@@ -67,13 +64,6 @@ def insert_blocks_catalog(generated_file):
         generated_file.write(
             dedent(
                 f"""
-                To register blocks in this module to
-                [view and edit them](https://orion-docs.prefect.io/ui/blocks/)
-                on Prefect Cloud:
-                ```bash
-                prefect block register -m prefect_gcp.{module_path}
-                ```
-
                 To load the {block_name}:
                 ```python
                 from prefect import flow
@@ -85,7 +75,6 @@ def insert_blocks_catalog(generated_file):
 
                 my_flow()
                 ```
-                </details>
                 """
             )
         )

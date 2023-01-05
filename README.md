@@ -70,7 +70,7 @@ from prefect import flow
 from prefect_gcp.cloud_storage import GcsBucket
 
 @flow
-def donwload_flow():
+def download_flow():
     gcs_bucket = GcsBucket.load("my-bucket")
     path = gcs_bucket.download_object_to_path("my_folder/notes.txt", "notes.txt")
     return path
@@ -194,7 +194,7 @@ prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
 
 Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
 
-### Use `with_options` to customize options on any existing task or flow:
+#### Use `with_options` to customize options on any existing task or flow
 
 ```python
 from prefect import flow
@@ -214,10 +214,10 @@ custom_download = cloud_storage_download_blob_as_bytes.with_options(
     contents = custom_download("bucket", "blob", gcp_credentials)
     return contents()
  
- example_with_options_flow()
- ```
+example_with_options_flow()
+```
  
-+For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
+For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
 
 ## Resources
 
