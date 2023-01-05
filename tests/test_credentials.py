@@ -3,10 +3,12 @@ import os
 from pathlib import Path, PosixPath
 
 import pytest
+from google.cloud.aiplatform.gapic import JobServiceClient
 from prefect import flow, task
 from prefect.blocks.core import Block
 
 from prefect_gcp import GcpCredentials
+from prefect_gcp.credentials import ClientType
 
 
 def _get_first_file_in_root():
@@ -62,13 +64,28 @@ def test_get_credentials_from_service_account_file_error(oauth2_credentials):
         ).get_credentials_from_service_account()
 
 
+def test_able_to_load_credentials_from_json_string(service_account_info_json):
+    gcp_credentials = GcpCredentials(service_account_info=service_account_info_json)
+    assert gcp_credentials.service_account_info.get_secret_value() == {
+        "project_id": "my_project",
+        "token_uri": "my-token-uri",
+        "client_email": "my-client-email",
+        "private_key": "my-private-key",
+    }
+
+
+def test_raise_on_invalid_json_credentials():
+    with pytest.raises(ValueError):
+        GcpCredentials(service_account_info="not json")
+
+
 def test_get_credentials_from_service_account_both_error(
-    service_account_info_dict, oauth2_credentials
+    service_account_info, oauth2_credentials
 ):
     with pytest.raises(ValueError):
         GcpCredentials(
             service_account_file=SERVICE_ACCOUNT_FILES[0],
-            service_account_info=service_account_info_dict,
+            service_account_info=service_account_info,
         ).get_credentials_from_service_account()
 
 
@@ -119,6 +136,20 @@ def test_get_cloud_storage_client(
     test_flow()
 
 
+def test_get_job_service_client(service_account_info, oauth2_credentials):
+    @flow
+    def test_flow():
+        project = "test_project"
+        credentials = GcpCredentials(
+            service_account_info=service_account_info,
+            project=project,
+        )
+        client = credentials.get_job_service_client(client_options={})
+        assert isinstance(client, JobServiceClient)
+
+    test_flow()
+
+
 class MockTargetConfigs(Block):
     credentials: GcpCredentials
 
@@ -131,6 +162,11 @@ class MockTargetConfigs(Block):
         configs = self.credentials.dict()
         for key in Block().dict():
             configs.pop(key, None)
+        for key in configs.copy():
+            if key.startswith("_"):
+                configs.pop(key)
+            elif hasattr(configs[key], "get_secret_value"):
+                configs[key] = configs[key].get_secret_value()
         return configs
 
 
@@ -178,3 +214,35 @@ def test_credentials_is_able_to_serialize_back(monkeypatch, service_account_info
         }
     }
     assert test_flow() == expected
+
+
+async def test_get_access_token_async(gcp_credentials):
+    print(gcp_credentials.get_credentials_from_service_account().token)
+    token = await gcp_credentials.get_access_token()
+    assert token == "my-token"
+
+
+def test_get_access_token_sync_compatible(gcp_credentials):
+    token = gcp_credentials.get_access_token()
+    assert token == "my-token"
+
+
+@pytest.mark.parametrize("input_type", [None, str])
+@pytest.mark.parametrize(
+    "client_type",
+    [
+        ClientType.BIGQUERY,
+        ClientType.CLOUD_STORAGE,
+        ClientType.AIPLATFORM,
+        ClientType.SECRET_MANAGER,
+    ],
+)
+def test_get_client(gcp_credentials, input_type, client_type):
+    if input_type is not None:
+        client_type = input_type(client_type.value)
+    assert gcp_credentials.get_client(client_type=client_type)
+
+
+def test_get_client_error(gcp_credentials):
+    with pytest.raises(ValueError, match="'cool' is not a valid ClientType"):
+        assert gcp_credentials.get_client(client_type="cool")

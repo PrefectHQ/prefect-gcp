@@ -1,13 +1,18 @@
 """Module handling GCP credentials."""
 
 import functools
+import json
+from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
-from pydantic import Json, root_validator, validator
+from prefect.blocks.abstract import CredentialsBlock
+from prefect.blocks.fields import SecretDict
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
+from pydantic import Field, root_validator, validator
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -24,8 +29,10 @@ try:
 except ModuleNotFoundError:
     pass
 
-from prefect.blocks.core import Block
-from prefect.utilities.asyncutils import run_sync_in_worker_thread
+try:
+    from google.cloud.aiplatform.gapic import JobServiceClient
+except ModuleNotFoundError:
+    pass
 
 
 def _raise_help_msg(key: str):
@@ -59,7 +66,15 @@ def _raise_help_msg(key: str):
     return outer
 
 
-class GcpCredentials(Block):
+class ClientType(Enum):
+
+    CLOUD_STORAGE = "cloud_storage"
+    BIGQUERY = "bigquery"
+    SECRET_MANAGER = "secret_manager"
+    AIPLATFORM = "job_service"  # vertex ai
+
+
+class GcpCredentials(CredentialsBlock):
     """
     Block used to manage authentication with GCP. GCP authentication is
     handled via the `google.oauth2` module or through the CLI.
@@ -71,7 +86,7 @@ class GcpCredentials(Block):
 
     Attributes:
         service_account_file: Path to the service account JSON keyfile.
-        service_account_info: The contents of the keyfile as a dict or JSON string.
+        service_account_info: The contents of the keyfile as a dict.
 
     Example:
         Load GCP credentials stored in a `GCP Credentials` Block:
@@ -84,9 +99,17 @@ class GcpCredentials(Block):
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "GCP Credentials"
 
-    service_account_file: Optional[Path] = None
-    service_account_info: Optional[Union[Dict[str, str], Json]] = None
-    project: Optional[str] = None
+    service_account_file: Optional[Path] = Field(
+        default=None, description="Path to the service account JSON keyfile."
+    )
+    service_account_info: Optional[SecretDict] = Field(
+        default=None, description="The contents of the keyfile as a dict."
+    )
+    project: Optional[str] = Field(
+        default=None, description="The GCP project to use for the client."
+    )
+
+    _service_account_email: Optional[str] = None
 
     @root_validator
     def _provide_one_service_account_source(cls, values):
@@ -115,6 +138,21 @@ class GcpCredentials(Block):
             raise ValueError("The provided path to the service account is invalid")
         return service_account_file
 
+    @validator("service_account_info", pre=True)
+    def _convert_json_string_json_service_account_info(cls, value):
+        """
+        Converts service account info provided as a json formatted string
+        to a dictionary
+        """
+        if isinstance(value, str):
+            try:
+                service_account_info = json.loads(value)
+                return service_account_info
+            except Exception:
+                raise ValueError("Unable to decode service_account_info")
+        else:
+            return value
+
     def block_initialization(self):
         credentials = self.get_credentials_from_service_account()
         if self.project is None:
@@ -124,6 +162,9 @@ class GcpCredentials(Block):
                 credentials_project = credentials.quota_project_id
             self.project = credentials_project
 
+        if hasattr(credentials, "service_account_email"):
+            self._service_account_email = credentials.service_account_email
+
     def get_credentials_from_service_account(self) -> Credentials:
         """
         Helper method to serialize credentials by using either
@@ -131,7 +172,7 @@ class GcpCredentials(Block):
         """
         if self.service_account_info:
             credentials = Credentials.from_service_account_info(
-                self.service_account_info,
+                self.service_account_info.get_secret_value(),
                 scopes=["https://www.googleapis.com/auth/cloud-platform"],
             )
         elif self.service_account_file:
@@ -143,6 +184,7 @@ class GcpCredentials(Block):
             credentials, _ = google.auth.default()
         return credentials
 
+    @sync_compatible
     async def get_access_token(self):
         """
         See: https://stackoverflow.com/a/69107745
@@ -152,6 +194,31 @@ class GcpCredentials(Block):
         credentials = self.get_credentials_from_service_account()
         await run_sync_in_worker_thread(credentials.refresh, request)
         return credentials.token
+
+    def get_client(
+        self,
+        client_type: Union[str, ClientType],
+        **get_client_kwargs: Dict[str, Any],
+    ) -> Any:
+        """
+        Helper method to dynamically get a client type.
+
+        Args:
+            client_type: The name of the client to get.
+            **get_client_kwargs: Additional keyword arguments to pass to the
+                `get_*_client` method.
+
+        Returns:
+            An authenticated client.
+
+        Raises:
+            ValueError: if the client is not supported.
+        """
+        if isinstance(client_type, str):
+            client_type = ClientType(client_type)
+        client_type = client_type.value
+        get_client_method = getattr(self, f"get_{client_type}_client")
+        return get_client_method(**get_client_kwargs)
 
     @_raise_help_msg("cloud_storage")
     def get_cloud_storage_client(
@@ -320,7 +387,7 @@ class GcpCredentials(Block):
                     "token_uri": "token_uri",
                     "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
                     "client_x509_cert_url": "client_x509_cert_url"
-                })
+                }
                 client = GcpCredentials(
                     service_account_info=service_account_info
                 ).get_secret_manager_client()
@@ -332,3 +399,61 @@ class GcpCredentials(Block):
         # doesn't accept project; must pass in project in tasks
         secret_manager_client = SecretManagerServiceClient(credentials=credentials)
         return secret_manager_client
+
+    @_raise_help_msg("aiplatform")
+    def get_job_service_client(
+        self, client_options: Dict[str, Any] = None
+    ) -> "JobServiceClient":
+        """
+        Gets an authenticated Job Service client for Vertex AI.
+
+        Returns:
+            An authenticated Job Service client.
+
+        Examples:
+            Gets a GCP Job Service client from a path.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_file = "~/.secrets/prefect-service-account.json"
+                client = GcpCredentials(
+                    service_account_file=service_account_file
+                ).get_job_service_client()
+
+            example_get_client_flow()
+            ```
+
+            Gets a GCP Cloud Storage client from a dictionary.
+            ```python
+            from prefect import flow
+            from prefect_gcp.credentials import GcpCredentials
+
+            @flow()
+            def example_get_client_flow():
+                service_account_info = {
+                    "type": "service_account",
+                    "project_id": "project_id",
+                    "private_key_id": "private_key_id",
+                    "private_key": "private_key",
+                    "client_email": "client_email",
+                    "client_id": "client_id",
+                    "auth_uri": "auth_uri",
+                    "token_uri": "token_uri",
+                    "auth_provider_x509_cert_url": "auth_provider_x509_cert_url",
+                    "client_x509_cert_url": "client_x509_cert_url"
+                }
+                client = GcpCredentials(
+                    service_account_info=service_account_info
+                ).get_job_service_client()
+
+            example_get_client_flow()
+            ```
+        """
+        credentials = self.get_credentials_from_service_account()
+        job_service_client = JobServiceClient(
+            credentials=credentials, client_options=client_options
+        )
+        return job_service_client

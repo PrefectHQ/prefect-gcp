@@ -3,6 +3,8 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from google.api_core.exceptions import NotFound as ApiCoreNotFound
+from google.cloud.aiplatform_v1.types.job_state import JobState
 from google.cloud.exceptions import NotFound
 from prefect.testing.utilities import prefect_test_harness
 
@@ -43,6 +45,9 @@ class Blob:
     def __init__(self, name):
         self.name = name
 
+    def download_to_filename(self, filename, **kwargs):
+        Path(filename).write_text("abcdef")
+
 
 class CloudStorageClient:
     def __init__(self, credentials=None, project=None):
@@ -55,10 +60,14 @@ class CloudStorageClient:
     def get_bucket(self, bucket):
         blob_obj = MagicMock()
         blob_obj.download_as_bytes.return_value = b"bytes"
-        blob_obj.download_to_filename.side_effect = lambda path, **kwargs: Path(
-            path
+        blob_obj.download_to_file.side_effect = (
+            lambda file_obj, **kwargs: file_obj.write(b"abcdef")
+        )
+        blob_obj.download_to_filename.side_effect = lambda filename, **kwargs: Path(
+            filename
         ).write_text("abcdef")
         bucket_obj = MagicMock(bucket=bucket)
+        bucket_obj.name = "my-bucket"
         bucket_obj.blob.side_effect = lambda blob, **kwds: blob_obj
         return bucket_obj
 
@@ -66,7 +75,7 @@ class CloudStorageClient:
         blob_obj = Blob(name="blob.txt")
         blob_directory = Blob(name="directory/")
         nested_blob_obj = Blob(name="base_folder/nested_blob.txt")
-        double_nested_blob_obj = Blob(name="base_folder/base_folder/nested_blob.txt")
+        double_nested_blob_obj = Blob(name="base_folder/sub_folder/nested_blob.txt")
         blobs = [blob_obj, blob_directory, nested_blob_obj, double_nested_blob_obj]
         for blob in blobs:
             if prefix and not blob.name.startswith(prefix):
@@ -86,10 +95,17 @@ class LoadJob:
         self._completion_lock = "completion_lock"
 
 
-class BigQueryClient:
-    def __init__(self, credentials=None, project=None):
+class BigQueryClient(MagicMock):
+    def __init__(self, credentials=None, project=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.credentials = credentials
         self.project = project
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        pass
 
     def query(self, query, **kwargs):
         response = MagicMock()
@@ -138,25 +154,37 @@ class SecretManagerClient:
     def __init__(self, credentials=None, project=None):
         self.credentials = credentials
         self.project = project
+        self._secrets = {}
 
-    def create_secret(self, parent=None, secret_id=None, **kwds):
+    def create_secret(self, request=None, parent=None, secret_id=None, **kwds):
         response = MagicMock()
-        response.name = secret_id
+        if request:
+            parent = request.parent
+            secret_id = request.secret_id
+        name = f"{parent}/secrets/{secret_id}"
+        response.name = name
+        self._secrets[name] = None
         return response
 
-    def add_secret_version(self, parent, payload, **kwds):
+    def add_secret_version(self, request=None, parent=None, payload=None, **kwds):
         response = MagicMock()
-        response.name = payload["data"]
+        if request:
+            parent = request.parent
+
+        if parent not in self._secrets:
+            raise ApiCoreNotFound(f"{parent!r} does not exist.")
+
+        response.name = parent
         return response
 
-    def access_secret_version(self, name, **kwds):
+    def access_secret_version(self, request=None, name=None, **kwds):
         response = MagicMock()
         payload = MagicMock()
-        payload.data = f"{name}".encode()
+        payload.data = "secret_data".encode("utf-8")
         response.payload = payload
         return response
 
-    def delete_secret(self, name, **kwds):
+    def delete_secret(self, request=None, name=None, **kwds):
         return name
 
     def destroy_secret_version(self, name, **kwds):
@@ -164,20 +192,66 @@ class SecretManagerClient:
 
 
 @pytest.fixture
-def gcp_credentials(monkeypatch, google_auth):
+def mock_credentials(monkeypatch):
+    mock_credentials = MagicMock(name="MockGoogleCredentials")
+    mock_authenticated_credentials = MagicMock(token="my-token")
+    mock_credentials.from_service_account_info = mock_authenticated_credentials
+    mock_credentials.from_service_account_file = mock_authenticated_credentials
+    monkeypatch.setattr(
+        "prefect_gcp.credentials.Credentials",  # noqa
+        mock_credentials,
+    )
+    mock_auth = MagicMock()
+    mock_auth.default.return_value = (mock_authenticated_credentials, "project")
+    monkeypatch.setattr(
+        "prefect_gcp.credentials.google.auth",  # noqa
+        mock_auth,
+    )
+    return mock_credentials
+
+
+@pytest.fixture
+def job_service_client():
+    job_service_client_mock = MagicMock()
+    custom_run = MagicMock(name="mock_name")
+    job_service_client_mock.create_custom_job.return_value = custom_run
+
+    error = MagicMock(message="")
+    custom_run_final = MagicMock(
+        name="mock_name",
+        state=JobState.JOB_STATE_SUCCEEDED,
+        error=error,
+        display_name="mock_display_name",
+    )
+    job_service_client_mock.get_custom_job.return_value = custom_run_final
+    return job_service_client_mock
+
+
+@pytest.fixture
+def gcp_credentials(monkeypatch, google_auth, mock_credentials, job_service_client):
     gcp_credentials_mock = GcpCredentials(project="gcp_credentials_project")
+    gcp_credentials_mock._service_account_email = "my_service_account_email"
+
+    gcp_credentials_mock.cloud_storage_client = CloudStorageClient()
+    gcp_credentials_mock.secret_manager_client = SecretManagerClient()
+    gcp_credentials_mock.job_service_client = job_service_client
+    gcp_credentials_mock.job_service_client.__enter__.return_value = job_service_client
+
     gcp_credentials_mock.get_cloud_storage_client = (
-        lambda *args, **kwargs: CloudStorageClient()
+        lambda *args, **kwargs: gcp_credentials_mock.cloud_storage_client
     )
     gcp_credentials_mock.get_bigquery_client = lambda *args, **kwargs: BigQueryClient()
     gcp_credentials_mock.get_secret_manager_client = (
-        lambda *args, **kwargs: SecretManagerClient()
+        lambda *args, **kwargs: gcp_credentials_mock.secret_manager_client
+    )
+    gcp_credentials_mock.get_job_service_client = (
+        lambda *args, **kwargs: gcp_credentials_mock.job_service_client
     )
     return gcp_credentials_mock
 
 
 @pytest.fixture()
-def service_account_info_dict(monkeypatch):
+def service_account_info(monkeypatch):
     monkeypatch.setattr(
         "google.auth.crypt._cryptography_rsa.serialization.load_pem_private_key",
         lambda *args, **kwargs: args[0],
@@ -192,11 +266,17 @@ def service_account_info_dict(monkeypatch):
 
 
 @pytest.fixture()
-def service_account_info_json(service_account_info_dict):
-    _service_account_info = json.dumps(service_account_info_dict)
+def service_account_info_json(monkeypatch):
+    monkeypatch.setattr(
+        "google.auth.crypt._cryptography_rsa.serialization.load_pem_private_key",
+        lambda *args, **kwargs: args[0],
+    )
+    _service_account_info = json.dumps(
+        {
+            "project_id": "my_project",
+            "token_uri": "my-token-uri",
+            "client_email": "my-client-email",
+            "private_key": "my-private-key",
+        }
+    )
     return _service_account_info
-
-
-@pytest.fixture(params=["service_account_info_dict", "service_account_info_json"])
-def service_account_info(request):
-    return request.getfixturevalue(request.param)

@@ -229,7 +229,7 @@ class CloudRunJob(Infrastructure):
         description=(
             "The image to use for a new Cloud Run Job. This value must "
             "refer to an image within either Google Container Registry "
-            "or Google Artifact Registry, like `gcr.io/<project_name>/<repo>/`"
+            "or Google Artifact Registry, like `gcr.io/<project_name>/<repo>/`."
         ),
     )
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
@@ -277,7 +277,9 @@ class CloudRunJob(Infrastructure):
         description="Keep the completed Cloud Run Job on Google Cloud Platform.",
     )
     timeout: Optional[int] = Field(
-        default=None,
+        default=600,
+        gt=0,
+        le=3600,
         title="Job Timeout",
         description=(
             "The length of time that Prefect will wait for a Cloud Run Job to complete "
@@ -570,6 +572,9 @@ class CloudRunJob(Infrastructure):
         # env and command here
         containers = [self._add_container_settings({"image": self.image})]
 
+        # apply this timeout to each task
+        timeout_seconds = str(self.timeout)
+
         body = {
             "apiVersion": "run.googleapis.com/v1",
             "kind": "Job",
@@ -578,7 +583,10 @@ class CloudRunJob(Infrastructure):
                 "template": {  # ExecutionTemplateSpec
                     "spec": {  # ExecutionSpec
                         "template": {  # TaskTemplateSpec
-                            "spec": {"containers": containers}  # TaskSpec
+                            "spec": {
+                                "containers": containers,
+                                "timeoutSeconds": timeout_seconds,
+                            }  # TaskSpec
                         }
                     },
                 }

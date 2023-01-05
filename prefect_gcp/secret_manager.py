@@ -1,11 +1,29 @@
 from functools import partial
-from typing import TYPE_CHECKING, Optional, Union
+from typing import Optional, Union
 
 from anyio import to_thread
+from google.api_core.exceptions import NotFound
 from prefect import get_run_logger, task
+from prefect.blocks.abstract import SecretBlock
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
+from pydantic import Field
 
-if TYPE_CHECKING:
-    from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.credentials import GcpCredentials
+
+try:
+    from google.cloud.secretmanager_v1.types.resources import (
+        Replication,
+        Secret,
+        SecretPayload,
+    )
+    from google.cloud.secretmanager_v1.types.service import (
+        AccessSecretVersionRequest,
+        AddSecretVersionRequest,
+        CreateSecretRequest,
+        DeleteSecretRequest,
+    )
+except ModuleNotFoundError:
+    pass
 
 
 @task
@@ -270,3 +288,107 @@ async def delete_secret_version(
     partial_destroy = partial(client.destroy_secret_version, name=name, timeout=timeout)
     await to_thread.run_sync(partial_destroy)
     return name
+
+
+class GcpSecret(SecretBlock):
+    """
+    Manages a secret in Google Cloud Platform's Secret Manager.
+
+    Attributes:
+        gcp_credentials: Credentials to use for authentication with GCP.
+        secret_name: Name of the secret to manage.
+        secret_version: Version number of the secret to use, or "latest".
+    """
+
+    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+
+    gcp_credentials: GcpCredentials
+    secret_name: str = Field(default=..., description="Name of the secret to manage.")
+    secret_version: str = Field(
+        default="latest", description="Version number of the secret to use."
+    )
+
+    @sync_compatible
+    async def read_secret(self) -> bytes:
+        """
+        Reads the secret data from the secret storage service.
+
+        Returns:
+            The secret data as bytes.
+        """
+        client = self.gcp_credentials.get_secret_manager_client()
+        project = self.gcp_credentials.project
+        name = f"projects/{project}/secrets/{self.secret_name}/versions/{self.secret_version}"  # noqa
+        request = AccessSecretVersionRequest(name=name)
+
+        self.logger.debug(f"Preparing to read secret data from {name!r}.")
+        response = await run_sync_in_worker_thread(
+            client.access_secret_version, request=request
+        )
+        secret = response.payload.data.decode("UTF-8")
+        self.logger.info(f"The secret {name!r} data was successfully read.")
+        return secret
+
+    @sync_compatible
+    async def write_secret(self, secret_data: bytes) -> str:
+        """
+        Writes the secret data to the secret storage service; if it doesn't exist
+        it will be created.
+
+        Args:
+            secret_data: The secret to write.
+
+        Returns:
+            The path that the secret was written to.
+        """
+        client = self.gcp_credentials.get_secret_manager_client()
+        project = self.gcp_credentials.project
+        parent = f"projects/{project}/secrets/{self.secret_name}"
+        payload = SecretPayload(data=secret_data)
+        add_request = AddSecretVersionRequest(parent=parent, payload=payload)
+
+        self.logger.debug(f"Preparing to write secret data to {parent!r}.")
+        try:
+            response = await run_sync_in_worker_thread(
+                client.add_secret_version, request=add_request
+            )
+        except NotFound:
+            self.logger.info(
+                f"The secret {parent!r} does not exist yet, creating it now."
+            )
+            create_parent = f"projects/{project}"
+            secret_id = self.secret_name
+            secret = Secret(replication=Replication(automatic=Replication.Automatic()))
+            create_request = CreateSecretRequest(
+                parent=create_parent, secret_id=secret_id, secret=secret
+            )
+            await run_sync_in_worker_thread(
+                client.create_secret, request=create_request
+            )
+
+            self.logger.debug(f"Preparing to write secret data to {parent!r} again.")
+            response = await run_sync_in_worker_thread(
+                client.add_secret_version, request=add_request
+            )
+
+        self.logger.info(f"The secret data was written successfully to {parent!r}.")
+        return response.name
+
+    @sync_compatible
+    async def delete_secret(self) -> str:
+        """
+        Deletes the secret from the secret storage service.
+
+        Returns:
+            The path that the secret was deleted from.
+        """
+        client = self.gcp_credentials.get_secret_manager_client()
+        project = self.gcp_credentials.project
+
+        name = f"projects/{project}/secrets/{self.secret_name}"
+        request = DeleteSecretRequest(name=name)
+
+        self.logger.debug(f"Preparing to delete the secret {name!r}.")
+        await run_sync_in_worker_thread(client.delete_secret, request=request)
+        self.logger.info(f"The secret {name!r} was successfully deleted.")
+        return name

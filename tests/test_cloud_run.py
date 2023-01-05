@@ -32,17 +32,6 @@ jobs_return_value = {
 
 
 @pytest.fixture
-def mock_credentials(monkeypatch):
-    mock_credentials = Mock(name="Credentials")
-    monkeypatch.setattr(
-        "prefect_gcp.cloud_run.GcpCredentials.get_credentials_from_service_account",  # noqa
-        mock_credentials,
-    )
-
-    return mock_credentials
-
-
-@pytest.fixture
 def mock_client(monkeypatch, mock_credentials):
     m = Mock(name="MockClient")
 
@@ -504,6 +493,14 @@ class TestCloudRunJobContainerSettings:
             "limits": {"cpu": expected_cpu, "memory": str(memory) + memory_unit},
             "requests": {"cpu": expected_cpu, "memory": str(memory) + memory_unit},
         }
+
+    def test_timeout_added_correctly(self, cloud_run_job):
+        timeout = 10
+        cloud_run_job.timeout = timeout
+        result = cloud_run_job._jobs_body()
+        assert result["spec"]["template"]["spec"]["template"]["spec"][
+            "timeoutSeconds"
+        ] == str(timeout)
 
     def test_memory_validation_succeeds(self, gcp_credentials):
         """Make sure that memory validation doesn't fail when valid params provided."""
