@@ -46,6 +46,7 @@ from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
+from prefect.blocks.fields import SecretDict
 from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
@@ -289,6 +290,9 @@ class CloudRunJob(Infrastructure):
     # For private use
     _job_name: str = None
     _execution: Optional[Execution] = None
+
+    class Config:
+        json_encoders = {SecretDict: lambda d: d.get_secret_value()}
 
     @property
     def job_name(self):
