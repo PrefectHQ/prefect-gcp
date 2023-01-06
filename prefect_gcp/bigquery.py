@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from anyio import to_thread
-from google.cloud.exceptions import NotFound
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import DatabaseBlock
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
@@ -29,6 +28,7 @@ try:
     from google.cloud.bigquery.dbapi.connection import Connection
     from google.cloud.bigquery.dbapi.cursor import Cursor
     from google.cloud.bigquery.table import Row
+    from google.cloud.exceptions import NotFound
 except ModuleNotFoundError:
     pass
 
@@ -167,12 +167,12 @@ async def bigquery_create_table(
     dataset: str,
     table: str,
     gcp_credentials: GcpCredentials,
-    schema: Optional[List[SchemaField]] = None,
+    schema: Optional[List["SchemaField"]] = None,
     clustering_fields: List[str] = None,
-    time_partitioning: TimePartitioning = None,
+    time_partitioning: "TimePartitioning" = None,
     project: Optional[str] = None,
     location: str = "US",
-    external_config: Optional[ExternalConfig] = None,
+    external_config: Optional["ExternalConfig"] = None,
 ) -> str:
     """
     Creates table in BigQuery.
@@ -337,11 +337,11 @@ async def bigquery_load_cloud_storage(
     table: str,
     uri: str,
     gcp_credentials: GcpCredentials,
-    schema: Optional[List[SchemaField]] = None,
+    schema: Optional[List["SchemaField"]] = None,
     job_config: Optional[dict] = None,
     project: Optional[str] = None,
     location: str = "US",
-) -> LoadJob:
+) -> "LoadJob":
     """
     Run method for this Task.  Invoked by _calling_ this
     Task within a Flow context, after initialization.
@@ -425,13 +425,13 @@ async def bigquery_load_file(
     table: str,
     path: Union[str, Path],
     gcp_credentials: GcpCredentials,
-    schema: Optional[List[SchemaField]] = None,
+    schema: Optional[List["SchemaField"]] = None,
     job_config: Optional[dict] = None,
     rewind: bool = False,
     size: Optional[int] = None,
     project: Optional[str] = None,
     location: str = "US",
-) -> LoadJob:
+) -> "LoadJob":
     """
     Loads file into BigQuery.
 
@@ -553,8 +553,8 @@ class BigQueryWarehouse(DatabaseBlock):
         default=1, description="The number of rows to fetch at a time."
     )
 
-    _connection: Optional[Connection] = None
-    _unique_cursors: Dict[str, Cursor] = None
+    _connection: Optional["Connection"] = None
+    _unique_cursors: Dict[str, "Cursor"] = None
 
     def _start_connection(self):
         """
@@ -571,13 +571,13 @@ class BigQueryWarehouse(DatabaseBlock):
         if self._unique_cursors is None:
             self._unique_cursors = {}
 
-    def get_connection(self) -> Connection:
+    def get_connection(self) -> "Connection":
         """
         Get the opened connection to BigQuery.
         """
         return self._connection
 
-    def _get_cursor(self, inputs: Dict[str, Any]) -> Tuple[bool, Cursor]:
+    def _get_cursor(self, inputs: Dict[str, Any]) -> Tuple[bool, "Cursor"]:
         """
         Get a BigQuery cursor.
 
@@ -622,7 +622,7 @@ class BigQueryWarehouse(DatabaseBlock):
         operation: str,
         parameters: Optional[Dict[str, Any]] = None,
         **execution_options: Dict[str, Any],
-    ) -> Row:
+    ) -> "Row":
         """
         Fetch a single result from the database.
 
@@ -682,7 +682,7 @@ class BigQueryWarehouse(DatabaseBlock):
         parameters: Optional[Dict[str, Any]] = None,
         size: Optional[int] = None,
         **execution_options: Dict[str, Any],
-    ) -> List[Row]:
+    ) -> List["Row"]:
         """
         Fetch a limited number of results from the database.
 
@@ -748,7 +748,7 @@ class BigQueryWarehouse(DatabaseBlock):
         operation: str,
         parameters: Optional[Dict[str, Any]] = None,
         **execution_options: Dict[str, Any],
-    ) -> List[Row]:
+    ) -> List["Row"]:
         """
         Fetch all results from the database.
 
