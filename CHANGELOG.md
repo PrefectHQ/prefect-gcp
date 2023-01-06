@@ -17,9 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Wrapping type annotations in quotes to prevent them from loading if the object is not found - [#105](https://github.com/PrefectHQ/prefect-gcp/pull/105)
-
 ### Security
+
+## 0.2.3
+
+Released on January 5th, 2022.
+
+### Fixed
+
+- Wrapping type annotations in quotes to prevent them from loading if the object is not found - [#105](https://github.com/PrefectHQ/prefect-gcp/pull/105)
 
 ## 0.2.2
 
