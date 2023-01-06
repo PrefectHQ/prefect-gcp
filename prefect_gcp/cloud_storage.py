@@ -711,7 +711,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         return bucket
 
     @sync_compatible
-    async def list_blobs(self, folder: str = "") -> List[Blob]:
+    async def list_blobs(self, folder: str = "") -> List["Blob"]:
         """
         Lists all blobs in the bucket that are in a folder.
         Folders are not included in the output.

@@ -1,0 +1,36 @@
+name: Extras
+
+on: [pull_request]
+
+jobs:
+  run-extras-tests:
+    name: Run Imports
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        extras:
+          - "cloud_storage"
+          - "bigquery"
+          - "secret_manager"
+          - "aiplatform"
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade --upgrade-strategy eager -e ".[${{ matrix.extras }}]"
+
+      - name: Run extras imports
+        env:
+          PREFECT_ORION_DATABASE_CONNECTION_URL: "sqlite+aiosqlite:///./orion-tests.db"
+        run: |
+          python -c "import prefect_gcp.${{ matrix.extras }}; print(prefect_gcp)"
