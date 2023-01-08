@@ -481,7 +481,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
     Example:
         Load stored GCP Cloud Storage Bucket:
         ```python
-        from prefect_gcp.cloud_storage import GcsBucketBucket
+        from prefect_gcp.cloud_storage import GcsBucket
         gcp_cloud_storage_bucket_block = GcsBucket.load("BLOCK_NAME")
         ```
     """
