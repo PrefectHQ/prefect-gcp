@@ -82,7 +82,7 @@ class GcpCredentials(CredentialsBlock):
     are not specified, the client will try to detect the service account info stored
     in the env from the command, `gcloud auth application-default login`. Refer to the
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
-    for more info about the possible credential configurations and to the Application 
+    for more info about the possible credential configurations and to the Application
     Default Credentials described in the following
     [GCP docs](https://cloud.google.com/docs/authentication/application-default-credentials).
 
