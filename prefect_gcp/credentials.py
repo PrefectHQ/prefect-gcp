@@ -83,7 +83,7 @@ class GcpCredentials(CredentialsBlock):
     in the env from the command, `gcloud auth application-default login`. Refer to the
     [Authentication docs](https://cloud.google.com/docs/authentication/production)
     for more info about the possible credential configurations and to the Application 
-    Default Credentials described in the following 
+    Default Credentials described in the following
     [GCP docs](https://cloud.google.com/docs/authentication/application-default-credentials).
 
     Attributes:
