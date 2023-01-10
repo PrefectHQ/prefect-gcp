@@ -76,13 +76,13 @@ class ClientType(Enum):
 
 class GcpCredentials(CredentialsBlock):
     """
-    Block used to manage authentication with GCP. GCP authentication is
+    Block used to manage authentication with GCP. Google authentication is
     handled via the `google.oauth2` module or through the CLI.
     Specify either one of service `account_file` or `service_account_info`; if both
-    are not specified, the client will try to detect the service account info stored
-    in the env from the command, `gcloud auth application-default login`. Refer to the
-    [Authentication docs](https://cloud.google.com/docs/authentication/production)
-    for more info about the possible credential configurations.
+    are not specified, the client will try to detect the credentials following Google's
+    [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials).
+    See Google's [Authentication documentation](https://cloud.google.com/docs/authentication#service-accounts)
+    for details on inference and recommended authentication patterns.
 
     Attributes:
         service_account_file: Path to the service account JSON keyfile.
@@ -94,7 +94,7 @@ class GcpCredentials(CredentialsBlock):
         from prefect_gcp import GcpCredentials
         gcp_credentials_block = GcpCredentials.load("BLOCK_NAME")
         ```
-    """
+    """  # noqa
 
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "GCP Credentials"
