@@ -106,8 +106,9 @@ class VertexAICustomTrainingJob(Infrastructure):
     gcp_credentials: GcpCredentials = Field(
         default_factory=GcpCredentials,
         description=(
-            "GCP credentials to use when running the configured "
-            "Vertex AI training job."
+            "GCP credentials to use when running the configured Vertex AI custom "
+            "training job. If not provided, credentials will be inferred from the "
+            "environment. See `GcpCredentials` for details."
         ),
     )
     region: str = Field(
