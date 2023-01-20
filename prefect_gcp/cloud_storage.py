@@ -688,7 +688,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 f"Bucket path {bucket_path!r} is already prefixed with "
                 f"bucket folder {self.bucket_folder!r}; is this intentional?"
             )
-        return str(Path(self.bucket_folder) / bucket_path)
+        return str(PurePosixPath(self.bucket_folder) / bucket_path)
 
     @sync_compatible
     async def get_bucket(self) -> "Bucket":
@@ -899,7 +899,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         async_coros = []
         for blob in blobs:
-            bucket_path = Path(blob.name).relative_to(bucket_folder)
+            bucket_path = PurePosixPath(blob.name).relative_to(bucket_folder)
             if bucket_path.is_dir():
                 continue
             to_path = to_folder / bucket_path
