@@ -5,7 +5,7 @@ on: [pull_request]
 jobs:
   run-tests:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version:
@@ -13,6 +13,9 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+        os:
+          - ubuntu-latest
+          - windows-latest
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
