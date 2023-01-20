@@ -622,8 +622,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ):
                 continue
             elif not local_file_path.is_dir():
-                remote_file_path = os.path.join(
-                    to_path, local_file_path.relative_to(local_path)
+                remote_file_path = str(
+                    PurePosixPath(to_path, local_file_path.relative_to(local_path))
                 )
                 local_file_content = local_file_path.read_bytes()
                 await self.write_path(remote_file_path, content=local_file_content)
