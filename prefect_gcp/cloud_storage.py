@@ -3,7 +3,7 @@
 import asyncio
 import os
 from io import BytesIO
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -526,7 +526,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         # If bucket_folder provided, it means we won't write to the root dir of
         # the bucket. So we need to add it on the front of the path.
-        path = os.path.join(self.bucket_folder, path) if self.bucket_folder else path
+        path = (
+            str(PurePosixPath(self.bucket_folder, path)) if self.bucket_folder else path
+        )
         return path
 
     @sync_compatible
