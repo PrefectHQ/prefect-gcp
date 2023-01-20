@@ -3,7 +3,7 @@
 import asyncio
 import os
 from io import BytesIO
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PosixPath, PurePosixPath
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -899,7 +899,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         async_coros = []
         for blob in blobs:
-            bucket_path = PurePosixPath(blob.name).relative_to(bucket_folder)
+            bucket_path = PosixPath(blob.name).relative_to(bucket_folder)
             if bucket_path.is_dir():
                 continue
             to_path = to_folder / bucket_path
