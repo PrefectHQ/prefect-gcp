@@ -3,7 +3,7 @@
 import asyncio
 import os
 from io import BytesIO
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -526,7 +526,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         # If bucket_folder provided, it means we won't write to the root dir of
         # the bucket. So we need to add it on the front of the path.
-        path = os.path.join(self.bucket_folder, path) if self.bucket_folder else path
+        path = (
+            str(PurePosixPath(self.bucket_folder, path)) if self.bucket_folder else path
+        )
         return path
 
     @sync_compatible
@@ -620,8 +622,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ):
                 continue
             elif not local_file_path.is_dir():
-                remote_file_path = os.path.join(
-                    to_path, local_file_path.relative_to(local_path)
+                remote_file_path = str(
+                    PurePosixPath(to_path, local_file_path.relative_to(local_path))
                 )
                 local_file_content = local_file_path.read_bytes()
                 await self.write_path(remote_file_path, content=local_file_content)
@@ -686,7 +688,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 f"Bucket path {bucket_path!r} is already prefixed with "
                 f"bucket folder {self.bucket_folder!r}; is this intentional?"
             )
-        return str(Path(self.bucket_folder) / bucket_path)
+        return str(PurePosixPath(self.bucket_folder) / bucket_path)
 
     @sync_compatible
     async def get_bucket(self) -> "Bucket":
@@ -897,8 +899,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         async_coros = []
         for blob in blobs:
-            bucket_path = Path(blob.name).relative_to(bucket_folder)
-            if bucket_path.is_dir():
+            bucket_path = PurePosixPath(blob.name).relative_to(bucket_folder)
+            if str(bucket_path).endswith("/"):
                 continue
             to_path = to_folder / bucket_path
             to_path.parent.mkdir(parents=True, exist_ok=True)

@@ -19,9 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.2.4
+
+Released on January 20th, 2023.
+
+### Fixed
+
+- Correctly format GCS paths on Windows machines - [#117](https://github.com/PrefectHQ/prefect-gcp/pull/117)
+
 ## 0.2.3
 
-Released on January 5th, 2022.
+Released on January 5th, 2023.
 
 ### Fixed
 
@@ -29,7 +37,7 @@ Released on January 5th, 2022.
 
 ## 0.2.2
 
-Released on January 3rd, 2022.
+Released on January 3rd, 2023.
 
 ### Added
 

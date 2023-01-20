@@ -1,6 +1,6 @@
 import json
 import os
-from pathlib import Path, PosixPath
+from pathlib import Path
 
 import pytest
 from google.cloud.aiplatform.gapic import JobServiceClient
@@ -41,7 +41,7 @@ def test_get_credentials_from_service_account_file(
     credentials = GcpCredentials(
         service_account_file=service_account_file, project="my-project"
     ).get_credentials_from_service_account()
-    assert isinstance(credentials, PosixPath)
+    assert isinstance(credentials, Path)
     assert credentials == Path(service_account_file).expanduser()
 
 
