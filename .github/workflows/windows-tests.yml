@@ -1,18 +1,16 @@
-name: Tests
+name: Windows Tests
 
 on: [pull_request]
 
 jobs:
   run-tests:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       matrix:
+        # Prefect only tests 3.9 on Windows
         python-version:
-          - "3.7"
-          - "3.8"
           - "3.9"
-          - "3.10"
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -33,9 +31,4 @@ jobs:
         env:
           PREFECT_ORION_DATABASE_CONNECTION_URL: "sqlite+aiosqlite:///./orion-tests.db"
         run: |
-          coverage run --branch -m pytest tests -vv
-          coverage report
-
-      - name: Run mkdocs build
-        run: |
-          mkdocs build --verbose --clean
+          pytest tests -vv
