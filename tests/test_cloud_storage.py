@@ -1,6 +1,6 @@
 import os
 from io import BytesIO
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from uuid import UUID
 
 import pytest
@@ -140,7 +140,7 @@ class TestGcsBucket:
             assert dirname == bucket_folder.rstrip("/")
             assert UUID(filename, version=4)
         else:
-            expected = str(Path(bucket_folder) / path)
+            expected = str(PurePosixPath(bucket_folder) / path)
             assert actual == expected
 
     def test_read_path(self, gcs_bucket):

@@ -106,8 +106,9 @@ class VertexAICustomTrainingJob(Infrastructure):
     gcp_credentials: GcpCredentials = Field(
         default_factory=GcpCredentials,
         description=(
-            "GCP credentials to use when running the configured "
-            "Vertex AI training job."
+            "GCP credentials to use when running the configured Vertex AI custom "
+            "training job. If not provided, credentials will be inferred from the "
+            "environment. See `GcpCredentials` for details."
         ),
     )
     region: str = Field(
@@ -219,8 +220,10 @@ class VertexAICustomTrainingJob(Infrastructure):
         )
         if service_account is None:
             raise ValueError(
-                "Could not detect a service_account through gcp_credentials; "
-                "please provide a service_account in VertexAICustomTrainingJob"
+                "A service account is required for the Vertex job. "
+                "A service account could not be detected in the attached credentials; "
+                "please set a service account explicitly, e.g. "
+                '`VertexAICustomTrainingJob(service_acount="...")`'
             )
 
         # build custom job specs

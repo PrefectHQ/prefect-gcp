@@ -20,26 +20,27 @@ class TestVertexAICustomTrainingJob:
             gcp_credentials=gcp_credentials,
         )
 
+    # TODO: Improve test resiliency to changes in str output
     def test_preview(self, vertex_ai_custom_training_job: VertexAICustomTrainingJob):
         actual_lines = vertex_ai_custom_training_job.preview().splitlines()
         expected_lines = """
             display_name: "container
             job_spec {
                 worker_pool_specs {
+                    container_spec {
+                        image_uri: "us-docker.pkg.dev/cloudrun/container/job:latest"
+                        command: "echo"
+                        command: "hello!!"
+                    }
                     machine_spec {
-                    machine_type: "n1-standard-4"
+                        machine_type: "n1-standard-4"
                     }
                     replica_count: 1
-                    container_spec {
-                    image_uri: "us-docker.pkg.dev/cloudrun/container/job:latest"
-                    command: "echo"
-                    command: "hello!!"
-                    }
                 }
                 scheduling {
                 }
                 service_account: "my_service_account_email"
-                }
+            }
         """.strip().splitlines()
         for actual_line, expected_line in zip(actual_lines, expected_lines):
             if '"container' in actual_line:
