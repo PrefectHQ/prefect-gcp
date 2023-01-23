@@ -529,6 +529,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         path = (
             str(PurePosixPath(self.bucket_folder, path)) if self.bucket_folder else path
         )
+        if path == "." or path == "/":
+            # client.bucket.list_blobs(prefix=None) is the proper way
+            # of specifying the root folder of the bucket
+            path = None
         return path
 
     @sync_compatible
@@ -688,7 +692,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 f"Bucket path {bucket_path!r} is already prefixed with "
                 f"bucket folder {self.bucket_folder!r}; is this intentional?"
             )
-        return str(PurePosixPath(self.bucket_folder) / bucket_path)
+
+        bucket_path = str(PurePosixPath(self.bucket_folder) / bucket_path)
+        if bucket_path == "." or bucket_path == "/":
+            # client.bucket.list_blobs(prefix=None) is the proper way
+            # of specifying the root folder of the bucket
+            bucket_path = None
+        return bucket_path
 
     @sync_compatible
     async def get_bucket(self) -> "Bucket":
