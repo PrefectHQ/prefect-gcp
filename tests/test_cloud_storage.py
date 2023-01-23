@@ -231,8 +231,9 @@ class TestGcsBucket:
     def test_list_blobs_root_folder(self, gcs_bucket_no_bucket_folder):
         blobs = gcs_bucket_no_bucket_folder.list_blobs(folder="")
         assert len(blobs) == 3
-        assert blobs[0].name == "base_folder/nested_blob.txt"
-        assert blobs[1].name == "base_folder/sub_folder/nested_blob.txt"
+        assert blobs[0].name == "blob.txt"
+        assert blobs[1].name == "base_folder/nested_blob.txt"
+        assert blobs[2].name == "base_folder/sub_folder/nested_blob.txt"
 
     def test_download_object_to_path_default(
         self, gcs_bucket_with_bucket_folder, tmp_path
