@@ -391,7 +391,7 @@ class TestGcsBucket:
         (from_path / "some_dir").mkdir()
 
         output_to_path = gcs_bucket_no_bucket_folder.upload_from_folder(from_path)
-        assert output_to_path == "."
+        assert output_to_path == ""
 
     def test_upload_from_folder_default_with_bucket_folder(
         self, gcs_bucket_with_bucket_folder, tmp_path
