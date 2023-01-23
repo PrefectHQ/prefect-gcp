@@ -743,6 +743,37 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         # Ignore folders
         return [blob for blob in blobs if not blob.name.endswith("/")]
+    
+    @sync_compatible
+    async def list_folders(self, folder: str = "") -> List[str]:
+        """
+        Lists all folders in the bucket.
+
+        Args:
+            folder: List all folders inside given folder.
+
+        Returns:
+            A list of folders.
+
+        Examples:
+            Get all folders from a bucket named "my-bucket".
+            ```python
+            from prefect_gcp.cloud_storage import GcsBucket
+
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.list_folders()
+            ```
+        """
+        client = self.gcp_credentials.get_cloud_storage_client()
+
+        bucket_path = self._join_bucket_folder(folder)
+        self.logger.info(f"Listing blobs in bucket {bucket_path}.")
+        blobs = await run_sync_in_worker_thread(
+            client.list_blobs, self.bucket, prefix=bucket_path
+        )
+
+        # Ignore blobs
+        return [blob for blob in blobs if blob.name.endswith("/")]
 
     @sync_compatible
     async def download_object_to_path(
