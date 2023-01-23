@@ -61,7 +61,7 @@ To use Vertex AI:
 pip install "prefect-gcp[aiplatform]"
 ```
 
-A list of available blocks in `prefect-gcp` and their setup instructions can be found [here](https://prefecthq.github.io/prefect-gcp/#blocks-catalog/).
+A list of available blocks in `prefect-gcp` and their setup instructions can be found [here](https://prefecthq.github.io/prefect-gcp/#blocks-catalog).
 
 ### Write and run a flow
 
