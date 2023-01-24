@@ -1059,7 +1059,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```
         """
         from_folder = Path(from_folder)
-        bucket_folder = self._join_bucket_folder(to_folder or "")
+        # join bucket folder expects string for the first input
+        # when it returns None, we need to convert it back to empty string
+        # so relative_to works
+        bucket_folder = self._join_bucket_folder(to_folder or "") or ""
 
         num_uploaded = 0
         bucket = await self.get_bucket()
@@ -1068,9 +1071,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         for from_path in from_folder.rglob("**/*"):
             if from_path.is_dir():
                 continue
-            bucket_path = str(
-                Path(bucket_folder or "") / from_path.relative_to(from_folder)
-            )
+            bucket_path = str(Path(bucket_folder) / from_path.relative_to(from_folder))
             self.logger.info(
                 f"Uploading from {str(from_path)!r} to the bucket "
                 f"{self.bucket!r} path {bucket_path!r}."
@@ -1085,4 +1086,4 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         await asyncio.gather(*async_coros)
         if num_uploaded == 0:
             self.logger.warning(f"No files were uploaded from {from_folder}.")
-        return bucket_folder or ""
+        return bucket_folder
