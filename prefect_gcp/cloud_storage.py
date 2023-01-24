@@ -529,6 +529,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         path = (
             str(PurePosixPath(self.bucket_folder, path)) if self.bucket_folder else path
         )
+        if path == "." or path == "/":
+            # client.bucket.list_blobs(prefix=None) is the proper way
+            # of specifying the root folder of the bucket
+            path = None
         return path
 
     @sync_compatible
@@ -688,7 +692,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 f"Bucket path {bucket_path!r} is already prefixed with "
                 f"bucket folder {self.bucket_folder!r}; is this intentional?"
             )
-        return str(PurePosixPath(self.bucket_folder) / bucket_path)
+
+        bucket_path = str(PurePosixPath(self.bucket_folder) / bucket_path)
+        if bucket_path == "." or bucket_path == "/":
+            # client.bucket.list_blobs(prefix=None) is the proper way
+            # of specifying the root folder of the bucket
+            bucket_path = None
+        return bucket_path
 
     @sync_compatible
     async def get_bucket(self) -> "Bucket":
@@ -1080,7 +1090,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```
         """
         from_folder = Path(from_folder)
-        bucket_folder = self._join_bucket_folder(to_folder or "")
+        # join bucket folder expects string for the first input
+        # when it returns None, we need to convert it back to empty string
+        # so relative_to works
+        bucket_folder = self._join_bucket_folder(to_folder or "") or ""
 
         num_uploaded = 0
         bucket = await self.get_bucket()
