@@ -210,6 +210,10 @@ class TestGcsBucket:
             bucket_folder=request.param,
         )
 
+    def test_list_folders(self, gcs_bucket_with_bucket_folder):
+        blobs = gcs_bucket_with_bucket_folder.list_folders()
+        assert len(blobs) == 1
+        assert blobs[0] == "sub_folder"
     def test_list_blobs(self, gcs_bucket_no_bucket_folder):
         blobs = gcs_bucket_no_bucket_folder.list_blobs(folder="base_folder/")
         assert len(blobs) == 2
