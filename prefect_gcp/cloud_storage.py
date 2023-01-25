@@ -773,17 +773,26 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             gcs_bucket = GcsBucket.load("my-bucket")
             gcs_bucket.list_folders()
             ```
+
+            Get all folders from a folder called years
+            ```python
+            from prefect_gcp.cloud_storage import GcsBucket
+
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.list_folders('years)
+            ```
         """
         client = self.gcp_credentials.get_cloud_storage_client()
 
         bucket_path = self._join_bucket_folder(folder)
-        self.logger.info(f"Listing blobs in bucket {bucket_path}.")
+        self.logger.info(f"Listing folders in bucket {bucket_path}.")
         blobs = await run_sync_in_worker_thread(
             client.list_blobs, self.bucket, prefix=bucket_path
         )
-
-        # Ignore blobs
-        return [blob for blob in blobs if blob.name.endswith("/")]
+        if bucket_path is not None:
+            return list(set([blob.name.split(os.sep)[1] for blob in blobs]))
+        else:
+            return list(set([blob.name.split(os.sep)[0] for blob in blobs]))
 
     @sync_compatible
     async def download_object_to_path(
