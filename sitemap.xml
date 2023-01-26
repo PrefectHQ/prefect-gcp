@@ -2,37 +2,47 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/</loc>
-         <lastmod>2023-01-09</lastmod>
+         <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/aiplatform/</loc>
-         <lastmod>2023-01-09</lastmod>
+         <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/bigquery/</loc>
-         <lastmod>2023-01-09</lastmod>
+         <lastmod>2023-01-26</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://PrefectHQ.github.io/prefect-gcp/blocks_catalog/</loc>
+         <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/cloud_run/</loc>
-         <lastmod>2023-01-09</lastmod>
+         <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/cloud_storage/</loc>
-         <lastmod>2023-01-09</lastmod>
+         <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/credentials/</loc>
-         <lastmod>2023-01-09</lastmod>
+         <lastmod>2023-01-26</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://PrefectHQ.github.io/prefect-gcp/examples_catalog/</loc>
+         <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/secret_manager/</loc>
-         <lastmod>2023-01-09</lastmod>
+         <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
