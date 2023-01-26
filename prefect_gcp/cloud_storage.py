@@ -488,6 +488,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "GCS Bucket"
+    _documentation_url = "https://prefecthq.github.io/prefect-gcp/cloud_storage/#prefect_gcp.cloud_storage.GcsBucket"  # noqa: E501
 
     bucket: str = Field(..., description="Name of the bucket.")
     gcp_credentials: GcpCredentials = Field(
