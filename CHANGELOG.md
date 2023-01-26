@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- list_folders method for GcsBucket - [#issue](https://github.com/PrefectHQ/prefect-gcp/issues/118)
+- list_folders method for GcsBucket - [#121](https://github.com/PrefectHQ/prefect-gcp/pull/121)
 ### Changed
 
 ### Deprecated

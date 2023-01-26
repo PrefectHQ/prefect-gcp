@@ -757,10 +757,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
     @sync_compatible
     async def list_folders(self, folder: str = "") -> List[str]:
         """
-        Lists all folders in the bucket.
+        Lists all folders and subfolders in the bucket.
 
         Args:
-            folder: List all folders inside given folder.
+            folder: List all folders and subfolders inside given folder.
 
         Returns:
             A list of folders.
@@ -782,19 +782,15 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             gcs_bucket.list_folders('years)
             ```
         """
-        client = self.gcp_credentials.get_cloud_storage_client()
 
-        bucket_path = self._join_bucket_folder(folder)
+        bucket_path = self._join_bucket_folder()
         self.logger.info(f"Listing folders in bucket {bucket_path}.")
-        blobs = await run_sync_in_worker_thread(
-            client.list_blobs, self.bucket, prefix=bucket_path
-        )
-        blobs = list(blobs)
-        if bucket_path is not None:
-            unique_folders = list(set([blob.name.split(os.sep)[1] for blob in blobs if "." not in blob.name.split(os.sep)[1]]))
-            return [folder for folder in unique_folders if folder]
-        else:
-            return list(set([blob.name.split(os.sep)[0] for blob in blobs if blob.name.endswith(os.sep)]))
+
+        blobs = await self.list_blobs(folder)
+        # gets all folders with full path
+        folders = {str(PurePosixPath(blob.name).parent).replace(".", "") for blob in blobs}
+
+        return list(folders)
 
     @sync_compatible
     async def download_object_to_path(
