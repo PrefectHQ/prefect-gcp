@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Listing blobs at the root folder - [#120](https://github.com/PrefectHQ/prefect-gcp/pull/120)
+
 ### Security
 
 ## 0.2.4
