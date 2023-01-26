@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `vpc_connector_name` field to `CloudRunJob` - [#123](https://github.com/PrefectHQ/prefect-gcp/pull/123)
+
 ### Changed
 
 ### Deprecated
