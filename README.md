@@ -1,8 +1,8 @@
 # prefect-gcp
 
-Visit the full docs [here](https://PrefectHQ.github.io/prefect-gcp) to see additional examples and the API reference.
-
 <p align="center">
+    <!--- Insert a cover image here -->
+    <!--- <br> -->
     <a href="https://pypi.python.org/pypi/prefect-gcp/" alt="PyPI version">
         <img alt="PyPI" src="https://img.shields.io/pypi/v/prefect-gcp?color=0052FF&labelColor=090422"></a>
     <a href="https://github.com/PrefectHQ/prefect-gcp/" alt="Stars">
@@ -229,11 +229,12 @@ If you have any questions or issues while using `prefect-gcp`, you can find help
 
 Feel free to star or watch [`prefect-gcp`](https://github.com/PrefectHQ/prefect-gcp) for updates too!
 
-## Contributing
+### Contributing
 
 If you'd like to help contribute to fix an issue or add a feature to `prefect-gcp`, please [propose changes through a pull request from a fork of the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 Here are the steps:
+
 1. [Fork the repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo#forking-a-repository)
 2. [Clone the forked repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo#cloning-your-forked-repository)
 3. Install the repository and its dependencies:
