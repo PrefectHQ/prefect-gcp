@@ -1,4 +1,4 @@
-# prefect-gcp
+# Coordinate and use Google Cloud Platform (GCP) in your dataflow with `prefect-gcp`
 
 <p align="center">
     <img src="https://user-images.githubusercontent.com/15331990/214915616-6369697e-bc84-400a-a584-845d795a68f2.png">
