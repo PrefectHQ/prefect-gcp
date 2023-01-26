@@ -89,7 +89,7 @@ def insert_blocks_catalog(generated_file):
         )
         for block_name in block_names:
             generated_file.write(
-                f"- [{block_name}][{COLLECTION_SLUG}.{module_path}.{block_name}]\n"
+                f"- **[{block_name}][{COLLECTION_SLUG}.{module_path}.{block_name}]**\n"
             )
             generated_file.write(
                 dedent(
@@ -120,7 +120,6 @@ with mkdocs_gen_files.open(blocks_catalog_path, "w") as generated_file:
 def skip_parsing(name, obj, module_nesting):
     try:
         wrong_module = not to_qualified_name(obj).startswith(module_nesting)
-        print(to_qualified_name(obj), module_nesting, wrong_module)
     except AttributeError:
         wrong_module = False
     return obj.__doc__ is None or name.startswith("_") or wrong_module

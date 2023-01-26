@@ -1,8 +1,8 @@
 # prefect-gcp
 
-Visit the full docs [here](https://PrefectHQ.github.io/prefect-gcp) to see additional examples and the API reference.
-
 <p align="center">
+    <img src="">
+    <br>
     <a href="https://pypi.python.org/pypi/prefect-gcp/" alt="PyPI version">
         <img alt="PyPI" src="https://img.shields.io/pypi/v/prefect-gcp?color=0052FF&labelColor=090422"></a>
     <a href="https://github.com/PrefectHQ/prefect-gcp/" alt="Stars">
@@ -18,50 +18,48 @@ Visit the full docs [here](https://PrefectHQ.github.io/prefect-gcp) to see addit
         <img src="https://img.shields.io/badge/discourse-browse_forum-red.svg?color=0052FF&labelColor=090422&logo=discourse" /></a>
 </p>
 
-## Welcome!
+Visit the full docs [here](https://PrefectHQ.github.io/prefect-gcp) to see additional examples and the API reference.
 
 `prefect-gcp` is a collection of prebuilt Prefect tasks that can be used to quickly construct Prefect flows.
 
 ## Getting Started
 
-### Python setup
+### Saving credentials to a block
 
-Requires an installation of Python 3.7+.
+You will need to obtain GCP credentials in order to use `prefect-gcp`.
 
-We recommend using a Python virtual environment manager such as pipenv, conda or virtualenv.
+1. Refer to the [GCP service account documentation](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating) on how to create and download a service account key file
+2. Copy the JSON contents
+3. Create a short script, replacing the placeholders (or do so in the UI)
 
-These tasks are designed to work with Prefect 2.0. For more information about how to use Prefect, please refer to the [Prefect documentation](https://orion-docs.prefect.io/).
+```python
+from prefect_gcp import GcpCredentials
 
-### Installation
+# replace this PLACEHOLDER dict with your own service account info
+service_account_info = {
+  "type": "service_account",
+  "project_id": "PROJECT_ID",
+  "private_key_id": "KEY_ID",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nPRIVATE_KEY\n-----END PRIVATE KEY-----\n",
+  "client_email": "SERVICE_ACCOUNT_EMAIL",
+  "client_id": "CLIENT_ID",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/SERVICE_ACCOUNT_EMAIL"
+}
 
-To use `prefect-gcp` and Cloud Run:
-
-```bash
-pip install prefect-gcp
+GcpCredentials(
+    service_account_info=service_account_info
+).save("BLOCK_NAME_PLACEHOLDER")
 ```
 
-To use Cloud Storage:
-```bash
-pip install "prefect-gcp[cloud_storage]"
+Congrats! You can now easily load the saved block, which holds your credentials:
+
+```python
+from prefect_gcp import GcpCredentials
+GcpCredentials.load("BLOCK_NAME_PLACEHOLDER")
 ```
-
-To use BigQuery:
-
-```bash
-pip install "prefect-gcp[bigquery]"
-```
-
-To use Secret Manager:
-```bash
-pip install "prefect-gcp[secret_manager]"
-```
-
-To use Vertex AI:
-```bash
-pip install "prefect-gcp[aiplatform]"
-```
-
-A list of available blocks in `prefect-gcp` and their setup instructions can be found [here](https://prefecthq.github.io/prefect-gcp/#blocks-catalog).
 
 ### Write and run a flow
 
@@ -223,13 +221,52 @@ For more tips on how to use tasks and flows in a Collection, check out [Using Co
 
 ## Resources
 
+### Installation
+
+To use `prefect-gcp` and Cloud Run:
+
+```bash
+pip install prefect-gcp
+```
+
+To use Cloud Storage:
+```bash
+pip install "prefect-gcp[cloud_storage]"
+```
+
+To use BigQuery:
+
+```bash
+pip install "prefect-gcp[bigquery]"
+```
+
+To use Secret Manager:
+```bash
+pip install "prefect-gcp[secret_manager]"
+```
+
+To use Vertex AI:
+```bash
+pip install "prefect-gcp[aiplatform]"
+```
+
+A list of available blocks in `prefect-gcp` and their setup instructions can be found [here](https://prefecthq.github.io/prefect-gcp/#blocks-catalog).
+
+Requires an installation of Python 3.7+.
+
+We recommend using a Python virtual environment manager such as pipenv, conda or virtualenv.
+
+These tasks are designed to work with Prefect 2.0. For more information about how to use Prefect, please refer to the [Prefect documentation](https://orion-docs.prefect.io/).
+
+### Feedback
+
 If you encounter any bugs while using `prefect-gcp`, feel free to open an issue in the [prefect-gcp](https://github.com/PrefectHQ/prefect-gcp) repository.
 
 If you have any questions or issues while using `prefect-gcp`, you can find help in either the [Prefect Discourse forum](https://discourse.prefect.io/) or the [Prefect Slack community](https://prefect.io/slack).
 
 Feel free to star or watch [`prefect-gcp`](https://github.com/PrefectHQ/prefect-gcp) for updates too!
 
-## Contributing
+### Contributing
 
 If you'd like to help contribute to fix an issue or add a feature to `prefect-gcp`, please [propose changes through a pull request from a fork of the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
