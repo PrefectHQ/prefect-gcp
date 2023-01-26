@@ -1,7 +1,7 @@
 # prefect-gcp
 
 <p align="center">
-    <img src="">
+    <img src="https://user-images.githubusercontent.com/15331990/214915616-6369697e-bc84-400a-a584-845d795a68f2.png">
     <br>
     <a href="https://pypi.python.org/pypi/prefect-gcp/" alt="PyPI version">
         <img alt="PyPI" src="https://img.shields.io/pypi/v/prefect-gcp?color=0052FF&labelColor=090422"></a>
