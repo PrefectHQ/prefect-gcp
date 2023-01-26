@@ -1,4 +1,4 @@
-# Coordinate and use Google Cloud Platform (GCP) in your dataflow with `prefect-gcp`
+# Coordinate and use GCP in your dataflow with `prefect-gcp`
 
 <p align="center">
     <img src="https://user-images.githubusercontent.com/15331990/214915616-6369697e-bc84-400a-a584-845d795a68f2.png">
@@ -20,7 +20,7 @@
 
 Visit the full docs [here](https://PrefectHQ.github.io/prefect-gcp) to see additional examples and the API reference.
 
-`prefect-gcp` is a collection of prebuilt Prefect tasks that can be used to quickly construct Prefect flows.
+The `prefect-openai` collection makes it easy to leverage the capabilities of Google Cloud Platform (GCP) in your flows. Check out the examples below to get started!
 
 ## Getting Started
 
