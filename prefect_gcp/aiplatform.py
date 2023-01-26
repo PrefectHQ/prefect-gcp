@@ -98,6 +98,7 @@ class VertexAICustomTrainingJob(Infrastructure):
     _block_type_name = "Vertex AI Custom Training Job"
     _block_type_slug = "vertex-ai-custom-training-job"
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _documentation_url = "https://prefecthq.github.io/prefect-gcp/aiplatform/#prefect_gcp.aiplatform.VertexAICustomTrainingJob"  # noqa: E501
 
     type: Literal["vertex-ai-custom-training-job"] = Field(
         "vertex-ai-custom-training-job", description="The slug for this task type."
