@@ -61,9 +61,17 @@ from prefect_gcp import GcpCredentials
 GcpCredentials.load("BLOCK_NAME_PLACEHOLDER")
 ```
 
-### Write and run a flow
+!!! info Registering blocks
 
-#### Download blob from bucket
+    Register blocks in this module to
+    [view and edit them](https://orion-docs.prefect.io/ui/blocks/)
+    on Prefect Cloud:
+
+    ```bash
+    prefect block register -m prefect_gcp
+    ```
+
+### Download blob from bucket
 
 ```python
 from prefect import flow
@@ -78,7 +86,7 @@ def download_flow():
 download_flow()
 ```
 
-#### Deploy command on Cloud Run
+### Deploy command on Cloud Run
 
 Save the following as `prefect_gcp_flow.py`:
 
@@ -120,7 +128,7 @@ prefect deployment run cloud-run-job-flow/cloud_run_job_deployment
 
 Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
 
-#### Get Google auth credentials from GcpCredentials
+### Get Google auth credentials from GcpCredentials
 
 To instantiate a Google Cloud client, like `bigquery.Client`, `GcpCredentials` is not a valid input. Instead, use the `get_credentials_from_service_account` method.
 
@@ -148,7 +156,7 @@ def create_bigquery_client():
     bigquery_client = gcp_credentials_block.get_bigquery_client()
 ```
 
-#### Deploy command on Vertex AI as a flow
+### Deploy command on Vertex AI as a flow
 
 Save the following as `prefect_gcp_flow.py`:
 
@@ -194,32 +202,9 @@ prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
 
 Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments.
 
-#### Use `with_options` to customize options on any existing task or flow
-
-```python
-from prefect import flow
-from prefect_gcp import GcpCredentials
-from prefect_gcp.cloud_storage import cloud_storage_download_blob_as_bytes
-
-custom_download = cloud_storage_download_blob_as_bytes.with_options(
-    name="My custom task name",
-    retries=2,
-    retry_delay_seconds=10,
-)
- 
- @flow
- def example_with_options_flow():
-    gcp_credentials = GcpCredentials(
-        service_account_file="/path/to/service/account/keyfile.json")
-    contents = custom_download("bucket", "blob", gcp_credentials)
-    return contents()
- 
-example_with_options_flow()
-```
- 
-For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
-
 ## Resources
+
+For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
 
 ### Installation
 
