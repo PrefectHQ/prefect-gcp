@@ -753,7 +753,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         # Ignore folders
         return [blob for blob in blobs if not blob.name.endswith("/")]
-    
+
     @sync_compatible
     async def list_folders(self, folder: str = "") -> List[str]:
         """
@@ -788,7 +788,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         blobs = await self.list_blobs(folder)
         # gets all folders with full path
-        folders = {str(PurePosixPath(blob.name).parent).replace(".", "") for blob in blobs}
+        folders = {
+            str(PurePosixPath(blob.name).parent).replace(".", "") for blob in blobs
+        }
 
         return list(folders)
 
