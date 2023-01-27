@@ -515,6 +515,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_run.CloudRunJob.vpc_connector_name" class="md-nav__link">
+    vpc_connector_name
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -838,6 +845,13 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.cloud_run.CloudRunJob.timeout" class="md-nav__link">
     timeout
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.cloud_run.CloudRunJob.vpc_connector_name" class="md-nav__link">
+    vpc_connector_name
   </a>
   
 </li>
@@ -1166,6 +1180,11 @@ be correct as long as the Credentials object is for the correct project.</p>
             <span class="s2">&quot;for additional details.&quot;</span>
         <span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">vpc_connector_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;VPC Connector Name&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The name of the VPC connector to use for the Cloud Run Job.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">description</span><span class="o">=</span><span class="p">(</span>
@@ -1472,9 +1491,13 @@ be correct as long as the Credentials object is for the correct project.</p>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_name</span><span class="p">,</span>
             <span class="s2">&quot;annotations&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="c1"># See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa</span>
-                <span class="s2">&quot;run.googleapis.com/launch-stage&quot;</span><span class="p">:</span> <span class="s2">&quot;BETA&quot;</span>
+                <span class="s2">&quot;run.googleapis.com/launch-stage&quot;</span><span class="p">:</span> <span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vpc_connector_name</span><span class="p">:</span>
+            <span class="n">jobs_metadata</span><span class="p">[</span><span class="s2">&quot;annotations&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;run.googleapis.com/vpc-access-connector&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vpc_connector_name</span>
 
         <span class="c1"># env and command here</span>
         <span class="n">containers</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_add_container_settings</span><span class="p">({</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">})]</span>
@@ -1871,6 +1894,28 @@ be correct as long as the Credentials object is for the correct project.</p>
     <div class="doc doc-contents ">
 
       <p>The length of time that Prefect will wait for a Cloud Run Job to complete before raising an exception.</p>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="prefect_gcp.cloud_run.CloudRunJob.vpc_connector_name" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">vpc_connector_name</span><span class="p">:</span> <span class="nb">str</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+</h5>
+
+    <div class="doc doc-contents ">
+
+      <p>The name of the VPC connector to use for the Cloud Run Job.</p>
     </div>
 
   </div>

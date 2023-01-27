@@ -626,6 +626,24 @@
         <span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </code></pre></div>
+Execute operation with parameters, fetching all rows:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.bigquery</span> <span class="kn">import</span> <span class="n">BigQueryWarehouse</span>
+
+<span class="k">with</span> <span class="n">BigQueryWarehouse</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;BLOCK_NAME&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">warehouse</span><span class="p">:</span>
+    <span class="n">operation</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">        SELECT word, word_count</span>
+<span class="s1">        FROM `bigquery-public-data.samples.shakespeare`</span>
+<span class="s1">        WHERE corpus = </span><span class="si">%(corpus)s</span>
+<span class="s1">        AND word_count &gt;= </span><span class="si">%(min_word_count)s</span>
+<span class="s1">        ORDER BY word_count DESC</span>
+<span class="s1">        LIMIT 3;</span>
+<span class="s1">    &#39;&#39;&#39;</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;corpus&quot;</span><span class="p">:</span> <span class="s2">&quot;romeoandjuliet&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;min_word_count&quot;</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">warehouse</span><span class="o">.</span><span class="n">fetch_all</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
+</code></pre></div>
 Execute operation with parameters:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.bigquery</span> <span class="kn">import</span> <span class="n">BigQueryWarehouse</span>
 
@@ -686,24 +704,6 @@ Execute operation with parameters, fetching one new row at a time:
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">warehouse</span><span class="o">.</span><span class="n">fetch_one</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-</code></pre></div>
-Execute operation with parameters, fetching all rows:
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.bigquery</span> <span class="kn">import</span> <span class="n">BigQueryWarehouse</span>
-
-<span class="k">with</span> <span class="n">BigQueryWarehouse</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;BLOCK_NAME&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">warehouse</span><span class="p">:</span>
-    <span class="n">operation</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
-<span class="s1">        SELECT word, word_count</span>
-<span class="s1">        FROM `bigquery-public-data.samples.shakespeare`</span>
-<span class="s1">        WHERE corpus = </span><span class="si">%(corpus)s</span>
-<span class="s1">        AND word_count &gt;= </span><span class="si">%(min_word_count)s</span>
-<span class="s1">        ORDER BY word_count DESC</span>
-<span class="s1">        LIMIT 3;</span>
-<span class="s1">    &#39;&#39;&#39;</span>
-    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;corpus&quot;</span><span class="p">:</span> <span class="s2">&quot;romeoandjuliet&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;min_word_count&quot;</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span>
-    <span class="p">}</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">warehouse</span><span class="o">.</span><span class="n">fetch_all</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
 </code></pre></div></p>
 <h2 id="cloud-run-module"><a class="autorefs autorefs-internal" href="../cloud_run/#prefect_gcp.cloud_run">Cloud Run Module</a></h2>
 <p>Run a job using Google Cloud Run Jobs:
@@ -722,46 +722,7 @@ Execute operation with parameters, fetching all rows:
 <span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </code></pre></div></p>
 <h2 id="cloud-storage-module"><a class="autorefs autorefs-internal" href="../cloud_storage/#prefect_gcp.cloud_storage">Cloud Storage Module</a></h2>
-<p>Get the bucket object.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
-
-<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
-<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
-</code></pre></div>
-Get all blobs from a folder named "prefect".
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
-
-<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
-<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">list_blobs</span><span class="p">(</span><span class="s2">&quot;prefect&quot;</span><span class="p">)</span>
-</code></pre></div>
-Upload notes.txt to my_folder/notes.txt.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
-
-<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
-<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_path</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">)</span>
-</code></pre></div>
-Upload local folder my_folder to the bucket's folder my_folder.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
-
-<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
-<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_folder</span><span class="p">(</span><span class="s2">&quot;my_folder&quot;</span><span class="p">)</span>
-</code></pre></div>
-Download my_folder/notes.txt object to a BytesIO object.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
-
-<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">:</span>
-    <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_file_object</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
-</code></pre></div></p>
-<p>Download my_folder/notes.txt object to a BufferedWriter.
-<div class="highlight"><pre><span></span><code>    <span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
-
-    <span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_file_object</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-</code></pre></div>
-Upload my_folder/notes.txt object to a BytesIO object.
+<p>Upload my_folder/notes.txt object to a BytesIO object.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
 <span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
 
@@ -785,84 +746,65 @@ Download my_folder to a local folder named my_folder.
 <span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_folder_to_path</span><span class="p">(</span><span class="s2">&quot;my_folder&quot;</span><span class="p">,</span> <span class="s2">&quot;my_folder&quot;</span><span class="p">)</span>
 </code></pre></div>
+Get all blobs from a folder named "prefect".
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">list_blobs</span><span class="p">(</span><span class="s2">&quot;prefect&quot;</span><span class="p">)</span>
+</code></pre></div>
 Download my_folder/notes.txt object to notes.txt.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
 
 <span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_path</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;notes.txt&quot;</span><span class="p">)</span>
+</code></pre></div>
+Download my_folder/notes.txt object to a BytesIO object.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">:</span>
+    <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_file_object</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Download my_folder/notes.txt object to a BufferedWriter.
+<div class="highlight"><pre><span></span><code>    <span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+    <span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_file_object</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</code></pre></div>
+Get all folders from a bucket named "my-bucket".
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">list_folders</span><span class="p">()</span>
+</code></pre></div></p>
+<p>Get all folders from a folder called years
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">list_folders</span><span class="p">(</span><span class="s1">&#39;years)</span>
+</code></pre></div>
+Upload notes.txt to my_folder/notes.txt.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_path</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">)</span>
+</code></pre></div>
+Get the bucket object.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
+</code></pre></div>
+Upload local folder my_folder to the bucket's folder my_folder.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
+
+<span class="n">gcs_bucket</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-bucket&quot;</span><span class="p">)</span>
+<span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_folder</span><span class="p">(</span><span class="s2">&quot;my_folder&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <h2 id="credentials-module"><a class="autorefs autorefs-internal" href="../credentials/#prefect_gcp.credentials">Credentials Module</a></h2>
-<p>Gets a GCP Secret Manager client from a path.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
-
-<span class="nd">@flow</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">example_get_client_flow</span><span class="p">():</span>
-    <span class="n">service_account_file</span> <span class="o">=</span> <span class="s2">&quot;~/.secrets/prefect-service-account.json&quot;</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
-        <span class="n">service_account_file</span><span class="o">=</span><span class="n">service_account_file</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">get_secret_manager_client</span><span class="p">()</span>
-<span class="n">example_get_client_flow</span><span class="p">()</span>
-</code></pre></div></p>
-<p>Gets a GCP Cloud Storage client from a dictionary.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
-
-<span class="nd">@flow</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">example_get_client_flow</span><span class="p">():</span>
-    <span class="n">service_account_info</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;service_account&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;project_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;private_key_id&quot;</span><span class="p">:</span> <span class="s2">&quot;private_key_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;private_key&quot;</span><span class="p">:</span> <span class="s2">&quot;private_key&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;client_email&quot;</span><span class="p">:</span> <span class="s2">&quot;client_email&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="s2">&quot;client_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;auth_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;auth_uri&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;token_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;token_uri&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;auth_provider_x509_cert_url&quot;</span><span class="p">:</span> <span class="s2">&quot;auth_provider_x509_cert_url&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;client_x509_cert_url&quot;</span><span class="p">:</span> <span class="s2">&quot;client_x509_cert_url&quot;</span>
-    <span class="p">}</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
-        <span class="n">service_account_info</span><span class="o">=</span><span class="n">service_account_info</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">get_secret_manager_client</span><span class="p">()</span>
-<span class="n">example_get_client_flow</span><span class="p">()</span>
-</code></pre></div>
-Gets a GCP Cloud Storage client from a path.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
-
-<span class="nd">@flow</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">example_get_client_flow</span><span class="p">():</span>
-    <span class="n">service_account_file</span> <span class="o">=</span> <span class="s2">&quot;~/.secrets/prefect-service-account.json&quot;</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
-        <span class="n">service_account_file</span><span class="o">=</span><span class="n">service_account_file</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">()</span>
-<span class="n">example_get_client_flow</span><span class="p">()</span>
-</code></pre></div></p>
-<p>Gets a GCP Cloud Storage client from a dictionary.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
-
-<span class="nd">@flow</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">example_get_client_flow</span><span class="p">():</span>
-    <span class="n">service_account_info</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;service_account&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;project_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;private_key_id&quot;</span><span class="p">:</span> <span class="s2">&quot;private_key_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;private_key&quot;</span><span class="p">:</span> <span class="s2">&quot;private_key&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;client_email&quot;</span><span class="p">:</span> <span class="s2">&quot;client_email&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="s2">&quot;client_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;auth_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;auth_uri&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;token_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;token_uri&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;auth_provider_x509_cert_url&quot;</span><span class="p">:</span> <span class="s2">&quot;auth_provider_x509_cert_url&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;client_x509_cert_url&quot;</span><span class="p">:</span> <span class="s2">&quot;client_x509_cert_url&quot;</span>
-    <span class="p">}</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
-        <span class="n">service_account_info</span><span class="o">=</span><span class="n">service_account_info</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">()</span>
-<span class="n">example_get_client_flow</span><span class="p">()</span>
-</code></pre></div>
-Gets a GCP BigQuery client from a path.
+<p>Gets a GCP BigQuery client from a path.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
 <span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
 
@@ -933,6 +875,76 @@ Gets a GCP Job Service client from a path.
         <span class="n">service_account_info</span><span class="o">=</span><span class="n">service_account_info</span>
     <span class="p">)</span><span class="o">.</span><span class="n">get_job_service_client</span><span class="p">()</span>
 
+<span class="n">example_get_client_flow</span><span class="p">()</span>
+</code></pre></div>
+Gets a GCP Secret Manager client from a path.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_get_client_flow</span><span class="p">():</span>
+    <span class="n">service_account_file</span> <span class="o">=</span> <span class="s2">&quot;~/.secrets/prefect-service-account.json&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="n">service_account_file</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">get_secret_manager_client</span><span class="p">()</span>
+<span class="n">example_get_client_flow</span><span class="p">()</span>
+</code></pre></div></p>
+<p>Gets a GCP Cloud Storage client from a dictionary.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_get_client_flow</span><span class="p">():</span>
+    <span class="n">service_account_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;service_account&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;project_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;private_key_id&quot;</span><span class="p">:</span> <span class="s2">&quot;private_key_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;private_key&quot;</span><span class="p">:</span> <span class="s2">&quot;private_key&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;client_email&quot;</span><span class="p">:</span> <span class="s2">&quot;client_email&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="s2">&quot;client_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;auth_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;auth_uri&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;token_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;token_uri&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;auth_provider_x509_cert_url&quot;</span><span class="p">:</span> <span class="s2">&quot;auth_provider_x509_cert_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;client_x509_cert_url&quot;</span><span class="p">:</span> <span class="s2">&quot;client_x509_cert_url&quot;</span>
+    <span class="p">}</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_info</span><span class="o">=</span><span class="n">service_account_info</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">get_secret_manager_client</span><span class="p">()</span>
+<span class="n">example_get_client_flow</span><span class="p">()</span>
+</code></pre></div>
+Gets a GCP Cloud Storage client from a path.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_get_client_flow</span><span class="p">():</span>
+    <span class="n">service_account_file</span> <span class="o">=</span> <span class="s2">&quot;~/.secrets/prefect-service-account.json&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_file</span><span class="o">=</span><span class="n">service_account_file</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">()</span>
+<span class="n">example_get_client_flow</span><span class="p">()</span>
+</code></pre></div></p>
+<p>Gets a GCP Cloud Storage client from a dictionary.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.credentials</span> <span class="kn">import</span> <span class="n">GcpCredentials</span>
+
+<span class="nd">@flow</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">example_get_client_flow</span><span class="p">():</span>
+    <span class="n">service_account_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;service_account&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;project_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;private_key_id&quot;</span><span class="p">:</span> <span class="s2">&quot;private_key_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;private_key&quot;</span><span class="p">:</span> <span class="s2">&quot;private_key&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;client_email&quot;</span><span class="p">:</span> <span class="s2">&quot;client_email&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="s2">&quot;client_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;auth_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;auth_uri&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;token_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;token_uri&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;auth_provider_x509_cert_url&quot;</span><span class="p">:</span> <span class="s2">&quot;auth_provider_x509_cert_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;client_x509_cert_url&quot;</span><span class="p">:</span> <span class="s2">&quot;client_x509_cert_url&quot;</span>
+    <span class="p">}</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">GcpCredentials</span><span class="p">(</span>
+        <span class="n">service_account_info</span><span class="o">=</span><span class="n">service_account_info</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">get_cloud_storage_client</span><span class="p">()</span>
 <span class="n">example_get_client_flow</span><span class="p">()</span>
 </code></pre></div></p>
 
