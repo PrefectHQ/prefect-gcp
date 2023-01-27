@@ -213,8 +213,7 @@ class TestGcsBucket:
     def test_list_folders_with_root_only(self, gcs_bucket_with_bucket_folder):
         blobs = gcs_bucket_with_bucket_folder.list_folders()
         assert len(blobs) == 2
-        assert blobs[0] == "base_folder"
-        assert blobs[1] == "base_folder/sub_folder"
+        assert set(blobs) == {"base_folder", "base_folder/sub_folder"}
 
     def test_list_folders_with_sub_folders(self, gcs_bucket_with_bucket_folder):
         blobs = gcs_bucket_with_bucket_folder.list_folders("base_folder")
