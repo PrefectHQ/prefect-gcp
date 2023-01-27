@@ -9,9 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `vpc_connector_name` field to `CloudRunJob` - [#123](https://github.com/PrefectHQ/prefect-gcp/pull/123)
-- `list_folders` method for GcsBucket - [#121](https://github.com/PrefectHQ/prefect-gcp/pull/121)
-
 ### Changed
 
 ### Deprecated
@@ -20,9 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Listing blobs at the root folder - [#120](https://github.com/PrefectHQ/prefect-gcp/pull/120)
-
 ### Security
+
+## 0.2.5
+
+Released on January 27th, 2023.
+
+### Added
+
+- `vpc_connector_name` field to `CloudRunJob` - [#123](https://github.com/PrefectHQ/prefect-gcp/pull/123)
+- `list_folders` method for GcsBucket - [#121](https://github.com/PrefectHQ/prefect-gcp/pull/121)
+
+### Fixed
+
+- Listing blobs at the root folder - [#120](https://github.com/PrefectHQ/prefect-gcp/pull/120)
 
 ## 0.2.4
 
