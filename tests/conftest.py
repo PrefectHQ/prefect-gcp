@@ -88,9 +88,8 @@ class CloudStorageClient:
         nested_blob_obj = Blob(name="base_folder/nested_blob.txt")
         double_nested_blob_obj = Blob(name="base_folder/sub_folder/nested_blob.txt")
         blobs = [blob_obj, blob_directory, nested_blob_obj, double_nested_blob_obj]
-        for blob in blobs:
-            if prefix and not blob.name.startswith(prefix):
-                blobs.remove(blob)
+        if prefix:
+            blobs = [blob for blob in blobs if blob.name.startswith(prefix)]
         return blobs
 
 

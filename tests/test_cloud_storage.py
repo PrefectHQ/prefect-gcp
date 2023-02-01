@@ -150,23 +150,34 @@ class TestGcsBucket:
         bucket_folder = gcs_bucket.bucket_folder
         assert gcs_bucket.write_path("blob", b"bytes_data") == f"{bucket_folder}blob"
 
-    @pytest.mark.parametrize("from_path", [None, "base_folder"])
-    @pytest.mark.parametrize("local_path", [None, "local_path"])
+    @pytest.mark.parametrize("from_path", [None, "base_folder", "sub_folder"])
+    @pytest.mark.parametrize("local_path", [None])
     def test_get_directory(self, gcs_bucket, tmp_path, from_path, local_path):
         os.chdir(tmp_path)
 
-        local_path = None
-        assert (
-            gcs_bucket.get_directory(from_path=from_path, local_path=local_path) is None
-        )
-        if local_path is None:
-            local_path = os.path.abspath(".")
+        local_path = os.path.abspath(".")
+        prefix = os.path.join(gcs_bucket.bucket_folder, from_path or "")
+
+        actual = gcs_bucket.get_directory(from_path=from_path, local_path=local_path)
 
         if from_path is None:
             from_path = gcs_bucket.bucket_folder
 
-        file_path = os.path.join(local_path, from_path)
-        assert os.path.exists(file_path)
+        # check all files exist on returned paths
+        for file_path in actual:
+            assert os.path.isfile(file_path)
+
+        # blob.txt, base_folder/nested_blob.txt, base_folder/sub_folder/nested_blob.txt
+        if not prefix:
+            assert len(actual) == 3
+        # base_folder/sub_folder/nested_blob.txt
+        elif prefix == "base_folder/sub_folder":
+            assert len(actual) == 1
+        # base_folder/nested_blob.txt, base_folder/sub_folder/nested_blob.txt
+        elif prefix == "base_folder" or prefix == "base_folder/":
+            assert len(actual) == 2
+        else:
+            assert len(actual) == 0
 
     @pytest.mark.parametrize("to_path", [None, "to_path"])
     @pytest.mark.parametrize("ignore", [True, False])
