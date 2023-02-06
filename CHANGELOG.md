@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `get_directory` method in `GcsBucket` returns the list of downloaded file paths and supports relative path for `local_path` [#129](https://github.com/PrefectHQ/prefect-gcp/pull/129).
+
 ### Deprecated
 
 ### Removed
