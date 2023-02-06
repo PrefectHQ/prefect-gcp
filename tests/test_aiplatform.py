@@ -9,9 +9,6 @@ from prefect_gcp.aiplatform import (
     VertexAICustomTrainingJobResult,
 )
 
-# @patch("VertexAICustomTrainingJob._base_environment")
-# mock_base_env.return_value = {"PREFECT_API_KEY": "secret"}
-
 
 class TestVertexAICustomTrainingJob:
     @pytest.fixture
