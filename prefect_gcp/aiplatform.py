@@ -204,7 +204,13 @@ class VertexAICustomTrainingJob(Infrastructure):
         Builds a job spec by gathering details.
         """
         # gather worker pool spec
-        env_list = [{"name": name, "value": value} for name, value in self.env.items()]
+        env_list = [
+            {"name": name, "value": value}
+            for name, value in {
+                **self._base_environment(),
+                **self.env,
+            }.items()
+        ]
         container_spec = ContainerSpec(
             image_uri=self.image, command=self.command, args=[], env=env_list
         )
