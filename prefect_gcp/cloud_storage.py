@@ -474,8 +474,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
     Note! `GcsBucket` in `prefect-gcp` is a unique block separate from `GCS`
     in core Prefect. `GcsBucket` does not use `gcsfs` under the hood,
-    instead using the `google-cloud-storage` package, and implements relatively
-    more methods to interact with a GCS bucket.
+    instead using the `google-cloud-storage` package, and offers more configuration
+    and functionality.
 
     Attributes:
         bucket: Name of the bucket.
