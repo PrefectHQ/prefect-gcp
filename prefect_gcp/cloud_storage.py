@@ -488,6 +488,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
     _block_type_name = "GCS Bucket"
+    _documentation_url = "https://prefecthq.github.io/prefect-gcp/cloud_storage/#prefect_gcp.cloud_storage.GcsBucket"  # noqa: E501
 
     bucket: str = Field(..., description="Name of the bucket.")
     gcp_credentials: GcpCredentials = Field(
@@ -529,12 +530,16 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         path = (
             str(PurePosixPath(self.bucket_folder, path)) if self.bucket_folder else path
         )
+        if path == "." or path == "/":
+            # client.bucket.list_blobs(prefix=None) is the proper way
+            # of specifying the root folder of the bucket
+            path = None
         return path
 
     @sync_compatible
     async def get_directory(
         self, from_path: Optional[str] = None, local_path: Optional[str] = None
-    ) -> None:
+    ) -> List[Union[str, Path]]:
         """
         Copies a folder from the configured GCS bucket to a local directory.
         Defaults to copying the entire contents of the block's bucket_folder
@@ -545,6 +550,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 configured bucket_folder.
             local_path: Local path to download GCS bucket contents to.
                 Defaults to the current working directory.
+
+        Returns:
+            A list of downloaded file paths.
         """
         from_path = (
             self.bucket_folder if from_path is None else self._resolve_path(from_path)
@@ -553,7 +561,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         if local_path is None:
             local_path = os.path.abspath(".")
         else:
-            local_path = os.path.expanduser(local_path)
+            local_path = os.path.abspath(os.path.expanduser(local_path))
 
         project = self.gcp_credentials.project
         client = self.gcp_credentials.get_cloud_storage_client(project=project)
@@ -561,6 +569,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         blobs = await run_sync_in_worker_thread(
             client.list_blobs, self.bucket, prefix=from_path
         )
+
+        file_paths = []
         for blob in blobs:
             blob_path = blob.name
             if blob_path[-1] == "/":
@@ -570,12 +580,14 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
 
             with disable_run_logger():
-                await cloud_storage_download_blob_to_file.fn(
+                file_path = await cloud_storage_download_blob_to_file.fn(
                     bucket=self.bucket,
                     blob=blob_path,
                     path=local_file_path,
                     gcp_credentials=self.gcp_credentials,
                 )
+                file_paths.append(file_path)
+        return file_paths
 
     @sync_compatible
     async def put_directory(
@@ -688,7 +700,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 f"Bucket path {bucket_path!r} is already prefixed with "
                 f"bucket folder {self.bucket_folder!r}; is this intentional?"
             )
-        return str(PurePosixPath(self.bucket_folder) / bucket_path)
+
+        bucket_path = str(PurePosixPath(self.bucket_folder) / bucket_path)
+        if bucket_path == "." or bucket_path == "/":
+            # client.bucket.list_blobs(prefix=None) is the proper way
+            # of specifying the root folder of the bucket
+            bucket_path = None
+        return bucket_path
 
     @sync_compatible
     async def get_bucket(self) -> "Bucket":
@@ -743,6 +761,46 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         # Ignore folders
         return [blob for blob in blobs if not blob.name.endswith("/")]
+
+    @sync_compatible
+    async def list_folders(self, folder: str = "") -> List[str]:
+        """
+        Lists all folders and subfolders in the bucket.
+
+        Args:
+            folder: List all folders and subfolders inside given folder.
+
+        Returns:
+            A list of folders.
+
+        Examples:
+            Get all folders from a bucket named "my-bucket".
+            ```python
+            from prefect_gcp.cloud_storage import GcsBucket
+
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.list_folders()
+            ```
+
+            Get all folders from a folder called years
+            ```python
+            from prefect_gcp.cloud_storage import GcsBucket
+
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.list_folders('years)
+            ```
+        """
+
+        bucket_path = self._join_bucket_folder()
+        self.logger.info(f"Listing folders in bucket {bucket_path}.")
+
+        blobs = await self.list_blobs(folder)
+        # gets all folders with full path
+        folders = {
+            str(PurePosixPath(blob.name).parent).replace(".", "") for blob in blobs
+        }
+
+        return list(folders)
 
     @sync_compatible
     async def download_object_to_path(
@@ -1049,7 +1107,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             ```
         """
         from_folder = Path(from_folder)
-        bucket_folder = self._join_bucket_folder(to_folder or "")
+        # join bucket folder expects string for the first input
+        # when it returns None, we need to convert it back to empty string
+        # so relative_to works
+        bucket_folder = self._join_bucket_folder(to_folder or "") or ""
 
         num_uploaded = 0
         bucket = await self.get_bucket()

@@ -502,6 +502,14 @@ class TestCloudRunJobContainerSettings:
             "timeoutSeconds"
         ] == str(timeout)
 
+    def test_vpc_connector_name_added_correctly(self, cloud_run_job):
+        cloud_run_job.vpc_connector_name = "vpc_name"
+        result = cloud_run_job._jobs_body()
+        assert (
+            result["metadata"]["annotations"]["run.googleapis.com/vpc-access-connector"]
+            == "vpc_name"
+        )
+
     def test_memory_validation_succeeds(self, gcp_credentials):
         """Make sure that memory validation doesn't fail when valid params provided."""
         CloudRunJob(
