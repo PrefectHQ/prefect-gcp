@@ -11,8 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `get_directory` method in `GcsBucket` returns the list of downloaded file paths and supports relative path for `local_path` [#129](https://github.com/PrefectHQ/prefect-gcp/pull/129).
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## 0.2.6
+
+Released on February 7th, 2023.
+
+### Fixed
+
+- `get_directory` method in `GcsBucket` returns the list of downloaded file paths and supports relative path for `local_path` - [#129](https://github.com/PrefectHQ/prefect-gcp/pull/129).
+- Reporting the state of the `VertexAICustomTrainingJob` to the Prefect API by passing the base env in job spec - [#132](https://github.com/PrefectHQ/prefect-gcp/pull/132).
 
 ## 0.2.5
 
