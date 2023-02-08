@@ -3,7 +3,7 @@
 import os
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 
 from anyio import to_thread
 from prefect import get_run_logger, task
@@ -22,13 +22,17 @@ try:
         QueryJobConfig,
         ScalarQueryParameter,
         SchemaField,
-        Table,
         TimePartitioning,
     )
     from google.cloud.bigquery.dbapi.connection import Connection
     from google.cloud.bigquery.dbapi.cursor import Cursor
-    from google.cloud.bigquery.table import Row
+    from google.cloud.bigquery.table import Row, Table, TableListItem, TableReference
     from google.cloud.exceptions import NotFound
+except ModuleNotFoundError:
+    pass
+
+try:
+    import pandas as pd  # type: ignore
 except ModuleNotFoundError:
     pass
 
@@ -922,13 +926,171 @@ class BigQueryWarehouse(DatabaseBlock):
         self.close()
 
     def __getstate__(self):
-        """ """
+        """
+        Get state for pickling.
+        """
         data = self.__dict__.copy()
         data.update({k: None for k in {"_connection", "_unique_cursors"}})
         return data
 
     def __setstate__(self, data: dict):
-        """ """
+        """
+        Set state for pickling.
+        """
         self.__dict__.update(data)
         self._unique_cursors = {}
         self._start_connection()
+
+    @sync_compatible
+    async def load_table_from_file_object(
+        self,
+        file_obj: BinaryIO,
+        destination: Union[Table, TableReference, TableListItem, str],
+        job_config: Optional[LoadJobConfig] = None,
+        **load_kwargs: Dict[str, Any],
+    ) -> "LoadJob":
+        """
+        Loads data from a file-like object into a table.
+
+        Args:
+            file_obj: A file-like object to load data from.
+            destination: The destination table to load data into.
+            job_config: Extra configuration options for the load job.
+            **load_kwargs: Additional keyword arguments to pass to
+                `client.load_table_from_file`.
+
+        Returns:
+            A `LoadJob` instance.
+        """
+        if job_config is None:
+            job_config = LoadJobConfig(autodetect=True)
+
+        with self.gcp_credentials.get_bigquery_client() as client:
+            result = await run_sync_in_worker_thread(
+                client.load_table_from_file,
+                file_obj=file_obj,
+                destination=destination,
+                job_config=job_config,
+                **load_kwargs,
+            )
+        return result
+
+    @sync_compatible
+    async def load_table_from_path(
+        self,
+        path: Union[str, Path],
+        destination: Union[Table, TableReference, TableListItem, str],
+        job_config: Optional[LoadJobConfig] = None,
+        **load_kwargs: Dict[str, Any],
+    ) -> "LoadJob":
+        """
+        Loads data from a path into a table.
+
+        Args:
+            path: A path to load data from.
+            destination: The destination table to load data into.
+            job_config: Extra configuration options for the load job.
+            **load_kwargs: Additional keyword arguments to pass to
+                `client.load_table_from_file`.
+
+        Returns:
+            A `LoadJob` instance.
+        """
+        with open(path, "rb") as f:
+            result = await self.load_table_from_file_object(
+                file_obj=f,
+                destination=destination,
+                job_config=job_config,
+                **load_kwargs,
+            )
+        return result
+
+    @sync_compatible
+    async def load_table_from_dataframe(
+        self,
+        dataframe: "pd.DataFrame",
+        destination: Union[Table, TableReference, TableListItem, str],
+        job_config: Optional[LoadJobConfig] = None,
+        **load_kwargs: Dict[str, Any],
+    ) -> "LoadJob":
+        """
+        Loads data from a pandas DataFrame into a table.
+
+        Args:
+            dataframe: A pandas DataFrame to load data from.
+            destination: The destination table to load data into.
+            job_config: Extra configuration options for the load job.
+        """
+        if job_config is None:
+            job_config = LoadJobConfig(autodetect=True)
+
+        with self.gcp_credentials.get_bigquery_client() as client:
+            result = await run_sync_in_worker_thread(
+                client.load_table_from_dataframe,
+                dataframe=dataframe,
+                destination=destination,
+                job_config=job_config,
+                **load_kwargs,
+            )
+
+        return result
+
+    @sync_compatible
+    async def load_table_from_uris(
+        self,
+        source_uris: Union[str, List[str]],
+        destination: Union[Table, TableReference, TableListItem, str],
+        job_config: Optional[LoadJobConfig] = None,
+        **load_kwargs: Dict[str, Any],
+    ) -> "LoadJob":
+        """
+        Loads data from a source of URIs into a table.
+
+        Args:
+            source_uris: A URI or list of URIs to load data from.
+            destination: The destination table to load data into.
+            job_config: Extra configuration options for the load job.
+        """
+        if job_config is None:
+            job_config = LoadJobConfig(autodetect=True)
+
+        with self.gcp_credentials.get_bigquery_client() as client:
+            result = await run_sync_in_worker_thread(
+                client.load_table_from_uri,
+                source_uris=source_uris,
+                destination=destination,
+                job_config=job_config,
+                **load_kwargs,
+            )
+
+        return result
+
+    @sync_compatible
+    async def load_table_from_json(
+        self,
+        json_rows: List[Dict[str, Any]],
+        destination: Union[Table, TableReference, TableListItem, str],
+        job_config: Optional[LoadJobConfig] = None,
+        **load_kwargs: Dict[str, Any],
+    ):
+        """
+        Loads data from a list of JSON rows into a table.
+
+        Args:
+            json_rows: A list of JSON rows to load data from.
+            destination: The destination table to load data into.
+            job_config: Extra configuration options for the load job.
+        """
+        if job_config is None:
+            job_config = LoadJobConfig(autodetect=True)
+
+        with self.gcp_credentials.get_bigquery_client() as client:
+            result = await run_sync_in_worker_thread(
+                client.load_table_from_json,
+                json_rows=json_rows,
+                destination=destination,
+                job_config=job_config,
+                **load_kwargs,
+            )
+
+        return result
