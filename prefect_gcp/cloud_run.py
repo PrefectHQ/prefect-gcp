@@ -260,6 +260,11 @@ class CloudRunJob(Infrastructure):
             "for additional details."
         ),
     )
+    vpc_connector_name: Optional[str] = Field(
+        default=None,
+        title="VPC Connector Name",
+        description="The name of the VPC connector to use for the Cloud Run Job.",
+    )
     args: Optional[List[str]] = Field(
         default=None,
         description=(
@@ -566,9 +571,13 @@ class CloudRunJob(Infrastructure):
             "name": self.job_name,
             "annotations": {
                 # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
-                "run.googleapis.com/launch-stage": "BETA"
+                "run.googleapis.com/launch-stage": "BETA",
             },
         }
+        if self.vpc_connector_name:
+            jobs_metadata["annotations"][
+                "run.googleapis.com/vpc-access-connector"
+            ] = self.vpc_connector_name
 
         # env and command here
         containers = [self._add_container_settings({"image": self.image})]
