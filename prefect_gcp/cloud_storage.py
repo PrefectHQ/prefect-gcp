@@ -1159,10 +1159,13 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             df (pd.DataFrame): pandas Dataframe object
             to_path (str): the actual full blob name (e.g.: /path/to/gcs/blob.csv)
             output_format (str): Specify whether the output should be csv or parquet
-            compression (Optional[str], optional): Specify the compression type
+            compression (Optional[str], optional):
+                Specify the compression type for the output.
                 'csv' supports 'None' or 'gzip',
                 'parquet' supports 'None', 'snappy', 'gzip'.
                 Defaults to None.
+            **upload_kwargs: Additional keyword arguments to pass to
+                `Blob.upload_from_file`.
 
         Returns:
             The path that the folder was uploaded to.
@@ -1205,8 +1208,10 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             )
 
         byte_buffer.seek(0)
-        return await self.upload_from_file_object(
+        gcs_path = await self.upload_from_file_object(
             from_file_object=byte_buffer,
             to_path=to_path,
-            **{"content_type": content_type},
+            **{"content_type": content_type, **upload_kwargs},
         )
+        byte_buffer.close()
+        return gcs_path
