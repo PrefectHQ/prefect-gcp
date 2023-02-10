@@ -3,6 +3,7 @@ from io import BytesIO
 from pathlib import Path, PurePosixPath
 from uuid import UUID
 
+import pandas as pd
 import pytest
 from prefect import flow
 
@@ -220,6 +221,15 @@ class TestGcsBucket:
             bucket="bucket",
             gcp_credentials=gcp_credentials,
             bucket_folder=request.param,
+        )
+
+    @pytest.fixture
+    def pandas_dataframe(self):
+        return pd.DataFrame.from_dict(
+            {
+                "name": ["John Doe", "Jane Doe", "Johny", "Jane"],
+                "username": ["john.doe", "jane.doe", "johny", "jane"],
+            }
         )
 
     def test_list_folders_with_root_only(self, gcs_bucket_with_bucket_folder):
@@ -455,3 +465,96 @@ class TestGcsBucket:
             from_path, "to_path"
         )
         assert output_to_path == "base_folder/to_path"
+
+    def test_upload_from_dataframe_with_default_options(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
+            df=pandas_dataframe, to_path=to_path
+        )
+        assert output_to_path == "base_folder/to_path.parquet"
+
+    def test_upload_from_dataframe_parquet_output_unspecified_compression(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
+            df=pandas_dataframe, to_path=to_path, output_format="parquet"
+        )
+        assert output_to_path == "base_folder/to_path.parquet"
+
+    def test_upload_from_dataframe_with_parquet_output_no_compression(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
+            df=pandas_dataframe,
+            to_path=to_path,
+            output_format="parquet",
+            compression=None,
+        )
+        assert output_to_path == "base_folder/to_path.parquet"
+
+    def test_upload_from_dataframe_with_parquet_output_gzip_compression(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
+            df=pandas_dataframe,
+            to_path=to_path,
+            output_format="parquet",
+            compression="gzip",
+        )
+        assert output_to_path == "base_folder/to_path.parquet.gz"
+
+    def test_upload_from_dataframe_with_parquet_output_snappy_compression(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
+            df=pandas_dataframe,
+            to_path=to_path,
+            output_format="parquet",
+            compression="snappy",
+        )
+        assert output_to_path == "base_folder/to_path.parquet.snappy"
+
+    def test_upload_from_dataframe_with_csv_output_unspecified_compression(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
+            df=pandas_dataframe, to_path=to_path, output_format="csv"
+        )
+        assert output_to_path == "base_folder/to_path.csv"
+
+    def test_upload_from_dataframe_with_csv_output_no_compression(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
+            df=pandas_dataframe, to_path=to_path, output_format="csv", compression=None
+        )
+        assert output_to_path == "base_folder/to_path.csv"
+
+    def test_upload_from_dataframe_with_csv_output_gzip_compressed(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
+            df=pandas_dataframe,
+            to_path=to_path,
+            output_format="csv",
+            compression="gzip",
+        )
+        assert output_to_path == "base_folder/to_path.csv.gz"
+
+    def test_upload_from_dataframe_with_unsupported_output(
+        self, gcs_bucket_with_bucket_folder, pandas_dataframe
+    ):
+        to_path = "to_path"
+        with pytest.raises(RuntimeError):
+            gcs_bucket_with_bucket_folder.upload_from_dataframe(
+                df=pandas_dataframe, to_path=to_path, output_format="pickle"
+            )

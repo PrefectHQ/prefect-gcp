@@ -7,6 +7,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
+import pandas as pd
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import ObjectStorageBlock
 from prefect.filesystems import WritableDeploymentStorage, WritableFileSystem
@@ -1140,3 +1141,72 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         if num_uploaded == 0:
             self.logger.warning(f"No files were uploaded from {from_folder}.")
         return bucket_folder
+
+    @sync_compatible
+    async def upload_from_dataframe(
+        self,
+        df: pd.DataFrame,
+        to_path: str,
+        output_format: str = "parquet",
+        compression: Optional[str] = None,
+        **upload_kwargs: Dict[str, Any],
+    ) -> str:
+        """
+        Upload a pandas Dataframe to Google Cloud Storage as:
+            .csv, .csv.gz, .parquet, .parquet.snappy, .parquet.gz
+
+        Args:
+            df (pd.DataFrame): pandas Dataframe object
+            to_path (str): the actual full blob name (e.g.: /path/to/gcs/blob.csv)
+            output_format (str): Specify whether the output should be csv or parquet
+            compression (Optional[str], optional): Specify the compression type
+                'csv' supports 'None' or 'gzip',
+                'parquet' supports 'None', 'snappy', 'gzip'.
+                Defaults to None.
+
+        Returns:
+            The path that the folder was uploaded to.
+
+        Examples:
+            Upload local folder my_folder to the bucket's folder my_folder.
+            ```python
+            from prefect_gcp.cloud_storage import GcsBucket
+
+            gcs_bucket = GcsBucket.load("my-bucket")
+            gcs_bucket.upload_from_dataframe(
+                df=pandas_df, blob_name="/path/to/gcs/blob.parquet",
+                output='parquet', compression='snappy'
+            )
+            ```
+        """
+        byte_buffer = BytesIO()
+        content_type: str = "application/octet-stream"
+
+        if not to_path.endswith(output_format):
+            to_path = f"{to_path}.{output_format}"
+
+        if output_format == "csv":
+            df.to_csv(path_or_buf=byte_buffer, compression=compression, index=False)
+            if compression:
+                to_path = f"{to_path}.gz"
+            else:
+                content_type = "text/csv"
+
+        elif output_format == "parquet":
+            df.to_parquet(path=byte_buffer, compression=compression, index=False)
+            if compression == "gzip":
+                to_path = f"{to_path}.gz"
+            elif compression == "snappy":
+                to_path = f"{to_path}.snappy"
+
+        else:
+            raise RuntimeError(
+                "Unsupported output format. Use either 'csv' or 'parquet'"
+            )
+
+        byte_buffer.seek(0)
+        return await self.upload_from_file_object(
+            from_file_object=byte_buffer,
+            to_path=to_path,
+            **{"content_type": content_type},
+        )
