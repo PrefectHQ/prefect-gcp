@@ -1156,16 +1156,15 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             .csv, .csv.gz, .parquet, .parquet.snappy, .parquet.gz
 
         Args:
-            df (pd.DataFrame): pandas Dataframe object
-            to_path (str): the actual full blob name (e.g.: /path/to/gcs/blob.csv)
-            output_format (str): Specify whether the output should be csv or parquet
-            compression (Optional[str], optional):
-                Specify the compression type for the output.
+            df: The pandas Dataframe object to upload.
+            to_path: The path to upload the object to; this gets prefixed
+                with the bucket_folder.
+            output_format: The output format to serialize the dataframe into.
+            compression: Specify the compression type for the output.
                 'csv' supports 'None' or 'gzip',
                 'parquet' supports 'None', 'snappy', 'gzip'.
-                Defaults to None.
             **upload_kwargs: Additional keyword arguments to pass to
-                `Blob.upload_from_file`.
+                `Blob.upload_from_dataframe`.
 
         Returns:
             The path that the folder was uploaded to.
@@ -1177,7 +1176,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
             gcs_bucket = GcsBucket.load("my-bucket")
             gcs_bucket.upload_from_dataframe(
-                df=pandas_df, blob_name="/path/to/gcs/blob.parquet",
+                df=pandas_df, to_path="/path/to/gcs/blob.parquet",
                 output='parquet', compression='snappy'
             )
             ```
