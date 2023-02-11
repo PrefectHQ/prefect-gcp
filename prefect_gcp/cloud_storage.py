@@ -2,12 +2,12 @@
 
 import asyncio
 import os
+from enum import Enum
 from io import BytesIO
 from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
-import pandas as pd
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import ObjectStorageBlock
 from prefect.filesystems import WritableDeploymentStorage, WritableFileSystem
@@ -19,6 +19,11 @@ from pydantic import Field, validator
 # cannot be type_checking only or else `fields = cls.schema()` raises
 # TypeError: issubclass() arg 1 must be a class
 from prefect_gcp.credentials import GcpCredentials
+
+try:
+    from pandas import DataFrame
+except ModuleNotFoundError:
+    pass
 
 try:
     from google.cloud.storage import Bucket
@@ -467,6 +472,74 @@ async def cloud_storage_copy_blob(
     )
 
     return dest_blob
+
+
+class OutputFormat(Enum):
+    """An enumeration class to represent different file formats,
+        compression options for upload_from_dataframe
+
+    Class Attributes:
+        CSV (tuple): Representation for 'csv' file format with no compression
+            and its related content type and suffix.
+
+        CSV_GZIP (tuple): Representation for 'csv' file format with 'gzip' compression
+            and its related content type and suffix.
+
+        PARQUET (tuple): Representation for 'parquet' file format with no compression
+            and its related content type and suffix.
+
+        PARQUET_SNAPPY (tuple): Representation for 'parquet' file format
+            with 'snappy' compression and its related content type and suffix.
+
+        PARQUET_GZIP (tuple): Representation for 'parquet' file format
+            with 'gzip' compression and its related content type and suffix.
+    """
+
+    CSV = ("csv", None, "text/csv", ".csv")
+    CSV_GZIP = ("csv", "gzip", "application/x-gzip", ".csv.gz")
+    PARQUET = ("parquet", None, "application/octet-stream", ".parquet")
+    PARQUET_SNAPPY = (
+        "parquet",
+        "snappy",
+        "application/octet-stream",
+        ".parquet.snappy",
+    )
+    PARQUET_GZIP = ("parquet", "gzip", "application/octet-stream", ".parquet.gz")
+
+    @property
+    def format(self) -> str:
+        """The file format of the current instance."""
+        return self.value[0]
+
+    @property
+    def compression(self) -> Union[str, None]:
+        """The compression type of the current instance."""
+        return self.value[1]
+
+    @property
+    def content_type(self) -> str:
+        """The content type of the current instance."""
+        return self.value[2]
+
+    @property
+    def suffix(self) -> str:
+        """The suffix of the file format of the current instance."""
+        return self.value[3]
+
+    @classmethod
+    def lookup(cls, output_format: str) -> "OutputFormat":
+        """
+        Returns the instance of the class that corresponds to the input `fmt`.
+        If no match is found, returns `CSV_GZIP` as a default value.
+
+        Parameters:
+            output_format (str): The string representation of the output format.
+
+        Returns:
+            OutputFormat: The instance of the class that corresponds to `fmt`.
+        """
+        lookup_table = {f"{entry.name}": entry for entry in OutputFormat}
+        return lookup_table.get(output_format.upper(), OutputFormat.CSV_GZIP)
 
 
 class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBlock):
@@ -1145,72 +1218,67 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
     @sync_compatible
     async def upload_from_dataframe(
         self,
-        df: pd.DataFrame,
+        df: DataFrame,
         to_path: str,
-        output_format: str = "parquet",
-        compression: Optional[str] = None,
+        output_format: Union[str, OutputFormat] = OutputFormat.CSV_GZIP,
         **upload_kwargs: Dict[str, Any],
     ) -> str:
-        """
-        Upload a pandas Dataframe to Google Cloud Storage as:
-            .csv, .csv.gz, .parquet, .parquet.snappy, .parquet.gz
+        """Upload a Pandas DataFrame to Google Cloud Storage in various formats.
+
+        This function uploads the data in a Pandas DataFrame to Google Cloud Storage
+        in a specified format, such as .csv, .csv.gz, .parquet,
+        .parquet.snappy, and .parquet.gz.
 
         Args:
-            df: The pandas Dataframe object to upload.
-            to_path: The path to upload the object to; this gets prefixed
-                with the bucket_folder.
-            output_format: The output format to serialize the dataframe into.
-            compression: Specify the compression type for the output.
-                'csv' supports 'None' or 'gzip',
-                'parquet' supports 'None', 'snappy', 'gzip'.
-            **upload_kwargs: Additional keyword arguments to pass to
-                `Blob.upload_from_dataframe`.
+            df (pd.DataFrame): The Pandas DataFrame to be uploaded.
+            to_path (str): The destination path for the uploaded DataFrame.
+            output_format (Union[str, OutputFormat]): The format to serialize
+                the DataFrame into. Defaults to `OutputFormat.CSV_GZIP`.
+                When passed as a `str`, the valid options are:
+                'csv', 'csv_gzip', 'parquet', 'parquet_snappy', 'parquet_gz'.
+            **upload_kwargs (Dict[str, Any]): Additional keyword arguments to
+                pass to the underlying `Blob.upload_from_dataframe` method.
 
         Returns:
-            The path that the folder was uploaded to.
-
-        Examples:
-            Upload local folder my_folder to the bucket's folder my_folder.
-            ```python
-            from prefect_gcp.cloud_storage import GcsBucket
-
-            gcs_bucket = GcsBucket.load("my-bucket")
-            gcs_bucket.upload_from_dataframe(
-                df=pandas_df, to_path="/path/to/gcs/blob.parquet",
-                output='parquet', compression='snappy'
-            )
-            ```
+            The path that the object was uploaded to.
         """
-        byte_buffer = BytesIO()
-        content_type: str = "application/octet-stream"
 
-        if not to_path.endswith(output_format):
-            to_path = f"{to_path}.{output_format}"
+        def fix_extension_with(gcs_blob: str, ext: str):
+            """Fix the extension of a GCS blob.
 
-        if output_format == "csv":
-            df.to_csv(path_or_buf=byte_buffer, compression=compression, index=False)
-            if compression:
-                to_path = f"{to_path}.gz"
-            else:
-                content_type = "text/csv"
+            Args:
+                gcs_blob (str): The path to the GCS blob to be modified.
+                ext (str): The extension to add to the filename.
 
-        elif output_format == "parquet":
-            df.to_parquet(path=byte_buffer, compression=compression, index=False)
-            if compression == "gzip":
-                to_path = f"{to_path}.gz"
-            elif compression == "snappy":
-                to_path = f"{to_path}.snappy"
+            Returns:
+                str: The modified path to the GCS blob with the new extension.
+            """
+            gcs_blob = Path(gcs_blob)
+            folder, filename = (gcs_blob.parent, Path(gcs_blob.stem).with_suffix(ext))
+            return str(folder.joinpath(filename))
 
-        else:
-            raise RuntimeError(
-                "Unsupported output format. Use either 'csv' or 'parquet'"
+        if type(output_format) == str:
+            output_format = OutputFormat.lookup(output_format)
+
+        with BytesIO() as bytes_buffer:
+            if output_format.format == "parquet":
+                df.to_parquet(
+                    path=bytes_buffer,
+                    compression=output_format.compression,
+                    index=False,
+                )
+            elif output_format.format == "csv":
+                df.to_csv(
+                    path_or_buf=bytes_buffer,
+                    compression=output_format.compression,
+                    index=False,
+                )
+
+            bytes_buffer.seek(0)
+            to_path = fix_extension_with(to_path, output_format.suffix)
+
+            return await self.upload_from_file_object(
+                from_file_object=bytes_buffer,
+                to_path=to_path,
+                **{"content_type": output_format.content_type, **upload_kwargs},
             )
-
-        byte_buffer.seek(0)
-        gcs_path = await self.upload_from_file_object(
-            from_file_object=byte_buffer,
-            to_path=to_path,
-            **{"content_type": content_type, **upload_kwargs},
-        )
-        byte_buffer.close()
-        return gcs_path
