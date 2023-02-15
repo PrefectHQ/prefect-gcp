@@ -527,39 +527,19 @@ class DataFrameSerializationFormat(Enum):
         """The suffix of the file format of the current instance."""
         return self.value[3]
 
-    @classmethod
-    def fix_extension_with(cls, gcs_blob: str, ext: str):
+    def fix_extension_with(self, gcs_blob_path: str) -> str:
         """Fix the extension of a GCS blob.
 
         Args:
-            gcs_blob: The path to the GCS blob to be modified.
-            ext: The extension to add to the filename.
+            gcs_blob_path: The path to the GCS blob to be modified.
 
         Returns:
             The modified path to the GCS blob with the new extension.
         """
-        gcs_blob = Path(gcs_blob)
-        folder = gcs_blob.parent
-        filename = Path(gcs_blob.stem).with_suffix(ext)
+        gcs_blob_path = PurePosixPath(gcs_blob_path)
+        folder = gcs_blob_path.parent
+        filename = PurePosixPath(gcs_blob_path.stem).with_suffix(self.suffix)
         return str(folder.joinpath(filename))
-
-    @classmethod
-    def lookup(cls, serialization_format: str):
-        """
-        Returns the instance of the class that corresponds to the input `fmt`.
-        If no match is found, returns `CSV_GZIP` as a default value.
-
-        Parameters:
-            serialization_format (str): The string representation of the file format.
-
-        Returns:
-            DataFrameSerializationFormat: The instance of the class that corresponds
-             to `serialization_format`.
-        """
-        try:
-            return cls[serialization_format.upper()]
-        except KeyError:
-            return cls.CSV_GZIP
 
 
 class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBlock):
@@ -1240,7 +1220,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         self,
         df: "DataFrame",
         to_path: str,
-        serialization_format: Union[str, DataFrameSerializationFormat] = "csv_gzip",
+        serialization_format: Union[
+            str, DataFrameSerializationFormat
+        ] = DataFrameSerializationFormat.CSV_GZIP,
         **upload_kwargs: Dict[str, Any],
     ) -> str:
         """Upload a Pandas DataFrame to Google Cloud Storage in various formats.
@@ -1263,9 +1245,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             The path that the object was uploaded to.
         """
         if isinstance(serialization_format, str):
-            serialization_format = DataFrameSerializationFormat.lookup(
-                serialization_format
-            )
+            serialization_format = DataFrameSerializationFormat[
+                serialization_format.upper()
+            ]
 
         with BytesIO() as bytes_buffer:
             if serialization_format.format == "parquet":
@@ -1282,9 +1264,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
                 )
 
             bytes_buffer.seek(0)
-            to_path = DataFrameSerializationFormat.fix_extension_with(
-                gcs_blob=to_path, ext=serialization_format.suffix
-            )
+            to_path = serialization_format.fix_extension_with(gcs_blob_path=to_path)
 
             return await self.upload_from_file_object(
                 from_file_object=bytes_buffer,

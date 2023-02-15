@@ -524,12 +524,11 @@ class TestGcsBucket:
         )
         assert output_to_path == "base_folder/to_path.csv.gz"
 
-    def test_upload_from_dataframe_with_invalid_output_falls_back_to_csv_gzip(
+    def test_upload_from_dataframe_with_invalid_serialization_should_raise_key_error(
         self, gcs_bucket_with_bucket_folder, pandas_dataframe
     ):
-        to_path = "to_path"
-        output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
-            df=pandas_dataframe, to_path=to_path, serialization_format="pickle"
-        )
-
-        assert output_to_path == "base_folder/to_path.csv.gz"
+        with pytest.raises(KeyError):
+            to_path = "to_path"
+            gcs_bucket_with_bucket_folder.upload_from_dataframe(
+                df=pandas_dataframe, to_path=to_path, serialization_format="pickle"
+            )
