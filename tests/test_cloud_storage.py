@@ -480,7 +480,7 @@ class TestGcsBucket:
     ):
         to_path = "to_path"
         output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
-            df=pandas_dataframe, to_path=to_path, output_format="parquet"
+            df=pandas_dataframe, to_path=to_path, serialization_format="parquet"
         )
         assert output_to_path == "base_folder/to_path.parquet"
 
@@ -491,7 +491,7 @@ class TestGcsBucket:
         output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
             df=pandas_dataframe,
             to_path=to_path,
-            output_format="parquet_snappy",
+            serialization_format="parquet_snappy",
         )
         assert output_to_path == "base_folder/to_path.parquet.snappy"
 
@@ -502,7 +502,7 @@ class TestGcsBucket:
         output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
             df=pandas_dataframe,
             to_path=to_path,
-            output_format="parquet_gzip",
+            serialization_format="parquet_gzip",
         )
         assert output_to_path == "base_folder/to_path.parquet.gz"
 
@@ -511,7 +511,7 @@ class TestGcsBucket:
     ):
         to_path = "to_path"
         output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
-            df=pandas_dataframe, to_path=to_path, output_format="csv"
+            df=pandas_dataframe, to_path=to_path, serialization_format="csv"
         )
         assert output_to_path == "base_folder/to_path.csv"
 
@@ -520,7 +520,7 @@ class TestGcsBucket:
     ):
         to_path = "to_path"
         output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
-            df=pandas_dataframe, to_path=to_path, output_format="csv_gzip"
+            df=pandas_dataframe, to_path=to_path, serialization_format="csv_gzip"
         )
         assert output_to_path == "base_folder/to_path.csv.gz"
 
@@ -529,7 +529,7 @@ class TestGcsBucket:
     ):
         to_path = "to_path"
         output_to_path = gcs_bucket_with_bucket_folder.upload_from_dataframe(
-            df=pandas_dataframe, to_path=to_path, output_format="pickle"
+            df=pandas_dataframe, to_path=to_path, serialization_format="pickle"
         )
 
         assert output_to_path == "base_folder/to_path.csv.gz"
