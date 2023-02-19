@@ -54,6 +54,9 @@ GcpCredentials(
 ).save("BLOCK_NAME_PLACEHOLDER")
 ```
 
+> **_NOTE:_**  The use of service_account_file is discouraged since it is not portable with containers. Please use service_account_info instead.
+
+
 Congrats! You can now easily load the saved block, which holds your credentials:
 
 ```python
@@ -70,6 +73,8 @@ GcpCredentials.load("BLOCK_NAME_PLACEHOLDER")
     ```bash
     prefect block register -m prefect_gcp
     ```
+
+
 
 ### Download blob from bucket
 
