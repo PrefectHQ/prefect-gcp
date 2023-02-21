@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+from enum import Enum
 from io import BytesIO
 from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
@@ -18,6 +19,11 @@ from pydantic import Field, validator
 # cannot be type_checking only or else `fields = cls.schema()` raises
 # TypeError: issubclass() arg 1 must be a class
 from prefect_gcp.credentials import GcpCredentials
+
+try:
+    from pandas import DataFrame
+except ModuleNotFoundError:
+    pass
 
 try:
     from google.cloud.storage import Bucket
@@ -466,6 +472,74 @@ async def cloud_storage_copy_blob(
     )
 
     return dest_blob
+
+
+class DataFrameSerializationFormat(Enum):
+    """
+    An enumeration class to represent different file formats,
+    compression options for upload_from_dataframe
+
+    Attributes:
+        CSV: Representation for 'csv' file format with no compression
+            and its related content type and suffix.
+
+        CSV_GZIP: Representation for 'csv' file format with 'gzip' compression
+            and its related content type and suffix.
+
+        PARQUET: Representation for 'parquet' file format with no compression
+            and its related content type and suffix.
+
+        PARQUET_SNAPPY: Representation for 'parquet' file format
+            with 'snappy' compression and its related content type and suffix.
+
+        PARQUET_GZIP: Representation for 'parquet' file format
+            with 'gzip' compression and its related content type and suffix.
+    """
+
+    CSV = ("csv", None, "text/csv", ".csv")
+    CSV_GZIP = ("csv", "gzip", "application/x-gzip", ".csv.gz")
+    PARQUET = ("parquet", None, "application/octet-stream", ".parquet")
+    PARQUET_SNAPPY = (
+        "parquet",
+        "snappy",
+        "application/octet-stream",
+        ".parquet.snappy",
+    )
+    PARQUET_GZIP = ("parquet", "gzip", "application/octet-stream", ".parquet.gz")
+
+    @property
+    def format(self) -> str:
+        """The file format of the current instance."""
+        return self.value[0]
+
+    @property
+    def compression(self) -> Union[str, None]:
+        """The compression type of the current instance."""
+        return self.value[1]
+
+    @property
+    def content_type(self) -> str:
+        """The content type of the current instance."""
+        return self.value[2]
+
+    @property
+    def suffix(self) -> str:
+        """The suffix of the file format of the current instance."""
+        return self.value[3]
+
+    def fix_extension_with(self, gcs_blob_path: str) -> str:
+        """Fix the extension of a GCS blob.
+
+        Args:
+            gcs_blob_path: The path to the GCS blob to be modified.
+
+        Returns:
+            The modified path to the GCS blob with the new extension.
+        """
+        gcs_blob_path = PurePosixPath(gcs_blob_path)
+        folder = gcs_blob_path.parent
+        filename = PurePosixPath(gcs_blob_path.stem).with_suffix(self.suffix)
+        return str(folder.joinpath(filename))
 
 
 class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBlock):
@@ -1140,3 +1214,60 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         if num_uploaded == 0:
             self.logger.warning(f"No files were uploaded from {from_folder}.")
         return bucket_folder
+
+    @sync_compatible
+    async def upload_from_dataframe(
+        self,
+        df: "DataFrame",
+        to_path: str,
+        serialization_format: Union[
+            str, DataFrameSerializationFormat
+        ] = DataFrameSerializationFormat.CSV_GZIP,
+        **upload_kwargs: Dict[str, Any],
+    ) -> str:
+        """Upload a Pandas DataFrame to Google Cloud Storage in various formats.
+
+        This function uploads the data in a Pandas DataFrame to Google Cloud Storage
+        in a specified format, such as .csv, .csv.gz, .parquet,
+        .parquet.snappy, and .parquet.gz.
+
+        Args:
+            df: The Pandas DataFrame to be uploaded.
+            to_path: The destination path for the uploaded DataFrame.
+            serialization_format: The format to serialize the DataFrame into.
+                When passed as a `str`, the valid options are:
+                'csv', 'csv_gzip',  'parquet', 'parquet_snappy', 'parquet_gz'.
+                Defaults to `OutputFormat.CSV_GZIP`.
+            **upload_kwargs: Additional keyword arguments to pass to the underlying
+            `Blob.upload_from_dataframe` method.
+
+        Returns:
+            The path that the object was uploaded to.
+        """
+        if isinstance(serialization_format, str):
+            serialization_format = DataFrameSerializationFormat[
+                serialization_format.upper()
+            ]
+
+        with BytesIO() as bytes_buffer:
+            if serialization_format.format == "parquet":
+                df.to_parquet(
+                    path=bytes_buffer,
+                    compression=serialization_format.compression,
+                    index=False,
+                )
+            elif serialization_format.format == "csv":
+                df.to_csv(
+                    path_or_buf=bytes_buffer,
+                    compression=serialization_format.compression,
+                    index=False,
+                )
+
+            bytes_buffer.seek(0)
+            to_path = serialization_format.fix_extension_with(gcs_blob_path=to_path)
+
+            return await self.upload_from_file_object(
+                from_file_object=bytes_buffer,
+                to_path=to_path,
+                **{"content_type": serialization_format.content_type, **upload_kwargs},
+            )

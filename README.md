@@ -20,7 +20,7 @@
 
 Visit the full docs [here](https://PrefectHQ.github.io/prefect-gcp) to see additional examples and the API reference.
 
-The `prefect-openai` collection makes it easy to leverage the capabilities of Google Cloud Platform (GCP) in your flows. Check out the examples below to get started!
+The `prefect-gcp` collection makes it easy to leverage the capabilities of Google Cloud Platform (GCP) in your flows. Check out the examples below to get started!
 
 ## Getting Started
 
