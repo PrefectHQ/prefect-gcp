@@ -20,7 +20,7 @@
 
 Visit the full docs [here](https://PrefectHQ.github.io/prefect-gcp) to see additional examples and the API reference.
 
-The `prefect-openai` collection makes it easy to leverage the capabilities of Google Cloud Platform (GCP) in your flows. Check out the examples below to get started!
+The `prefect-gcp` collection makes it easy to leverage the capabilities of Google Cloud Platform (GCP) in your flows. Check out the examples below to get started!
 
 ## Getting Started
 
@@ -61,7 +61,7 @@ from prefect_gcp import GcpCredentials
 GcpCredentials.load("BLOCK_NAME_PLACEHOLDER")
 ```
 
-!!! info Registering blocks
+!!! info "Registering blocks"
 
     Register blocks in this module to
     [view and edit them](https://orion-docs.prefect.io/ui/blocks/)
