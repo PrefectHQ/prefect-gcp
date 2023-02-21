@@ -31,6 +31,6 @@ jobs:
 
       - name: Run extras imports
         env:
-          PREFECT_ORION_DATABASE_CONNECTION_URL: "sqlite+aiosqlite:///./orion-tests.db"
+          PREFECT_ORION_DATABASE_CONNECTION_URL: "sqlite+aiosqlite:///./tests.db"
         run: |
           python -c "import prefect_gcp.${{ matrix.extras }}; print(prefect_gcp)"
