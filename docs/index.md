@@ -83,7 +83,7 @@ from prefect_gcp import GcpCredentials, CloudRunJob, GcsBucket
 gcp_credentials = GcpCredentials.load("BLOCK-NAME-PLACEHOLDER")
 
 cloud_run_job = CloudRunJob(
-    image="us-docker.pkg.dev/cloudrun/container/job:latest",
+    image="IMAGE-NAME-PLACEHOLDER",  # must be from GCR and have Python + Prefect
     credentials=gcp_credentials,
     region="us-central1",
 )
@@ -124,16 +124,44 @@ Make any necessary changes to the YAML, if needed, and apply the deployment.
 prefect deployment apply cloud_run_job_flow-deployment.yaml
 ```
 
-Finally start up an agent if you haven't.
+Start up an agent if you haven't.
 
 ```bash
 prefect agent start -q 'default'
 ```
 
+Run the deployment once to test.
+
+```bash
+prefect deployment run cloud-run-job-flow/cloud-run-deployment 
+```
+
+You should see `Hello, Prefect!` eventually logged.
+
 !!! info "No class found for dispatch key"
 
     If you encounter an error message like `KeyError: "No class found for dispatch key 'cloud-run-job' in registry for type 'Block'."`,
     ensure `prefect-gcp` is installed in the environment that your agent is running!
+
+
+### Using Prefect with Google Vertex AI
+
+`prefect_gcp` allows you to interact with Google Vertex AI with Prefect flows. Be sure to additionally [install](#installation) the AI Platform extra!
+
+Setting up a Vertex AI job is extremely similar to setting up a Cloud Run Job, but replace `CloudRunJob` with the following snippet.
+
+```python
+from prefect_gcp import GcpCredentials, VertexAICustomTrainingJob, GcsBucket
+
+gcp_credentials = GcpCredentials.load("BLOCK-NAME-PLACEHOLDER")
+
+vertex_ai_job = VertexAICustomTrainingJob(
+    image="IMAGE-NAME-PLACEHOLDER",  # must be from GCR and have Python + Prefect
+    credentials=gcp_credentials,
+    region="us-central1",
+)
+vertex_ai_job.save("test-example")
+```
 
 ### Using Prefect with Google BigQuery
 
@@ -267,53 +295,6 @@ def create_bigquery_client():
     gcp_credentials = GcpCredentials.load("BLOCK-NAME-PLACEHOLDER")
     bigquery_client = gcp_credentials.get_client("bigquery")
 ```
-
-<!-- 
-### Deploy command on Vertex AI as a flow
-
-Save the following as `prefect_gcp_flow.py`:
-
-```python
-from prefect import flow
-from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.aiplatform import VertexAICustomTrainingJob
-
-@flow
-def vertex_ai_job_flow():
-    gcp_credentials = GcpCredentials.load("MY_BLOCK")
-    job = VertexAICustomTrainingJob(
-        command=["echo", "hello world"],
-        region="us-east1",
-        image="us-docker.pkg.dev/cloudrun/container/job:latest",
-        gcp_credentials=gcp_credentials,
-    )
-    job.run()
-
-vertex_ai_job_flow()
-```
-
-Deploy `prefect_gcp_flow.py`:
-
-
-```python
-from prefect.deployments import Deployment
-from prefect_gcp_flow import vertex_ai_job_flow
-
-deployment = Deployment.build_from_flow(
-    flow=vertex_ai_job_flow,
-    name="vertex-ai-job-deployment", 
-    version=1, 
-    work_queue_name="demo",
-)
-deployment.apply()
-```
-
-Run the deployment either on the UI or through the CLI:
-```bash
-prefect deployment run vertex-ai-job-flow/vertex-ai-job-deployment
-```
-
-Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for more information about deployments. -->
 
 ## Resources
 
