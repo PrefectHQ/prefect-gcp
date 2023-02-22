@@ -545,4 +545,4 @@ class TestGcsBucket:
             name="test-deployment",
             storage=gcs_bucket_with_bucket_folder,
         )
-        assert deployment.storage.basepath == "base_folder/"
+        assert deployment.location == ""
