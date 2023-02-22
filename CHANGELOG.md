@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Using `GcsBucket` as a deployment storage option - [#147](https://github.com/PrefectHQ/prefect-gcp/pull/147)
-- Breaking: Stop decoding and return a `bytes` type in `GcpSecret.read_secret`, as originally annotated - [#148](https://github.com/PrefectHQ/prefect-gcp/pull/148)
+- Breaking: Stop decoding and return a `bytes` type in `GcpSecret.read_secret`, as originally annotated - [#149](https://github.com/PrefectHQ/prefect-gcp/pull/149)
 
 ### Security
 
