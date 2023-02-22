@@ -75,19 +75,44 @@ GcpCredentials.load("BLOCK-NAME-PLACEHOLDER_PLACEHOLDER")
 
 The snippets below show how you can use `prefect_gcp` to run a job on Cloud Run. It uses the `CloudRunJob` block as [Prefect infrastructure](https://docs.prefect.io/concepts/infrastructure/).
 
-First save a custom infrastructure and storage block by updating the placeholders and executing the following snippet.
+#### Build an image
+
+First, find an existing image within the Google Artifact Registry. Ensure it has Python and Prefect installed, or follow the instructions below to set one up.
+
+Create a `Dockerfile`.
+
+```dockerfile
+FROM prefecthq/prefect:latest-python3.9
+RUN pip install prefect-gcp
+```
+
+Then push to the Google Artifact Registry.
+
+```bash
+gcloud artifacts repositories create test-example-repository --repository-format=docker --location=us
+gcloud auth configure-docker us-docker.pkg.dev
+docker build -t us-docker.pkg.dev/<PROJECT-NAME-PLACEHOLDER>/test-example-repository/prefect-gcp:latest-python3.9 .
+docker push us-docker.pkg.dev/<PROJECT-NAME-PLACEHOLDER>/test-example-repository/prefect-gcp:latest-python3.9
+```
+
+#### Save an infrastructure and storage block
+
+Save a custom infrastructure and storage block by updating the placeholders and executing the following snippet.
 
 ```python
 from prefect_gcp import GcpCredentials, CloudRunJob, GcsBucket
 
 gcp_credentials = GcpCredentials.load("BLOCK-NAME-PLACEHOLDER")
 
+# must be from GCR and have Python + Prefect
+image = "us-docker.pkg.dev/<PROJECT-NAME-PLACEHOLDER>/test-example-repository/prefect-gcp:latest-python3.9"  # noqa
+
 cloud_run_job = CloudRunJob(
-    image="IMAGE-NAME-PLACEHOLDER",  # must be from GCR and have Python + Prefect
+    image=image,
     credentials=gcp_credentials,
     region="us-central1",
 )
-cloud_run_job.save("test-example")
+cloud_run_job.save("test-example", overwrite=True)
 
 bucket_name = "cloud-run-job-bucket"
 cloud_storage_client = gcp_credentials.get_cloud_storage_client()
@@ -96,8 +121,10 @@ gcs_bucket = GcsBucket(
     bucket=bucket_name,
     gcp_credentials=gcp_credentials,
 )
-gcs_bucket.save("test-example")
+gcs_bucket.save("test-example", overwrite=True)
 ```
+
+#### Write a flow
 
 Then, find an existing flow or define an arbitrary one to test.
 
@@ -112,6 +139,8 @@ if __name__ == "__main__":
     cloud_run_job_flow()
 ```
 
+#### Create a deployment
+
 If the script was named "cloud_run_job_script.py", build the deployment with the following command.
 
 ```bash
@@ -124,6 +153,8 @@ Make any necessary changes to the YAML, if needed, and apply the deployment.
 prefect deployment apply cloud_run_job_flow-deployment.yaml
 ```
 
+##### Test the deployment
+
 Start up an agent if you haven't.
 
 ```bash
@@ -133,7 +164,7 @@ prefect agent start -q 'default'
 Run the deployment once to test.
 
 ```bash
-prefect deployment run cloud-run-job-flow/cloud-run-deployment 
+prefect deployment run cloud-run-job-flow/cloud-run-deployment
 ```
 
 You should see `Hello, Prefect!` eventually logged.
