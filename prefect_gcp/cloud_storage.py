@@ -582,6 +582,15 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         ),
     )
 
+    @property
+    def basepath(self) -> str:
+        """
+        Read-only property that mirrors the bucket folder.
+
+        Used for deployment.
+        """
+        return self.bucket_folder
+
     @validator("bucket_folder", pre=True, always=True)
     def _bucket_folder_suffix(cls, value):
         """
