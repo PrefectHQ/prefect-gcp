@@ -6,6 +6,7 @@ from uuid import UUID
 import pandas as pd
 import pytest
 from prefect import flow
+from prefect.deployments import Deployment
 
 from prefect_gcp.cloud_storage import (
     GcsBucket,
@@ -533,5 +534,15 @@ class TestGcsBucket:
                 df=pandas_dataframe, to_path=to_path, serialization_format="pickle"
             )
 
-    def test_basepath(self, gcs_bucket_with_bucket_folder):
+    def test_basepath(self, gcs_bucket_with_bucket_folder, monkeypatch):
+        monkeypatch.setattr(
+            "prefect_gcp.GcpCredentials.get_cloud_storage_client", lambda x: x
+        )
         assert gcs_bucket_with_bucket_folder.basepath == "base_folder/"
+
+        deployment = Deployment(
+            flow_name="test-flow-name",
+            name="test-deployment",
+            storage=gcs_bucket_with_bucket_folder,
+        )
+        assert deployment.storage.basepath == "base_folder/"
