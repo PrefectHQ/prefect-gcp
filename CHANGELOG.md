@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Using `GcsBucket` as a deployment storage option - [#147](https://github.com/PrefectHQ/prefect-gcp/pull/147)
+
 ### Security
 
 ## 0.2.6
