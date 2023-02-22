@@ -4,6 +4,7 @@ repo_url: https://github.com/PrefectHQ/prefect-gcp
 edit_uri: edit/main/docs/
 theme:
   name: material
+  custom_dir: docs/overrides
   favicon: img/favicon.ico
   palette:
     - media: "(prefers-color-scheme)"
@@ -105,5 +106,5 @@ extra:
         - icon: fontawesome/brands/python
           link: https://pypi.org/project/prefect/
     analytics:
-        provider: google
+        provider: custom
         property: G-8CSMBCQDKN

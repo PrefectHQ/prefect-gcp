@@ -6,7 +6,7 @@ flake8
 mypy
 mkdocs
 mkdocs-material
-mkdocstrings-python-legacy
+mkdocstrings[python]
 isort
 pre-commit
 pytest-asyncio
