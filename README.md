@@ -7,7 +7,7 @@
         <img alt="PyPI" src="https://img.shields.io/pypi/v/prefect-gcp?color=0052FF&labelColor=090422"></a>
     <a href="https://github.com/PrefectHQ/prefect-gcp/" alt="Stars">
         <img src="https://img.shields.io/github/stars/PrefectHQ/prefect-gcp?color=0052FF&labelColor=090422" /></a>
-    <a href="https://pepy.tech/badge/prefect-gcp/" alt="Downloads">
+    <a href="https://pypistats.org/packages/prefect-gcp/" alt="Downloads">
         <img src="https://img.shields.io/pypi/dm/prefect-gcp?color=0052FF&labelColor=090422" /></a>
     <a href="https://github.com/PrefectHQ/prefect-gcp/pulse" alt="Activity">
         <img src="https://img.shields.io/github/commit-activity/m/PrefectHQ/prefect-gcp?color=0052FF&labelColor=090422" /></a>
@@ -61,10 +61,10 @@ from prefect_gcp import GcpCredentials
 GcpCredentials.load("BLOCK_NAME_PLACEHOLDER")
 ```
 
-!!! info Registering blocks
+!!! info "Registering blocks"
 
     Register blocks in this module to
-    [view and edit them](https://orion-docs.prefect.io/ui/blocks/)
+    [view and edit them](https://docs.prefect.io/ui/blocks/)
     on Prefect Cloud:
 
     ```bash
@@ -204,7 +204,7 @@ Visit [Prefect Deployments](https://docs.prefect.io/tutorials/deployments/) for 
 
 ## Resources
 
-For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://orion-docs.prefect.io/collections/usage/)!
+For more tips on how to use tasks and flows in a Collection, check out [Using Collections](https://docs.prefect.io/collections/usage/)!
 
 ### Installation
 
@@ -241,7 +241,7 @@ Requires an installation of Python 3.7+.
 
 We recommend using a Python virtual environment manager such as pipenv, conda or virtualenv.
 
-These tasks are designed to work with Prefect 2.0. For more information about how to use Prefect, please refer to the [Prefect documentation](https://orion-docs.prefect.io/).
+These tasks are designed to work with Prefect 2.0. For more information about how to use Prefect, please refer to the [Prefect documentation](https://docs.prefect.io/).
 
 ### Feedback
 
