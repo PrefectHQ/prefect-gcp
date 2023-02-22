@@ -6,7 +6,6 @@ from enum import Enum
 from io import BytesIO
 from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
-from uuid import uuid4
 
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import ObjectStorageBlock
@@ -611,8 +610,6 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Returns:
             The joined path.
         """
-        path = path or str(uuid4())
-
         # If bucket_folder provided, it means we won't write to the root dir of
         # the bucket. So we need to add it on the front of the path.
         path = (
@@ -658,6 +655,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             client.list_blobs, self.bucket, prefix=from_path
         )
 
+        print(f"Hello all\n\n\n{from_path} {blobs} {self.bucket}")
         file_paths = []
         for blob in blobs:
             blob_path = blob.name
