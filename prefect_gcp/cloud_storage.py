@@ -615,7 +615,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         path = (
             str(PurePosixPath(self.bucket_folder, path)) if self.bucket_folder else path
         )
-        if path == "." or path == "/":
+        if path in ["", ".", "/"]:
             # client.bucket.list_blobs(prefix=None) is the proper way
             # of specifying the root folder of the bucket
             path = None
@@ -655,7 +655,6 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             client.list_blobs, self.bucket, prefix=from_path
         )
 
-        print(f"Hello all\n\n\n{from_path} {blobs} {self.bucket}")
         file_paths = []
         for blob in blobs:
             blob_path = blob.name
@@ -788,7 +787,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             )
 
         bucket_path = str(PurePosixPath(self.bucket_folder) / bucket_path)
-        if bucket_path == "." or bucket_path == "/":
+        if bucket_path in ["", ".", "/"]:
             # client.bucket.list_blobs(prefix=None) is the proper way
             # of specifying the root folder of the bucket
             bucket_path = None

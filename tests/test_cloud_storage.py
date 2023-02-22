@@ -1,7 +1,6 @@
 import os
 from io import BytesIO
 from pathlib import Path, PurePosixPath
-from uuid import UUID
 
 import pandas as pd
 import pytest
@@ -133,17 +132,14 @@ class TestGcsBucket:
         else:
             assert bucket_folder == ""
 
-    @pytest.mark.parametrize("path", [None, "subpath"])
+    @pytest.mark.parametrize("path", ["", ".", "/", "subpath"])
     def test_resolve_path(self, gcs_bucket, path):
         actual = gcs_bucket._resolve_path(path)
         bucket_folder = gcs_bucket.bucket_folder
-        if path is None:
-            dirname, filename = os.path.split(actual)
-            assert dirname == bucket_folder.rstrip("/")
-            assert UUID(filename, version=4)
-        else:
-            expected = str(PurePosixPath(bucket_folder) / path)
-            assert actual == expected
+        expected = str(PurePosixPath(bucket_folder) / path)
+        if expected in ["", "/", "."]:
+            expected = None
+        assert actual == expected
 
     def test_read_path(self, gcs_bucket):
         assert gcs_bucket.read_path("blob") == b"bytes"
