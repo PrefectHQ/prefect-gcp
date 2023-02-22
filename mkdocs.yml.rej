@@ -1,0 +1,9 @@
+diff a/mkdocs.yml b/mkdocs.yml	(rejected hunks)
+@@ -4,6 +4,7 @@ repo_url: https://github.com/PrefectHQ/prefect-gcp
+ edit_uri: edit/main/docs/
+ theme:
+   name: material
++  custom_dir: docs/overrides
+   favicon: img/favicon.ico
+   palette:
+     - media: "(prefers-color-scheme)"
