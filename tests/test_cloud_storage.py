@@ -532,3 +532,6 @@ class TestGcsBucket:
             gcs_bucket_with_bucket_folder.upload_from_dataframe(
                 df=pandas_dataframe, to_path=to_path, serialization_format="pickle"
             )
+
+    def test_basepath(self, gcs_bucket_with_bucket_folder):
+        assert gcs_bucket_with_bucket_folder.basepath == "base_folder/"
