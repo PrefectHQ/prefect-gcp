@@ -75,15 +75,27 @@ GcpCredentials.load("BLOCK-NAME-PLACEHOLDER_PLACEHOLDER")
 
 The snippets below show how you can use `prefect_gcp` to run a job on Cloud Run. It uses the `CloudRunJob` block as [Prefect infrastructure](https://docs.prefect.io/concepts/infrastructure/).
 
+#### Set variables
+
+To expedite copy/paste without the needing to update placeholders manually, update and execute the following.
+
+```bash
+export CREDENTIALS_BLOCK_NAME="gcp-sbx"
+export GCP_PROJECT_ID=$(gcloud config get-value project)
+export CLOUD_RUN_JOB_BLOCK_NAME="cloud-run-job-example"
+export CLOUD_RUN_JOB_REGION="us-central1"
+export GCS_BUCKET_BLOCK_NAME="cloud-run-job-bucket-example"
+```
+
 #### Build an image
 
-First, find an existing image within the Google Artifact Registry. Ensure it has Python and Prefect installed, or follow the instructions below to set one up.
+First, find an existing image within the Google Artifact Registry. Ensure it has Python and `prefect-gcp[cloud_storage]` installed, or follow the instructions below to set one up.
 
 Create a `Dockerfile`.
 
 ```dockerfile
-FROM prefecthq/prefect:latest-python3.9
-RUN pip install prefect-gcp
+FROM prefecthq/prefect:2-python3.11
+RUN pip install "prefect-gcp[cloud_storage]"
 ```
 
 Then push to the Google Artifact Registry.
@@ -91,28 +103,29 @@ Then push to the Google Artifact Registry.
 ```bash
 gcloud artifacts repositories create test-example-repository --repository-format=docker --location=us
 gcloud auth configure-docker us-docker.pkg.dev
-docker build -t us-docker.pkg.dev/<PROJECT-NAME-PLACEHOLDER>/test-example-repository/prefect-gcp:latest-python3.9 .
-docker push us-docker.pkg.dev/<PROJECT-NAME-PLACEHOLDER>/test-example-repository/prefect-gcp:latest-python3.9
+docker build -t us-docker.pkg.dev/${GCP_PROJECT_ID}/test-example-repository/prefect-gcp:2-python3.11 .
+docker push us-docker.pkg.dev/${GCP_PROJECT_ID}/test-example-repository/prefect-gcp:2-python3.11
 ```
 
 #### Save an infrastructure and storage block
 
-Save a custom infrastructure and storage block by updating the placeholders and executing the following snippet.
+Save a custom infrastructure and storage block by executing the following snippet.
 
 ```python
+import os
 from prefect_gcp import GcpCredentials, CloudRunJob, GcsBucket
 
-gcp_credentials = GcpCredentials.load("BLOCK-NAME-PLACEHOLDER")
+gcp_credentials = GcpCredentials.load(os.environ["CREDENTIALS_BLOCK_NAME"])
 
 # must be from GCR and have Python + Prefect
-image = "us-docker.pkg.dev/<PROJECT-NAME-PLACEHOLDER>/test-example-repository/prefect-gcp:latest-python3.9"  # noqa
+image = f"us-docker.pkg.dev/{os.environ['GCP_PROJECT_ID']}/test-example-repository/prefect-gcp:2-python3.11"  # noqa
 
 cloud_run_job = CloudRunJob(
     image=image,
     credentials=gcp_credentials,
-    region="us-central1",
+    region=os.environ["CLOUD_RUN_JOB_REGION"],
 )
-cloud_run_job.save("test-example", overwrite=True)
+cloud_run_job.save(os.environ["CLOUD_RUN_JOB_BLOCK_NAME"], overwrite=True)
 
 bucket_name = "cloud-run-job-bucket"
 cloud_storage_client = gcp_credentials.get_cloud_storage_client()
@@ -121,7 +134,7 @@ gcs_bucket = GcsBucket(
     bucket=bucket_name,
     gcp_credentials=gcp_credentials,
 )
-gcs_bucket.save("test-example", overwrite=True)
+gcs_bucket.save(os.environ["GCS_BUCKET_BLOCK_NAME"], overwrite=True)
 ```
 
 #### Write a flow
@@ -144,7 +157,10 @@ if __name__ == "__main__":
 If the script was named "cloud_run_job_script.py", build the deployment with the following command.
 
 ```bash
-prefect deployment build cloud_run_job_script.py:cloud_run_job_flow -n cloud-run-deployment -ib cloud-run-job/test-example -sb gcs-bucket/test-example
+prefect deployment build cloud_run_job_script.py:cloud_run_job_flow \
+    -n cloud-run-deployment \
+    -ib cloud-run-job/${CLOUD_RUN_JOB_BLOCK_NAME} \
+    -sb gcs-bucket/${GCS_BUCKET_BLOCK_NAME}
 ```
 
 Make any necessary changes to the YAML, if needed, and apply the deployment.
@@ -155,7 +171,7 @@ prefect deployment apply cloud_run_job_flow-deployment.yaml
 
 #### Test the deployment
 
-Start up an agent if you haven't.
+Start up an agent in a separate terminal if you haven't already.
 
 ```bash
 prefect agent start -q 'default'
