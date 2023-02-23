@@ -28,7 +28,7 @@ You will need to first install [prefect-gcp](#installation) and obtain GCP crede
 
 1. Refer to the [GCP service account documentation](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating) on how to create and download a service account key file
 2. Copy the JSON contents
-3. Create a short script, replacing the placeholders (or do so in the UI)
+3. Create a short script, replacing the placeholders with your information
 
 ```python
 from prefect_gcp import GcpCredentials
@@ -71,7 +71,7 @@ GcpCredentials.load("BLOCK-NAME-PLACEHOLDER")
 
 ### Using Prefect with Google Cloud Run
 
-`prefect_gcp` allows you to interact with Google Cloud Run with Prefect flows.
+`prefect_gcp` allows you to run your Prefect flows on the on-demand infrastructure of Google Cloud Run.
 
 The snippets below show how you can use `prefect_gcp` to run a job on Cloud Run. It uses the `CloudRunJob` block within a flow or as [Prefect infrastructure](https://docs.prefect.io/concepts/infrastructure/).
 
@@ -97,7 +97,7 @@ def cloud_run_job_flow():
 
 #### As Infrastructure
 
-You can also use Cloud Run Jobs as infrastructure to execute your deployed flows.
+Below is a simple walkthrough for how to use Google Cloud Run as infrastructure for a deployment.
 
 ##### Set variables
 
@@ -163,7 +163,7 @@ gcs_bucket.save(os.environ["GCS_BUCKET_BLOCK_NAME"], overwrite=True)
 
 ##### Write a flow
 
-Then, find an existing flow or define an arbitrary one to test.
+Then, use an existing flow to create a deployment with, or use the flow below if you don't have an existing flow handy.
 
 ```python
 from prefect import flow
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
 ##### Create a deployment
 
-If the script was named "cloud_run_job_script.py", build the deployment with the following command.
+If the script was named "cloud_run_job_script.py", build a deployment manifest with the following command.
 
 ```bash
 prefect deployment build cloud_run_job_script.py:cloud_run_job_flow \
@@ -187,7 +187,7 @@ prefect deployment build cloud_run_job_script.py:cloud_run_job_flow \
     -sb gcs-bucket/${GCS_BUCKET_BLOCK_NAME}
 ```
 
-Make any necessary changes to the YAML, if needed, and apply the deployment.
+Now apply the deployment!
 
 ```bash
 prefect deployment apply cloud_run_job_flow-deployment.yaml
@@ -195,7 +195,7 @@ prefect deployment apply cloud_run_job_flow-deployment.yaml
 
 ##### Test the deployment
 
-Start up an agent in a separate terminal if you haven't already.
+Start up an agent in a separate terminal. The agent will poll the Prefect API for scheduled flow runs that are ready to run.
 
 ```bash
 prefect agent start -q 'default'
@@ -207,7 +207,7 @@ Run the deployment once to test.
 prefect deployment run cloud-run-job-flow/cloud-run-deployment
 ```
 
-You should see `Hello, Prefect!` eventually logged.
+Once the flow run has completed, you will see `Hello, Prefect!` logged in the Prefect UI.
 
 !!! info "No class found for dispatch key"
 
@@ -235,7 +235,7 @@ vertex_ai_job.save("test-example")
 
 ### Using Prefect with Google BigQuery
 
-`prefect_gcp` allows you to interact with Google BigQuery within your Prefect flows. Be sure to additionally [install](#installation) the BigQuery extra!
+  `prefect_gcp` allows you to query from and write to Google BigQuery within your Prefect flows. Be sure to [install](#installation) `prefect-gcp` with the BigQuery extra!
 
 The provided code snippet shows how you can use `prefect_gcp` to create a new dataset in BigQuery, define a table, insert rows, and fetch data from the table using.
 
@@ -277,7 +277,7 @@ bigquery_flow()
 
 ### Using Prefect with Google Cloud Storage
 
-`prefect_gcp` allows you to interact with Google Cloud Storage within your Prefect flows. Be sure to additionally [install](#installation) the Cloud Storage extra!
+`prefect_gcp` allows you to read and write objects with Google Cloud Storage within your Prefect flows. Be sure to additionally [install](#installation) `prefect-gcp1 with the Cloud Storage extra!
 
 The provided code snippet shows how you can use `prefect_gcp` to upload a file to a Google Cloud Storage bucket and download the same file under a different file name.
 
@@ -311,7 +311,7 @@ cloud_storage_flow()
 
 ### Using Prefect with Google Secret Manager
 
-`prefect_gcp` allows you to interact with Google Secret Manager within your Prefect flows. Be sure to additionally [install](#installation) the Secret Manager extra!
+`prefect_gcp` allows you to read and write secrets with Google Secret Manager within your Prefect flows. Be sure to [install] `prefect-gcp` (#installation) with the Secret Manager extra!
 
 The provided code snippet shows how you can use `prefect_gcp` to write a secret to the Secret Manager, read the secret data, delete the secret, and finally return the secret data.
 
@@ -336,7 +336,7 @@ secret_manager_flow()
 
 In the case that `prefect-gcp` is missing a feature, feel free to [submit an issue](#feedback).
 
-In the meantime, you may want to access the underlying Google credentials or clients, which `prefect-gcp` exposes straightforwardly.
+In the meantime, you may want to access the underlying Google credentials or clients, which `prefect-gcp` exposes via the `GcpCredentials` block.
 
 The provided code snippet shows how you can use `prefect_gcp` to instantiate a Google Cloud client, like `bigquery.Client`.
 
