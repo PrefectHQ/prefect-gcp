@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Using `GcsBucket` as a deployment storage option - [#147](https://github.com/PrefectHQ/prefect-gcp/pull/147)
+- Breaking: Stop decoding and return a `bytes` type in `GcpSecret.read_secret`, as originally annotated - [#149](https://github.com/PrefectHQ/prefect-gcp/pull/149)
+- Resolving paths in `GcsBucket` unintentionally generating an arbitrary UUID when path is an empty string - [#150](https://github.com/PrefectHQ/prefect-gcp/pull/150)
+
 ### Security
 
 ## 0.2.6

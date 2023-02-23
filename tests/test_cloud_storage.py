@@ -1,11 +1,11 @@
 import os
 from io import BytesIO
 from pathlib import Path, PurePosixPath
-from uuid import UUID
 
 import pandas as pd
 import pytest
 from prefect import flow
+from prefect.deployments import Deployment
 
 from prefect_gcp.cloud_storage import (
     GcsBucket,
@@ -132,17 +132,14 @@ class TestGcsBucket:
         else:
             assert bucket_folder == ""
 
-    @pytest.mark.parametrize("path", [None, "subpath"])
+    @pytest.mark.parametrize("path", ["", ".", "/", "subpath"])
     def test_resolve_path(self, gcs_bucket, path):
         actual = gcs_bucket._resolve_path(path)
         bucket_folder = gcs_bucket.bucket_folder
-        if path is None:
-            dirname, filename = os.path.split(actual)
-            assert dirname == bucket_folder.rstrip("/")
-            assert UUID(filename, version=4)
-        else:
-            expected = str(PurePosixPath(bucket_folder) / path)
-            assert actual == expected
+        expected = str(PurePosixPath(bucket_folder) / path)
+        if expected in ["", "/", "."]:
+            expected = None
+        assert actual == expected
 
     def test_read_path(self, gcs_bucket):
         assert gcs_bucket.read_path("blob") == b"bytes"
@@ -532,3 +529,16 @@ class TestGcsBucket:
             gcs_bucket_with_bucket_folder.upload_from_dataframe(
                 df=pandas_dataframe, to_path=to_path, serialization_format="pickle"
             )
+
+    def test_basepath(self, gcs_bucket_with_bucket_folder, monkeypatch):
+        monkeypatch.setattr(
+            "prefect_gcp.GcpCredentials.get_cloud_storage_client", lambda x: x
+        )
+        assert gcs_bucket_with_bucket_folder.basepath == "base_folder/"
+
+        deployment = Deployment(
+            flow_name="test-flow-name",
+            name="test-deployment",
+            storage=gcs_bucket_with_bucket_folder,
+        )
+        assert deployment.location == ""
