@@ -283,7 +283,7 @@ bigquery_flow()
 
 ### Using Prefect with Google Cloud Storage
 
-`prefect_gcp` allows you to read and write objects with Google Cloud Storage within your Prefect flows. Be sure to additionally [install](#installation) `prefect-gcp1 with the Cloud Storage extra!
+`prefect_gcp` allows you to read and write objects with Google Cloud Storage within your Prefect flows. Be sure to additionally [install](#installation) `prefect-gcp` with the Cloud Storage extra!
 
 The provided code snippet shows how you can use `prefect_gcp` to upload a file to a Google Cloud Storage bucket and download the same file under a different file name.
 
