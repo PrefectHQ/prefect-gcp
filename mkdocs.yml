@@ -76,6 +76,7 @@ nav:
     - Home: index.md
     - Blocks Catalog: blocks_catalog.md
     - Examples Catalog: examples_catalog.md
+    - Contributing: contributing.md
     - API Reference:
         - Credentials: credentials.md
         - Cloud Storage: cloud_storage.md

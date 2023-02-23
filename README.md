@@ -22,6 +22,16 @@ The `prefect-gcp` collection makes it easy to leverage the capabilities of Googl
 
 Visit the full docs [here](https://PrefectHQ.github.io/prefect-gcp).
 
+### Installation
+
+To start using `prefect-gcp`:
+
+```bash
+pip install prefect-gcp
+```
+
+To install extras, see [here](https://prefecthq.github.io/prefect-gcp/#installation).
+
 ### Feedback
 
 If you encounter any bugs while using `prefect-gcp`, feel free to open an issue in the [`prefect-gcp`](https://github.com/PrefectHQ/prefect-gcp) repository.
