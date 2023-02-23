@@ -75,7 +75,29 @@ GcpCredentials.load("BLOCK-NAME-PLACEHOLDER")
 
 The snippets below show how you can use `prefect_gcp` to run a job on Cloud Run. It uses the `CloudRunJob` block as [Prefect infrastructure](https://docs.prefect.io/concepts/infrastructure/).
 
+#### Within Flow
+
+You can execute commands through Cloud Run Job directly within a Prefect flow.
+
+```python
+from prefect import flow
+from prefect_gcp import GcpCredentials
+from prefect_gcp.cloud_run import CloudRunJob
+
+@flow
+def cloud_run_job_flow():
+    cloud_run_job = CloudRunJob(
+        image="us-docker.pkg.dev/cloudrun/container/job:latest",
+        credentials=GcpCredentials.load("BLOCK-NAME-PLACEHOLDER"),
+        region="us-central1",
+        command=["echo", "Hello, Prefect!"],
+    )
+    return cloud_run_job.run()
+```
+
 #### As Infrastructure
+
+You can also use Cloud Run Jobs as infrastructure to execute your deployed flows.
 
 ##### Set variables
 
@@ -191,26 +213,6 @@ You should see `Hello, Prefect!` eventually logged.
 
     If you encounter an error message like `KeyError: "No class found for dispatch key 'cloud-run-job' in registry for type 'Block'."`,
     ensure `prefect-gcp` is installed in the environment that your agent is running!
-
-#### Within Flow
-
-It is also possible to execute Cloud Run Jobs within a Prefect flow.
-
-```python
-from prefect import flow
-from prefect_gcp import GcpCredentials
-from prefect_gcp.cloud_run import CloudRunJob
-
-@flow
-def cloud_run_job_flow():
-    cloud_run_job = CloudRunJob(
-        image="us-docker.pkg.dev/cloudrun/container/job:latest",
-        credentials=GcpCredentials.load("BLOCK-NAME-PLACEHOLDER"),
-        region="us-central1",
-        command=["echo", "Hello, Prefect!"],
-    )
-    return cloud_run_job.run()
-```
 
 ### Using Prefect with Google Vertex AI
 
