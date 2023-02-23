@@ -90,7 +90,7 @@ class TestGcpSecret:
         assert actual == expected
 
     def test_read_secret(self, gcp_secret):
-        expected = "secret_data"
+        expected = b"secret_data"
         actual = gcp_secret.read_secret()
         assert actual == expected
 
