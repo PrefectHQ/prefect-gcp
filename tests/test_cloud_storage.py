@@ -205,6 +205,11 @@ class TestGcsBucket:
         bucket = gcs_bucket.get_bucket()
         assert bucket.name == "my-bucket"
 
+    def test_create_bucket(self, gcs_bucket):
+        bucket = gcs_bucket.create_bucket(location="us-east1")
+        assert bucket.name == "my-bucket"
+        assert bucket.location == "us-east1"
+
     @pytest.fixture
     def gcs_bucket_no_bucket_folder(self, gcp_credentials):
         return GcsBucket(
