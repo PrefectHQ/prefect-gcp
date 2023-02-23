@@ -6,7 +6,6 @@ from enum import Enum
 from io import BytesIO
 from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
-from uuid import uuid4
 
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import ObjectStorageBlock
@@ -582,6 +581,15 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         ),
     )
 
+    @property
+    def basepath(self) -> str:
+        """
+        Read-only property that mirrors the bucket folder.
+
+        Used for deployment.
+        """
+        return self.bucket_folder
+
     @validator("bucket_folder", pre=True, always=True)
     def _bucket_folder_suffix(cls, value):
         """
@@ -602,14 +610,12 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         Returns:
             The joined path.
         """
-        path = path or str(uuid4())
-
         # If bucket_folder provided, it means we won't write to the root dir of
         # the bucket. So we need to add it on the front of the path.
         path = (
             str(PurePosixPath(self.bucket_folder, path)) if self.bucket_folder else path
         )
-        if path == "." or path == "/":
+        if path in ["", ".", "/"]:
             # client.bucket.list_blobs(prefix=None) is the proper way
             # of specifying the root folder of the bucket
             path = None
@@ -781,11 +787,42 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             )
 
         bucket_path = str(PurePosixPath(self.bucket_folder) / bucket_path)
-        if bucket_path == "." or bucket_path == "/":
+        if bucket_path in ["", ".", "/"]:
             # client.bucket.list_blobs(prefix=None) is the proper way
             # of specifying the root folder of the bucket
             bucket_path = None
         return bucket_path
+
+    @sync_compatible
+    async def create_bucket(
+        self, location: Optional[str] = None, **create_kwargs
+    ) -> "Bucket":
+        """
+        Creates a bucket.
+
+        Args:
+            location: The location of the bucket.
+            **create_kwargs: Additional keyword arguments to pass to the
+                `create_bucket` method.
+
+        Returns:
+            The bucket object.
+
+        Examples:
+            Create a bucket.
+            ```python
+            from prefect_gcp.cloud_storage import GcsBucket
+
+            gcs_bucket = GcsBucket(bucket="my-bucket")
+            gcs_bucket.create_bucket()
+            ```
+        """
+        self.logger.info(f"Creating bucket {self.bucket!r}.")
+        client = self.gcp_credentials.get_cloud_storage_client()
+        bucket = await run_sync_in_worker_thread(
+            client.create_bucket, self.bucket, location=location, **create_kwargs
+        )
+        return bucket
 
     @sync_compatible
     async def get_bucket(self) -> "Bucket":

@@ -397,14 +397,19 @@ def cloud_run_job(service_account_info):
     )
 
 
-def remove_orion_url_from_env(env):
+def remove_server_url_from_env(env):
     """
     For convenience since the testing database URL is non-deterministic.
     """
     return [
         env_var
         for env_var in env
-        if env_var["name"] != "PREFECT_ORION_DATABASE_CONNECTION_URL"
+        if env_var["name"]
+        not in [
+            "PREFECT_API_DATABASE_CONNECTION_URL",
+            "PREFECT_ORION_DATABASE_CONNECTION_URL",
+            "PREFECT_SERVER_DATABASE_CONNECTION_URL",
+        ]
     ]
 
 
@@ -419,7 +424,7 @@ class TestCloudRunJobContainerSettings:
             }
         ):
             result = cloud_run_job._add_container_settings(base_setting)
-            assert remove_orion_url_from_env(result["env"]) == [
+            assert remove_server_url_from_env(result["env"]) == [
                 {"name": "PREFECT_API_URL", "value": "Puppy"},
                 {"name": "PREFECT_API_KEY", "value": "Dog"},
                 {"name": "PREFECT_PROFILES_PATH", "value": "Woof"},
@@ -437,7 +442,7 @@ class TestCloudRunJobContainerSettings:
             }
         ):
             result = cloud_run_job._add_container_settings(base_setting)
-            assert remove_orion_url_from_env(result["env"]) == [
+            assert remove_server_url_from_env(result["env"]) == [
                 {"name": "PREFECT_API_URL", "value": "Puppy"},
                 {"name": "PREFECT_API_KEY", "value": "Dog"},
                 {"name": "PREFECT_PROFILES_PATH", "value": "Woof"},
@@ -460,7 +465,7 @@ class TestCloudRunJobContainerSettings:
             }
         ):
             result = cloud_run_job._add_container_settings(base_setting)
-            assert remove_orion_url_from_env(result["env"]) == [
+            assert remove_server_url_from_env(result["env"]) == [
                 {"name": "PREFECT_API_URL", "value": "Kitty"},
                 {"name": "PREFECT_API_KEY", "value": "Cat"},
                 {"name": "PREFECT_PROFILES_PATH", "value": "Woof"},
