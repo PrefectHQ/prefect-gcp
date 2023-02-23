@@ -73,7 +73,7 @@ GcpCredentials.load("BLOCK-NAME-PLACEHOLDER")
 
 `prefect_gcp` allows you to interact with Google Cloud Run with Prefect flows.
 
-The snippets below show how you can use `prefect_gcp` to run a job on Cloud Run. It uses the `CloudRunJob` block as [Prefect infrastructure](https://docs.prefect.io/concepts/infrastructure/).
+The snippets below show how you can use `prefect_gcp` to run a job on Cloud Run. It uses the `CloudRunJob` block within a flow or as [Prefect infrastructure](https://docs.prefect.io/concepts/infrastructure/).
 
 #### Within Flow
 
