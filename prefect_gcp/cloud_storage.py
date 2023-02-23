@@ -794,6 +794,37 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         return bucket_path
 
     @sync_compatible
+    async def create_bucket(
+        self, location: Optional[str] = None, **create_kwargs
+    ) -> "Bucket":
+        """
+        Creates a bucket.
+
+        Args:
+            location: The location of the bucket.
+            **create_kwargs: Additional keyword arguments to pass to the
+                `create_bucket` method.
+
+        Returns:
+            The bucket object.
+
+        Examples:
+            Create a bucket.
+            ```python
+            from prefect_gcp.cloud_storage import GcsBucket
+
+            gcs_bucket = GcsBucket(bucket="my-bucket")
+            gcs_bucket.create_bucket()
+            ```
+        """
+        self.logger.info(f"Creating bucket {self.bucket!r}.")
+        client = self.gcp_credentials.get_cloud_storage_client()
+        bucket = await run_sync_in_worker_thread(
+            client.create_bucket, self.bucket, location=location, **create_kwargs
+        )
+        return bucket
+
+    @sync_compatible
     async def get_bucket(self) -> "Bucket":
         """
         Returns the bucket object.
