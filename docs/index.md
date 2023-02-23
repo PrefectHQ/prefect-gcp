@@ -52,6 +52,12 @@ GcpCredentials(
 ).save("BLOCK-NAME-PLACEHOLDER")
 ```
 
+!!! warning "`service_account_info` vs `service_account_file`"
+    
+    The advantage of using `service_account_info`, instead of `service_account_file`, is that it is accessible across containers.
+    
+    If `service_account_file` is used, the provided file path *must be available* in the container executing the flow.
+
 Congrats! You can now easily load the saved block, which holds your credentials:
 
 ```python
