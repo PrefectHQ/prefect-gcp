@@ -326,7 +326,7 @@ class GcpSecret(SecretBlock):
         response = await run_sync_in_worker_thread(
             client.access_secret_version, request=request
         )
-        secret = response.payload.data.decode("UTF-8")
+        secret = response.payload.data
         self.logger.info(f"The secret {name!r} data was successfully read.")
         return secret
 
