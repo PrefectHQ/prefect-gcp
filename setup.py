@@ -13,7 +13,7 @@ with open("README.md") as readme_file:
 
 extras_require = {
     "cloud_storage": ["google-cloud-storage"],
-    "bigquery": ["google-cloud-bigquery"],
+    "bigquery": ["google-cloud-bigquery", "google-cloud-bigquery-storage"],
     "secret_manager": ["google-cloud-secret-manager"],
     "aiplatform": ["google-cloud-aiplatform"],
 }
