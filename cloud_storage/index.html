@@ -17,7 +17,7 @@
         <link rel="next" href="../bigquery/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.15">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.5">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.113286f1.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7a7fce14.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.a0c5b2b5.min.css">
@@ -111,7 +111,9 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="prefect-gcp" class="md-header__button md-logo" aria-label="prefect-gcp" data-md-component="logo">
       
@@ -3092,8 +3094,8 @@ for reading and writing objects.</p></td>
 <span class="sd">            to_path: The destination path for the uploaded DataFrame.</span>
 <span class="sd">            serialization_format: The format to serialize the DataFrame into.</span>
 <span class="sd">                When passed as a `str`, the valid options are:</span>
-<span class="sd">                &#39;csv&#39;, &#39;csv_gzip&#39;,  &#39;parquet&#39;, &#39;parquet_snappy&#39;, &#39;parquet_gz&#39;.</span>
-<span class="sd">                Defaults to `OutputFormat.CSV_GZIP`.</span>
+<span class="sd">                &#39;csv&#39;, &#39;csv_gzip&#39;,  &#39;parquet&#39;, &#39;parquet_snappy&#39;, &#39;parquet_gzip&#39;.</span>
+<span class="sd">                Defaults to `DataFrameSerializationFormat.CSV_GZIP`.</span>
 <span class="sd">            **upload_kwargs: Additional keyword arguments to pass to the underlying</span>
 <span class="sd">            `Blob.upload_from_dataframe` method.</span>
 
@@ -4889,8 +4891,8 @@ in a specified format, such as .csv, .csv.gz, .parquet,
           </td>
           <td><p>The format to serialize the DataFrame into.
 When passed as a <code>str</code>, the valid options are:
-'csv', 'csv_gzip',  'parquet', 'parquet_snappy', 'parquet_gz'.
-Defaults to <code>OutputFormat.CSV_GZIP</code>.</p></td>
+'csv', 'csv_gzip',  'parquet', 'parquet_snappy', 'parquet_gzip'.
+Defaults to <code>DataFrameSerializationFormat.CSV_GZIP</code>.</p></td>
           <td>
                 <code>DataFrameSerializationFormat.CSV_GZIP</code>
           </td>
@@ -5004,8 +5006,8 @@ Defaults to <code>OutputFormat.CSV_GZIP</code>.</p></td>
 <span class="sd">        to_path: The destination path for the uploaded DataFrame.</span>
 <span class="sd">        serialization_format: The format to serialize the DataFrame into.</span>
 <span class="sd">            When passed as a `str`, the valid options are:</span>
-<span class="sd">            &#39;csv&#39;, &#39;csv_gzip&#39;,  &#39;parquet&#39;, &#39;parquet_snappy&#39;, &#39;parquet_gz&#39;.</span>
-<span class="sd">            Defaults to `OutputFormat.CSV_GZIP`.</span>
+<span class="sd">            &#39;csv&#39;, &#39;csv_gzip&#39;,  &#39;parquet&#39;, &#39;parquet_snappy&#39;, &#39;parquet_gzip&#39;.</span>
+<span class="sd">            Defaults to `DataFrameSerializationFormat.CSV_GZIP`.</span>
 <span class="sd">        **upload_kwargs: Additional keyword arguments to pass to the underlying</span>
 <span class="sd">        `Blob.upload_from_dataframe` method.</span>
 
@@ -7768,7 +7770,7 @@ gcp_credentials project if provided.</p></td>
     <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.2a6f1dda.min.js"></script>
+      <script src="../assets/javascripts/bundle.407015b8.min.js"></script>
       
     
   </body>
