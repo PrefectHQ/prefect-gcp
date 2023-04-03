@@ -1273,8 +1273,8 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             to_path: The destination path for the uploaded DataFrame.
             serialization_format: The format to serialize the DataFrame into.
                 When passed as a `str`, the valid options are:
-                'csv', 'csv_gzip',  'parquet', 'parquet_snappy', 'parquet_gz'.
-                Defaults to `OutputFormat.CSV_GZIP`.
+                'csv', 'csv_gzip',  'parquet', 'parquet_snappy', 'parquet_gzip'.
+                Defaults to `DataFrameSerializationFormat.CSV_GZIP`.
             **upload_kwargs: Additional keyword arguments to pass to the underlying
             `Blob.upload_from_dataframe` method.
 
