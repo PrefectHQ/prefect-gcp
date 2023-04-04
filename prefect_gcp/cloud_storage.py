@@ -502,9 +502,9 @@ class DataFrameSerializationFormat(Enum):
         "parquet",
         "snappy",
         "application/octet-stream",
-        ".parquet.snappy",
+        ".snappy.parquet",
     )
-    PARQUET_GZIP = ("parquet", "gzip", "application/octet-stream", ".parquet.gz")
+    PARQUET_GZIP = ("parquet", "gzip", "application/octet-stream", ".gz.parquet")
 
     @property
     def format(self) -> str:

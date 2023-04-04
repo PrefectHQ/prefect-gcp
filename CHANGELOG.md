@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 - [Fix `upload_from_dataframe` docstring for MkDocs](https://github.com/PrefectHQ/prefect-gcp/pull/162) 
+- [Fix `upload_from_dataframe` file extensions for compressed parquet ('.snappy.parquet', '.gz.parquet')](https://github.com/PrefectHQ/prefect-gcp/pull/166)
 
 ### Added
 
