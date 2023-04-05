@@ -495,7 +495,7 @@ class TestGcsBucket:
             to_path=to_path,
             serialization_format="parquet_snappy",
         )
-        assert output_to_path == "base_folder/to_path.parquet.snappy"
+        assert output_to_path == "base_folder/to_path.snappy.parquet"
 
     def test_upload_from_dataframe_with_parquet_gzip_output(
         self, gcs_bucket_with_bucket_folder, pandas_dataframe
@@ -506,7 +506,7 @@ class TestGcsBucket:
             to_path=to_path,
             serialization_format="parquet_gzip",
         )
-        assert output_to_path == "base_folder/to_path.parquet.gz"
+        assert output_to_path == "base_folder/to_path.gz.parquet"
 
     def test_upload_from_dataframe_with_csv_output(
         self, gcs_bucket_with_bucket_folder, pandas_dataframe
