@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `pull_project_from_gcs` and `push_project_to_gcs` steps - [#167](https://github.com/PrefectHQ/prefect-gcp/pull/167)
+
 ### Changed
 
 ### Deprecated
