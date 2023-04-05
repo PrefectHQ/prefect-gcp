@@ -1,3 +1,6 @@
+"""
+Prefect project steps for code storage in and retrieval from Google Cloud Storage.
+"""
 from pathlib import Path, PurePosixPath
 from typing import Dict, Optional
 
@@ -57,7 +60,6 @@ def push_project_to_gcs(
                 requires: prefect-gcp
                 bucket: my-bucket
                 folder: my-project
-                project: my-project
         ```
 
         Push a project to an GCS bucket using credentials stored in a block:
@@ -66,19 +68,7 @@ def push_project_to_gcs(
             - prefect_gcp.projects.steps.push_project_to_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
-                folder: my-project
-                project: my-project
-                credentials: "{{ prefect.blocks.gcp-credentials.dev-credentials }}"
-        ```
-
-        Push a project to an GCS bucket using credentials stored in a block:
-        ```yaml
-        build:
-            - prefect_gcp.projects.steps.push_project_to_gcs:
-                requires: prefect-gcp
-                bucket: my-bucket
-                folder: my-project
-                project: my-project
+                folder: my-folder
                 credentials: "{{ prefect.blocks.gcp-credentials.dev-credentials }}"
         ```
 
@@ -89,8 +79,7 @@ def push_project_to_gcs(
             - prefect_gcp.projects.steps.push_project_to_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
-                folder: my-project
-                project: my-project
+                folder: my-folder
                 credentials:
                     project: my-project
                     service_account_file: /path/to/service_account.json
@@ -98,20 +87,21 @@ def push_project_to_gcs(
 
     """
     project = credentials.get("project") if credentials else None
-    if credentials is None:
-        gcp_creds, _ = google.auth.default()
-    elif credentials.get("service_account_info") is not None:
-        gcp_creds = Credentials.from_service_account_info(
-            credentials.get("service_account_info"),
-            scopes=["https://www.googleapis.com/auth/cloud-platform"],
-        )
-    elif credentials.get("service_account_file") is not None:
-        gcp_creds = Credentials.from_service_account_file(
-            credentials.get("service_account_file"),
-            scopes=["https://www.googleapis.com/auth/cloud-platform"],
-        )
-    else:
-        gcp_creds, _ = google.auth.default()
+
+    gcp_creds = None
+    if credentials is not None:
+        if credentials.get("service_account_info") is not None:
+            gcp_creds = Credentials.from_service_account_info(
+                credentials.get("service_account_info"),
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
+        elif credentials.get("service_account_file") is not None:
+            gcp_creds = Credentials.from_service_account_file(
+                credentials.get("service_account_file"),
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
+
+    gcp_creds = gcp_creds or google.auth.default()[0]
 
     storage_client = StorageClient(credentials=gcp_creds, project=project)
     bucket_resource = storage_client.bucket(bucket)
@@ -124,13 +114,15 @@ def push_project_to_gcs(
             ignore_patterns = f.readlines()
         included_files = filter_files(str(local_path), ignore_patterns)
 
-    for local_file_path in Path(local_path).rglob("*"):
-        if included_files is not None and local_file_path.name not in included_files:
+    for local_file_path in local_path.expanduser().rglob("*"):
+        relative_local_file_path = local_file_path.relative_to(local_path)
+        if (
+            included_files is not None
+            and str(relative_local_file_path) not in included_files
+        ):
             continue
         elif not local_file_path.is_dir():
-            remote_file_path = (
-                folder / local_file_path.relative_to(local_path)
-            ).as_posix()
+            remote_file_path = (folder / relative_local_file_path).as_posix()
 
             blob_resource = bucket_resource.blob(remote_file_path)
             blob_resource.upload_from_filename(local_file_path)
@@ -168,8 +160,7 @@ def pull_project_from_gcs(
             - prefect_gcp.projects.steps.pull_project_from_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
-                folder: my-project
-                project: my-project
+                folder: my-folder
         ```
 
         Pull a project from GCS using credentials stored in a block:
@@ -178,8 +169,7 @@ def pull_project_from_gcs(
             - prefect_gcp.projects.steps.pull_project_from_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
-                folder: my-project
-                project: my-project
+                folder: my-folder
                 credentials: "{{ prefect.blocks.gcp-credentials.dev-credentials }}"
         ```
 
@@ -189,8 +179,7 @@ def pull_project_from_gcs(
             - prefect_gcp.projects.steps.pull_project_from_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
-                folder: my-project
-                project: my-project
+                folder: my-folder
                 credentials:
                     project: my-project
                     service_account_file: /path/to/service_account.json
@@ -200,20 +189,20 @@ def pull_project_from_gcs(
     local_path = Path.cwd()
     project = credentials.get("project") if credentials else None
 
-    if credentials is None:
-        gcp_creds, _ = google.auth.default()
-    elif credentials.get("service_account_info") is not None:
-        gcp_creds = Credentials.from_service_account_info(
-            credentials.get("service_account_info"),
-            scopes=["https://www.googleapis.com/auth/cloud-platform"],
-        )
-    elif credentials.get("service_account_file") is not None:
-        gcp_creds = Credentials.from_service_account_file(
-            credentials.get("service_account_file"),
-            scopes=["https://www.googleapis.com/auth/cloud-platform"],
-        )
-    else:
-        gcp_creds, _ = google.auth.default()
+    gcp_creds = None
+    if credentials is not None:
+        if credentials.get("service_account_info") is not None:
+            gcp_creds = Credentials.from_service_account_info(
+                credentials.get("service_account_info"),
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
+        elif credentials.get("service_account_file") is not None:
+            gcp_creds = Credentials.from_service_account_file(
+                credentials.get("service_account_file"),
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
+
+    gcp_creds = gcp_creds or google.auth.default()[0]
 
     storage_client = StorageClient(credentials=gcp_creds, project=project)
 
@@ -223,13 +212,13 @@ def pull_project_from_gcs(
         if blob.name.endswith("/"):
             # object is a folder and will be created if it contains any objects
             continue
-        target = PurePosixPath(
+        local_blob_download_path = PurePosixPath(
             local_path
             / relative_path_to_current_platform(blob.name).relative_to(folder)
         )
-        Path.mkdir(Path(target.parent), parents=True, exist_ok=True)
+        Path.mkdir(Path(local_blob_download_path.parent), parents=True, exist_ok=True)
 
-        blob.download_to_filename(target)
+        blob.download_to_filename(local_blob_download_path)
 
     return {
         "bucket": bucket,
