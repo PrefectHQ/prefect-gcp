@@ -6,12 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
-- [Fix `upload_from_dataframe` docstring for MkDocs](https://github.com/PrefectHQ/prefect-gcp/pull/162) 
-- [Fix `upload_from_dataframe` file extensions for compressed parquet ('.snappy.parquet', '.gz.parquet')](https://github.com/PrefectHQ/prefect-gcp/pull/166)
 
 ### Added
-
-- `pull_project_from_gcs` and `push_project_to_gcs` steps - [#167](https://github.com/PrefectHQ/prefect-gcp/pull/167)
 
 ### Changed
 
@@ -22,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## 0.4.0
+
+Released on April 6th, 2023.
+
+### Added 
+
+- `pull_project_from_gcs` and `push_project_to_gcs` steps - [#167](https://github.com/PrefectHQ/prefect-gcp/pull/167)
+
+### Fixed
+
+- `upload_from_dataframe` docstring - [#162](https://github.com/PrefectHQ/prefect-gcp/pull/162) 
+- `upload_from_dataframe` file extensions for compressed parquet ('.snappy.parquet', '.gz.parquet') - [#166](https://github.com/PrefectHQ/prefect-gcp/pull/166)
 
 ## 0.3.0
 
