@@ -574,10 +574,6 @@ class CloudRunJob(Infrastructure):
                 "run.googleapis.com/launch-stage": "BETA",
             },
         }
-        if self.vpc_connector_name:
-            jobs_metadata["annotations"][
-                "run.googleapis.com/vpc-access-connector"
-            ] = self.vpc_connector_name
 
         # env and command here
         containers = [self._add_container_settings({"image": self.image})]
@@ -602,6 +598,11 @@ class CloudRunJob(Infrastructure):
                 }
             },
         }
+
+        if self.vpc_connector_name:
+            body["spec"]["template"]["metadata"]["annotations"] = {
+                "run.googleapis.com/vpc-access-connector": self.vpc_connector_name
+            }
         return body
 
     def preview(self) -> str:
