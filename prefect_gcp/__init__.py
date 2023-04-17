@@ -6,5 +6,6 @@ from .cloud_storage import GcsBucket  # noqa
 from .cloud_run import CloudRunJob  # noqa
 from .secret_manager import GcpSecret  # noqa
 from .credentials import GcpCredentials  # noqa
+from .worker import CloudRunWorker  # noqa
 
 __version__ = _version.get_versions()["version"]
