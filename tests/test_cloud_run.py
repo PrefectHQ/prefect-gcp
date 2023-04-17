@@ -511,7 +511,9 @@ class TestCloudRunJobContainerSettings:
         cloud_run_job.vpc_connector_name = "vpc_name"
         result = cloud_run_job._jobs_body()
         assert (
-            result["metadata"]["annotations"]["run.googleapis.com/vpc-access-connector"]
+            result["spec"]["template"]["metadata"]["annotations"][
+                "run.googleapis.com/vpc-access-connector"
+            ]
             == "vpc_name"
         )
 
