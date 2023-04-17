@@ -567,13 +567,17 @@ class CloudRunJob(Infrastructure):
         """Create properly formatted body used for a Job CREATE request.
         See: https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs
         """
-        jobs_metadata = {
-            "name": self.job_name,
-            "annotations": {
-                # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
-                "run.googleapis.com/launch-stage": "BETA",
-            },
+        jobs_metadata = {"name": self.job_name}
+
+        annotations = {
+            # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
+            "run.googleapis.com/launch-stage": "BETA",
         }
+        # add vpc connector if specified
+        if self.vpc_connector_name:
+            annotations[
+                "run.googleapis.com/vpc-access-connector"
+            ] = self.vpc_connector_name
 
         # env and command here
         containers = [self._add_container_settings({"image": self.image})]
@@ -587,6 +591,7 @@ class CloudRunJob(Infrastructure):
             "metadata": jobs_metadata,
             "spec": {  # JobSpec
                 "template": {  # ExecutionTemplateSpec
+                    "metadata": {"annotations": annotations},
                     "spec": {  # ExecutionSpec
                         "template": {  # TaskTemplateSpec
                             "spec": {
@@ -598,11 +603,6 @@ class CloudRunJob(Infrastructure):
                 }
             },
         }
-
-        if self.vpc_connector_name:
-            body["spec"]["template"]["metadata"]["annotations"] = {
-                "run.googleapis.com/vpc-access-connector": self.vpc_connector_name
-            }
         return body
 
     def preview(self) -> str:
