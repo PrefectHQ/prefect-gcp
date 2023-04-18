@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
+- Fix `CloudRunJob` with VPC Connector usage. - [#170](https://github.com/PrefectHQ/prefect-gcp/pull/170)
 
 ### Security
 

@@ -567,15 +567,15 @@ class CloudRunJob(Infrastructure):
         """Create properly formatted body used for a Job CREATE request.
         See: https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs
         """
-        jobs_metadata = {
-            "name": self.job_name,
-            "annotations": {
-                # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
-                "run.googleapis.com/launch-stage": "BETA",
-            },
+        jobs_metadata = {"name": self.job_name}
+
+        annotations = {
+            # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
+            "run.googleapis.com/launch-stage": "BETA",
         }
+        # add vpc connector if specified
         if self.vpc_connector_name:
-            jobs_metadata["annotations"][
+            annotations[
                 "run.googleapis.com/vpc-access-connector"
             ] = self.vpc_connector_name
 
@@ -591,6 +591,7 @@ class CloudRunJob(Infrastructure):
             "metadata": jobs_metadata,
             "spec": {  # JobSpec
                 "template": {  # ExecutionTemplateSpec
+                    "metadata": {"annotations": annotations},
                     "spec": {  # ExecutionSpec
                         "template": {  # TaskTemplateSpec
                             "spec": {
