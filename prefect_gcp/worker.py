@@ -1,6 +1,6 @@
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from uuid import uuid4
 
 import anyio
@@ -17,7 +17,7 @@ from prefect.workers.base import (
     BaseWorker,
     BaseWorkerResult,
 )
-from pydantic import Field
+from pydantic import Field, validator
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
@@ -32,23 +32,33 @@ def _get_default_job_body_template() -> Dict[str, Any]:
             "annotations": {
                 # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
                 "run.googleapis.com/launch-stage": "BETA",
+                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
             },
         },
         "spec": {  # JobSpec
             "template": {  # ExecutionTemplateSpec
                 "spec": {  # ExecutionSpec
                     "template": {  # TaskTemplateSpec
-                        "spec": {
+                        "spec": {  # TaskSpec
                             "containers": [
                                 {
                                     "image": "{{ image }}",
                                     "args": "{{ args }}",
+                                    "resources": {
+                                        "limits": {
+                                            "cpu": "{{ cpu }}",
+                                            "memory": "{{ memory }}",
+                                        },
+                                        "requests": {
+                                            "cpu": "{{ cpu }}",
+                                            "memory": "{{ memory }}",
+                                        }
+                                    }
                                 }
                             ],
                             "timeoutSeconds": "{{ timeout }}",
-                            # TODO what to do about this?
-                            # "serviceAccountName": "{{ service_account_name }}",
-                        }  # TaskSpec
+                            "serviceAccountName": "{{ service_account_name }}",
+                        }
                     },
                 },
             },
@@ -75,10 +85,6 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         title="Keep Job After Completion",
         description="Keep the completed Cloud Run Job on Google Cloud Platform.",
     )
-
-    # For private use
-    _job_name: str = None
-    _execution: Optional[Execution] = None
 
     @property
     def project(self) -> str:
@@ -108,22 +114,36 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         """
         super().prepare_for_flow_run(flow_run, deployment, flow)
         self._populate_envs()
-
-        # TODO what to do about this?
-        # set task execution service account to the email of the credentials`
-        self.job_body["spec"]["template"]["spec"]["template"]["spec"]["serviceAccountName"] = self.credentials.client_email
-
+        self._populate_service_account_if_not_present()
         self._populate_image_if_not_present()
         self._populate_command_if_not_present()
         self._populate_name_if_not_present()
 
+    def _populate_service_account_if_not_present(self):
+        """Populate the service account used for Cloud Run Job Execution if not provided.
+        The service account will be the one from `credentials`."""
+
+        try:
+            if "serviceAccountName" not in self.job_body["spec"]["template"]["spec"]["template"]["spec"]:
+                self.job_body["spec"]["template"]["spec"]["template"]["spec"][
+                    "serviceAccountName"
+                ] = self.credentials.client_email
+        except KeyError:
+            raise ValueError(
+                "Unable to verify service account due to invalid job body template."
+            )
+
     def _populate_envs(self):
+        """Populate environment variables. BaseWorker.prepare_for_flow_run handles
+        putting the environment variables in the `env` attribute. This method
+        moves them into the jobs body"""
         envs = [{"name": k, "value": v} for k, v in self.env.items()]
         self.job_body["spec"]["template"]["spec"]["template"]["spec"]["containers"][0][
             "env"
         ] = envs
 
     def _populate_name_if_not_present(self):
+        # TODO should we give this a flow run id?
         try:
             if "name" not in self.job_body["metadata"]:
                 self.job_body["metadata"]["name"] = f"prefect-job-{uuid4()}"
@@ -187,6 +207,32 @@ class CloudRunWorkerVariables(BaseVariables):
         ),
         example="docker.io/prefecthq/prefect:2-latest",
     )
+    cpu: Optional[str] = Field(
+        default=None,
+        title="CPU",
+        description=(
+            "The amount of compute allocated to the Cloud Run Job. "
+            "The int must be valid based on the rules specified at "
+            "https://cloud.google.com/run/docs/configuring/cpu#setting-jobs."
+            "1000m = 1 CPU."
+        ),
+        example="1000m",
+        regex="^(\d*000)m$"
+    )
+    memory: Optional[str] = Field(
+        default=None,
+        title="Memory",
+        description="The amount of memory allocated to the Cloud Run Job. See"
+                    "https://cloud.google.com/run/docs/configuring/memory-limits#setting "
+                    "for additional details. Must end in 'G', 'Gi', 'M', or 'Mi'.",
+        example="512Mi",
+        regex=r'^\d+(?:G|Gi|M|Mi)$'
+    )
+    vpc_connector_name: Optional[str] = Field(
+        default=None,
+        title="VPC Connector Name",
+        description="The name of the VPC connector to use for the Cloud Run Job.",
+    )
     args: Optional[List[str]] = Field(
         default=None,
         description=(
@@ -209,7 +255,6 @@ class CloudRunWorkerVariables(BaseVariables):
         ),
     )
 
-
 class CloudRunWorkerResult(BaseWorkerResult):
     """Contains information about the final state of a completed process"""
 
@@ -219,9 +264,9 @@ class CloudRunWorker(BaseWorker):
     job_configuration = CloudRunWorkerJobConfiguration
     job_configuration_variables = CloudRunWorkerVariables
 
-    # TODO: remove
-    # async def _check_flow_run(self, flow_run: "FlowRun") -> None:
-    #     pass
+    # TODO: remove! this is only to use remote storage for testing convience
+    async def _check_flow_run(self, flow_run: "FlowRun") -> None:
+        pass
 
     def _create_job_error(self, exc, configuration):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""
@@ -303,7 +348,8 @@ class CloudRunWorker(BaseWorker):
         """Create a new job wait for it to finish registering."""
         try:
             self._logger.info(f"Creating Cloud Run Job {configuration.job_name}")
-
+            import pprint
+            pprint.pprint(configuration.job_body)
             Job.create(
                 client=client,
                 namespace=configuration.credentials.project,
