@@ -1,4 +1,6 @@
-from __future__ import annotations
+"""
+TODO docstring!
+"""
 
 import re
 import time
@@ -6,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 import anyio
 import googleapiclient
-from anyio.abc import TaskStatus
+from anyio.abc import TaskStatus  # noqa
 from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
@@ -26,6 +28,7 @@ from prefect_gcp.credentials import GcpCredentials
 
 
 def _get_default_job_body_template() -> Dict[str, Any]:
+    """Returns the default job body template used by the Cloud Run Job."""
     return {
         "apiVersion": "run.googleapis.com/v1",
         "kind": "Job",
@@ -69,6 +72,7 @@ def _get_default_job_body_template() -> Dict[str, Any]:
 
 
 def _get_base_job_body() -> Dict[str, Any]:
+    """Returns a base job body to use for job body validation."""
     return {
         "apiVersion": "run.googleapis.com/v1",
         "kind": "Job",
@@ -91,6 +95,20 @@ def _get_base_job_body() -> Dict[str, Any]:
 
 
 class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
+    """
+    Configuration class used by the Cloud Run Worker to create a Cloud Run Job.
+
+    An instance of this class is passed to the Cloud Run worker's `run` method
+    for each flow run. It contains all information necessary to execute
+    the flow run as a Cloud Run Job.
+
+    Attributes:
+        region: The region where the Cloud Run Job resides.
+        credentials: The GCP Credentials used to connect to Cloud Run.
+        job_body: The job body used to create the Cloud Run Job.
+        timeout: The length of time that Prefect will wait for a Cloud Run Job.
+        keep_job: Whether to delete the Cloud Run Job after it completes.
+    """
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
@@ -118,10 +136,12 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
 
     @property
     def project(self) -> str:
+        """property for accessing the project from the credentials."""
         return self.credentials.project
 
     @property
     def job_name(self) -> str:
+        """property for accessing the name from the job metadata."""
         return self.job_body["metadata"]["name"]
 
     def prepare_for_flow_run(
@@ -158,6 +178,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         ] = envs
 
     def _populate_name_if_not_present(self, flow_run):
+        """Adds the flow run name to the job if one is not already provided."""
         try:
             if "name" not in self.job_body["metadata"]:
                 self.job_body["metadata"]["name"] = flow_run.name
@@ -165,6 +186,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             raise ValueError("Unable to verify name due to invalid job body template.")
 
     def _populate_image_if_not_present(self):
+        """Adds the latest prefect image to the job if one is not already provided."""
         try:
             if (
                 "image"
@@ -224,6 +246,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
 
     @validator("job_body")
     def _ensure_job_has_compatible_values(cls, value: Dict[str, Any]):
+        """Ensure that the job body has compatible values."""
         patch = JsonPatch.from_diff(value, _get_base_job_body())
         incompatible = sorted(
             [
@@ -241,6 +264,12 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
 
 
 class CloudRunWorkerVariables(BaseVariables):
+    """
+    Default variables for the Cloud Run worker.
+
+    The schema for this class is used to populate the `variables` section of the default
+    base job template.
+    """
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
@@ -322,6 +351,8 @@ class CloudRunWorkerResult(BaseWorkerResult):
 
 
 class CloudRunWorker(BaseWorker):
+    """Prefect worker that executes flow runs within Cloud Run Jobs."""
+
     type = "cloud-run"
     job_configuration = CloudRunWorkerJobConfiguration
     job_configuration_variables = CloudRunWorkerVariables
@@ -369,7 +400,21 @@ class CloudRunWorker(BaseWorker):
         flow_run: "FlowRun",
         configuration: CloudRunWorkerJobConfiguration,
         task_status: Optional[anyio.abc.TaskStatus] = None,
-    ) -> BaseWorkerResult:
+    ) -> CloudRunWorkerResult:
+        """
+        Executes a flow run within a Cloud Run Job and waits for the flow run
+        to complete.
+
+        Args:
+            flow_run: The flow run to execute
+            configuration: The configuration to use when executing the flow run.
+            task_status: The task status object for the current flow run. If provided,
+                the task will be marked as started.
+
+        Returns:
+            CloudRunWorkerResult: A result object containing information about the
+                final state of the flow run
+        """
         with self._get_client(configuration) as client:
             await run_sync_in_worker_thread(
                 self._create_job_and_wait_for_registration, configuration, client

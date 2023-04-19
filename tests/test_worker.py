@@ -62,8 +62,8 @@ def cloud_run_worker():
 
 
 class TestCloudRunWorkerJobConfiguration:
-    def test_project_property(self, service_account_info, cloud_run_worker_job_config):
-        assert cloud_run_worker_job_config.project == service_account_info["project_id"]
+    def test_project_property(self, mock_credentials, cloud_run_worker_job_config):
+        assert cloud_run_worker_job_config.project == "my_project"
 
     def test_job_name(self, cloud_run_worker_job_config):
         cloud_run_worker_job_config.job_body["metadata"]["name"] = "my-job-name"
