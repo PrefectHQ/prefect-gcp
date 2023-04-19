@@ -1,7 +1,6 @@
 import re
 import time
-from typing import Any, Dict, List, Literal, Optional
-from uuid import uuid4
+from typing import Any, Dict, List, Optional
 
 import anyio
 import googleapiclient
@@ -11,6 +10,7 @@ from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.docker import get_prefect_image_name
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
+from prefect.utilities.pydantic import JsonPatch
 from prefect.workers.base import (
     BaseJobConfiguration,
     BaseVariables,
@@ -18,9 +18,9 @@ from prefect.workers.base import (
     BaseWorkerResult,
 )
 from pydantic import Field, validator
+
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
-from prefect.utilities.pydantic import JsonPatch
 
 
 def _get_default_job_body_template() -> Dict[str, Any]:
@@ -32,7 +32,7 @@ def _get_default_job_body_template() -> Dict[str, Any]:
             "annotations": {
                 # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
                 "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
+                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}",
             },
         },
         "spec": {  # JobSpec
@@ -52,8 +52,8 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                                         "requests": {
                                             "cpu": "{{ cpu }}",
                                             "memory": "{{ memory }}",
-                                        }
-                                    }
+                                        },
+                                    },
                                 }
                             ],
                             "timeoutSeconds": "{{ timeout }}",
@@ -80,15 +80,11 @@ def _get_base_job_body() -> Dict[str, Any]:
             "template": {  # ExecutionTemplateSpec
                 "spec": {  # ExecutionSpec
                     "template": {  # TaskTemplateSpec
-                        "spec": {  # TaskSpec
-                            "containers": [
-                                {}
-                            ]
-                        },
+                        "spec": {"containers": [{}]},  # TaskSpec
                     },
                 },
             },
-        }
+        },
     }
 
 
@@ -97,7 +93,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
-        description="The GCP Credentials used to connect to Cloud Run. If not provided credentials will be inferred from the local environment."
+        description="The GCP Credentials used to connect to Cloud Run. If not provided credentials will be inferred from the local environment.",
     )
     job_body: Dict[str, Any] = Field(template=_get_default_job_body_template())
     timeout: Optional[int] = Field(
@@ -245,7 +241,7 @@ class CloudRunWorkerVariables(BaseVariables):
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
-        description="The GCP Credentials used to initiate the Cloud Run Job. If not provided credentials will be inferred from the local environment."
+        description="The GCP Credentials used to initiate the Cloud Run Job. If not provided credentials will be inferred from the local environment.",
     )
     image: Optional[str] = Field(
         default=None,
@@ -266,16 +262,16 @@ class CloudRunWorkerVariables(BaseVariables):
             "1000m = 1 CPU."
         ),
         example="1000m",
-        regex="^(\d*000)m$"
+        regex="^(\d*000)m$",
     )
     memory: Optional[str] = Field(
         default=None,
         title="Memory",
         description="The amount of memory allocated to the Cloud Run Job. See"
-                    "https://cloud.google.com/run/docs/configuring/memory-limits#setting "
-                    "for additional details. Must end in 'G', 'Gi', 'M', or 'Mi'.",
+        "https://cloud.google.com/run/docs/configuring/memory-limits#setting "
+        "for additional details. Must end in 'G', 'Gi', 'M', or 'Mi'.",
         example="512Mi",
-        regex=r'^\d+(?:G|Gi|M|Mi)$'
+        regex=r"^\d+(?:G|Gi|M|Mi)$",
     )
     vpc_connector_name: Optional[str] = Field(
         default=None,
@@ -286,8 +282,9 @@ class CloudRunWorkerVariables(BaseVariables):
         default=None,
         title="Service Account Name",
         description="The name of the service account to use for the task execution of Cloud Run Job."
-                    "By default Cloud Run jobs run as the default Compute Engine Service Account if not specified."
-                    "See https://cloud.google.com/run/docs/configuring/service-accounts.")
+        "By default Cloud Run jobs run as the default Compute Engine Service Account if not specified."
+        "See https://cloud.google.com/run/docs/configuring/service-accounts.",
+    )
     args: Optional[List[str]] = Field(
         default=None,
         description=(
@@ -309,6 +306,7 @@ class CloudRunWorkerVariables(BaseVariables):
             "before raising an exception."
         ),
     )
+
 
 class CloudRunWorkerResult(BaseWorkerResult):
     """Contains information about the final state of a completed process"""
@@ -400,6 +398,7 @@ class CloudRunWorker(BaseWorker):
         try:
             self._logger.info(f"Creating Cloud Run Job {configuration.job_name}")
             import pprint
+
             pprint.pprint(configuration.job_body)
 
             Job.create(

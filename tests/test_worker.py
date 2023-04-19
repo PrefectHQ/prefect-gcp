@@ -1,14 +1,16 @@
-import pytest
 from unittest.mock import Mock
-from prefect_gcp.worker import (
-    CloudRunWorkerJobConfiguration,
-    CloudRunWorker,
-    CloudRunWorkerVariables,
-    CloudRunWorkerResult,
-)
-from prefect_gcp.credentials import GcpCredentials
+
+import pytest
 from prefect.client.schemas import FlowRun
 from pydantic import ValidationError
+
+from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.worker import (
+    CloudRunWorker,
+    CloudRunWorkerJobConfiguration,
+    CloudRunWorkerResult,
+    CloudRunWorkerVariables,
+)
 
 
 @pytest.fixture
@@ -178,7 +180,8 @@ class TestCloudRunWorkerJobConfiguration:
                 "msg": (
                     "Job is missing required attributes at the following paths: "
                     "/metadata/annotations, "
-                    "/spec/template/spec/template/spec/containers"),
+                    "/spec/template/spec/template/spec/containers"
+                ),
                 "type": "value_error",
             }
         ]
@@ -217,7 +220,8 @@ class TestCloudRunWorkerJobConfiguration:
                     "Job has incompatible values for the following attributes: "
                     "/apiVersion must have value 'run.googleapis.com/v1', "
                     "/kind must have value 'Job', "
-                    "/metadata/annotations/run.googleapis.com~1launch-stage must have value 'BETA'"),
+                    "/metadata/annotations/run.googleapis.com~1launch-stage must have value 'BETA'"
+                ),
                 "type": "value_error",
             }
         ]
@@ -410,7 +414,13 @@ class TestCloudRunWorker:
         ],
     )
     def test_happy_path_api_calls_made_correctly(
-        self, mock_client, cloud_run_worker, cloud_run_worker_job_config, keep_job, flow_run, expected_calls
+        self,
+        mock_client,
+        cloud_run_worker,
+        cloud_run_worker_job_config,
+        keep_job,
+        flow_run,
+        expected_calls,
     ):
         """Expected behavior:
         Happy path:
@@ -433,7 +443,9 @@ class TestCloudRunWorker:
         for call, expected_call in zip(calls, expected_calls):
             assert call.startswith(expected_call)
 
-    def test_happy_path_result(self, mock_client, cloud_run_worker, cloud_run_worker_job_config, flow_run):
+    def test_happy_path_result(
+        self, mock_client, cloud_run_worker, cloud_run_worker_job_config, flow_run
+    ):
         """Expected behavior: returns a CloudrunJobResult with status_code 0"""
         cloud_run_worker_job_config.keep_job = True
         cloud_run_worker_job_config.prepare_for_flow_run(flow_run, None, None)
@@ -468,7 +480,14 @@ class TestCloudRunWorker:
         ],
     )
     def test_behavior_called_when_job_get_fails(
-        self, monkeypatch, mock_client, cloud_run_worker, cloud_run_worker_job_config, flow_run, keep_job, expected_calls
+        self,
+        monkeypatch,
+        mock_client,
+        cloud_run_worker,
+        cloud_run_worker_job_config,
+        flow_run,
+        keep_job,
+        expected_calls,
     ):
         """Expected behavior:
         When job create is called, but there is a subsequent exception on a get,
@@ -520,7 +539,14 @@ class TestCloudRunWorker:
         ],
     )
     def test_behavior_called_when_execution_get_fails(
-        self, monkeypatch, mock_client, cloud_run_worker, cloud_run_worker_job_config, flow_run, keep_job, expected_calls
+        self,
+        monkeypatch,
+        mock_client,
+        cloud_run_worker,
+        cloud_run_worker_job_config,
+        flow_run,
+        keep_job,
+        expected_calls,
     ):
         """Expected behavior:
         Job creation is called successfully, the job is found when `get` is called,
