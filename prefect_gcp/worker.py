@@ -4,7 +4,7 @@ TODO docstring!
 
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import anyio
 import googleapiclient
@@ -25,6 +25,11 @@ from pydantic import Field, validator
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
+
+if TYPE_CHECKING:
+    from prefect.client.schemas import FlowRun
+    from prefect.server.schemas.core import Flow
+    from prefect.server.schemas.responses import DeploymentResponse
 
 
 def _get_default_job_body_template() -> Dict[str, Any]:
@@ -109,6 +114,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         timeout: The length of time that Prefect will wait for a Cloud Run Job.
         keep_job: Whether to delete the Cloud Run Job after it completes.
     """
+
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
@@ -270,6 +276,7 @@ class CloudRunWorkerVariables(BaseVariables):
     The schema for this class is used to populate the `variables` section of the default
     base job template.
     """
+
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
