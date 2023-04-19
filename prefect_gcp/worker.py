@@ -1,6 +1,98 @@
 """
-TODO docstring!
+<span class="badge-api beta"/>
+
+Module containing the Cloud Run worker used for executing flow runs as Cloud Run jobs.
+
+Note this module is in **beta**. The interfaces within may change without notice.
+
+To start a Cloud Run worker, run the following command:
+
+```bash
+prefect worker start --pool 'my-work-pool' --type cloud-run
+```
+
+Replace `my-work-pool` with the name of the work pool you want the worker
+to poll for flow runs.
+
+## Configuration
+The only required field for a cloud-run work pool is `region`.
+When attaching a work pool to a deployment, the deployment must have
+
+
+!!! example "Using a custom Kubernetes job manifest template"
+    The default template used for Kubernetes job manifests looks like this:
+    ```yaml
+    ---
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+    labels: "{{ labels }}"
+    namespace: "{{ namespace }}"
+    generateName: "{{ name }}-"
+    spec:
+    ttlSecondsAfterFinished: "{{ finished_job_ttl }}"
+    template:
+        spec:
+        parallelism: 1
+        completions: 1
+        restartPolicy: Never
+        serviceAccountName: "{{ service_account_name }}"
+        containers:
+        - name: prefect-job
+            env: "{{ env }}"
+            image: "{{ image }}"
+            imagePullPolicy: "{{ image_pull_policy }}"
+            args: "{{ command }}"
+    ```
+
+    Each values enclosed in `{{ }}` is a placeholder that will be replaced with
+    a value at runtime. The values that can be used a placeholders are defined
+    by the `variables` schema defined in the base job template.
+
+    The default job manifest and available variables can be customized on a work pool
+    by work pool basis. These customizations can be made via the Prefect UI when
+    creating or editing a work pool.
+
+    For example, if you wanted to allow custom memory requests for a Kubernetes work
+    pool you could update the job manifest template to look like this:
+
+    ```yaml
+    ---
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+    labels: "{{ labels }}"
+    namespace: "{{ namespace }}"
+    generateName: "{{ name }}-"
+    spec:
+    ttlSecondsAfterFinished: "{{ finished_job_ttl }}"
+    template:
+        spec:
+        parallelism: 1
+        completions: 1
+        restartPolicy: Never
+        serviceAccountName: "{{ service_account_name }}"
+        containers:
+        - name: prefect-job
+            env: "{{ env }}"
+            image: "{{ image }}"
+            imagePullPolicy: "{{ image_pull_policy }}"
+            args: "{{ command }}"
+            resources:
+                requests:
+                    memory: "{{ memory }}Mi"
+                limits:
+                    memory: 128Mi
+    ```
+
+    In this new template, the `memory` placeholder allows customization of the memory
+    allocated to Kubernetes jobs created by workers in this work pool, but the limit
+    is hard-coded and cannot be changed by deployments.
+
+For more information about work pools and workers,
+checkout out the [Prefect docs](https://docs.prefect.io/concepts/work-pools/).
 """
+
 import re
 import shlex
 import time
@@ -13,7 +105,8 @@ from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.docker import get_prefect_image_name
-from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
+from prefect.exceptions import InfrastructureNotFound
+from prefect.utilities.asyncutils import run_sync_in_worker_thread
 from prefect.utilities.pydantic import JsonPatch
 from prefect.workers.base import (
     BaseJobConfiguration,
@@ -408,7 +501,6 @@ class CloudRunWorker(BaseWorker):
 
         raise exc
 
-    @sync_compatible
     async def run(
         self,
         flow_run: "FlowRun",
@@ -648,12 +740,38 @@ class CloudRunWorker(BaseWorker):
 
             time.sleep(poll_interval)
 
+    async def kill_infrastructure(
+        self,
+        infrastructure_pid: str,
+        configuration: CloudRunWorkerJobConfiguration,
+        grace_seconds: int = 30,
+    ):
+        """
+        Stops a job for a cancelled flow run based on the provided infrastructure PID
+        and run configuration.
+        """
+        if grace_seconds != 30:
+            self._logger.warning(
+                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
+                "support dynamic grace period configuration. See here for more info: "
+                "https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs/delete"  # noqa
+            )
 
-# get the command
-# split first part into command, rest into args
-# while you're setting command and args in the template
+        with self._get_client(configuration) as client:
+            await run_sync_in_worker_thread(
+                self._stop_job,
+                client=client,
+                namespace=configuration.project,
+                job_name=infrastructure_pid,
+            )
 
-
-# if command and args in the template
-# otherwise take command and get
-# set default values for those variables
+    def _stop_job(self, client: Resource, namespace: str, job_name: str):
+        try:
+            Job.delete(client=client, namespace=namespace, job_name=job_name)
+        except Exception as exc:
+            if "does not exist" in str(exc):
+                raise InfrastructureNotFound(
+                    f"Cannot stop Cloud Run Job; the job name {job_name!r} "
+                    "could not be found."
+                ) from exc
+            raise
