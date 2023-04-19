@@ -54,7 +54,6 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                                 {
                                     "image": "{{ image }}",
                                     "command": "{{ command }}",
-                                    "args": "{{ args }}",
                                     "resources": {
                                         "limits": {
                                             "cpu": "{{ cpu }}",
@@ -240,7 +239,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             args = self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                 "containers"
             ][0].get("args")
-            if args is not None:
+            if args is not None and isinstance(args, str):
                 self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                     "containers"
                 ][0]["args"] = shlex.split(args)
@@ -292,13 +291,6 @@ class CloudRunWorkerVariables(BaseVariables):
         ...,
         description="The region where the Cloud Run Job resides.",
         example="us-central1",
-    )
-    args: Optional[str] = Field(
-        default=None,
-        description=(
-            "Arguments to be passed to your Cloud Run Job's entrypoint command. "
-            "Leave blank if using a prefect image."
-        ),
     )
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",

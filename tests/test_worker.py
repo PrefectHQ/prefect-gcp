@@ -1,15 +1,17 @@
+import uuid
 from unittest.mock import Mock
 
+import pydantic
 import pytest
+from jsonschema.exceptions import ValidationError
 from prefect.client.schemas import FlowRun
-from pydantic import ValidationError
+from prefect.server.schemas.actions import DeploymentCreate
 
 from prefect_gcp.credentials import GcpCredentials
 from prefect_gcp.worker import (
     CloudRunWorker,
     CloudRunWorkerJobConfiguration,
     CloudRunWorkerResult,
-    CloudRunWorkerVariables,
 )
 
 
@@ -181,7 +183,7 @@ class TestCloudRunWorkerJobConfiguration:
         template["job_configuration"]["job_body"] = {}
         template["job_configuration"]["region"] = "test-region1"
 
-        with pytest.raises(ValidationError) as excinfo:
+        with pytest.raises(pydantic.ValidationError) as excinfo:
             await CloudRunWorkerJobConfiguration.from_template_and_values(template, {})
 
         assert excinfo.value.errors() == [
@@ -205,7 +207,7 @@ class TestCloudRunWorkerJobConfiguration:
         }
         template["job_configuration"]["region"] = "test-region1"
 
-        with pytest.raises(ValidationError) as excinfo:
+        with pytest.raises(pydantic.ValidationError) as excinfo:
             await CloudRunWorkerJobConfiguration.from_template_and_values(template, {})
 
         assert excinfo.value.errors() == [
@@ -244,7 +246,7 @@ class TestCloudRunWorkerJobConfiguration:
             },
         }
 
-        with pytest.raises(ValidationError) as excinfo:
+        with pytest.raises(pydantic.ValidationError) as excinfo:
             await CloudRunWorkerJobConfiguration.from_template_and_values(template, {})
 
         assert excinfo.value.errors() == [
@@ -262,40 +264,70 @@ class TestCloudRunWorkerJobConfiguration:
         ]
 
 
-class TestCloudRunWorkerVariables:
+class TestCloudRunWorkerValidConfiguration:
     def test_region_is_required(self):
+        deployment = DeploymentCreate(
+            name="my-deployment", flow_id=uuid.uuid4(), infra_overrides={}
+        )
+
         with pytest.raises(ValidationError) as excinfo:
-            CloudRunWorkerVariables()
-        assert excinfo.value.errors() == [
-            {"loc": ("region",), "msg": "field required", "type": "value_error.missing"}
-        ]
+            deployment.check_valid_configuration(
+                CloudRunWorker.get_default_base_job_template()
+            )
 
-    def test_valid_cpu_string(self):
-        with pytest.raises(ValidationError):
-            CloudRunWorkerVariables(region="test-region1", cpu="1")
-        with pytest.raises(ValidationError):
-            CloudRunWorkerVariables(region="test-region1", cpu="100")
-        with pytest.raises(ValidationError):
-            CloudRunWorkerVariables(region="test-region1", cpu="100m")
-        with pytest.raises(ValidationError):
-            CloudRunWorkerVariables(region="test-region1", cpu="1500m")
+        assert excinfo.value.message == "'region' is a required property"
 
-        CloudRunWorkerVariables(region="test-region1", cpu="1000m")
-        CloudRunWorkerVariables(region="test-region1", cpu="2000m")
-        CloudRunWorkerVariables(region="test-region1", cpu="3000m")
+    @pytest.mark.parametrize("cpu", ["1", "100", "100m", "1500m"])
+    def test_invalid_cpu_string(self, cpu):
+        deployment = DeploymentCreate(
+            name="my-deployment",
+            flow_id=uuid.uuid4(),
+            infra_overrides={"region": "test-region1", "cpu": cpu},
+        )
+        with pytest.raises(ValidationError) as excinfo:
+            deployment.check_valid_configuration(
+                CloudRunWorker.get_default_base_job_template()
+            )
 
-    def test_valid_memory_string(self):
-        with pytest.raises(ValidationError):
-            CloudRunWorkerVariables(region="test-region1", memory="1")
-        with pytest.raises(ValidationError):
-            CloudRunWorkerVariables(region="test-region1", memory="100")
-        with pytest.raises(ValidationError):
-            CloudRunWorkerVariables(region="test-region1", memory="100Gigs")
+        assert excinfo.value.message == f"'{cpu}' does not match '^(\\\\d*000)m$'"
 
-        CloudRunWorkerVariables(region="test-region1", memory="512G")
-        CloudRunWorkerVariables(region="test-region1", memory="512Gi")
-        CloudRunWorkerVariables(region="test-region1", memory="512M")
-        CloudRunWorkerVariables(region="test-region1", memory="512Mi")
+    @pytest.mark.parametrize("cpu", ["1000m", "2000m", "3000m"])
+    def test_valid_cpu_string(self, cpu):
+        deployment = DeploymentCreate(
+            name="my-deployment",
+            flow_id=uuid.uuid4(),
+            infra_overrides={"region": "test-region1", "cpu": cpu},
+        )
+        deployment.check_valid_configuration(
+            CloudRunWorker.get_default_base_job_template()
+        )
+
+    @pytest.mark.parametrize("memory", ["1", "100", "100Gigs"])
+    def test_invalid_memory_string(self, memory):
+        deployment = DeploymentCreate(
+            name="my-deployment",
+            flow_id=uuid.uuid4(),
+            infra_overrides={"region": "test-region1", "memory": memory},
+        )
+        with pytest.raises(ValidationError) as excinfo:
+            deployment.check_valid_configuration(
+                CloudRunWorker.get_default_base_job_template()
+            )
+        assert (
+            excinfo.value.message
+            == f"'{memory}' does not match '^\\\\d+(?:G|Gi|M|Mi)$'"
+        )
+
+    @pytest.mark.parametrize("memory", ["512G", "512Gi", "512M", "512Mi"])
+    def test_valid_memory_string(self, memory):
+        deployment = DeploymentCreate(
+            name="my-deployment",
+            flow_id=uuid.uuid4(),
+            infra_overrides={"region": "test-region1", "memory": memory},
+        )
+        deployment.check_valid_configuration(
+            CloudRunWorker.get_default_base_job_template()
+        )
 
 
 executions_return_value = {
