@@ -222,7 +222,8 @@ class TestCloudRunWorkerJobConfiguration:
                     "Job has incompatible values for the following attributes: "
                     "/apiVersion must have value 'run.googleapis.com/v1', "
                     "/kind must have value 'Job', "
-                    "/metadata/annotations/run.googleapis.com~1launch-stage must have value 'BETA'"
+                    "/metadata/annotations/run.googleapis.com~1launch-stage "
+                    "must have value 'BETA'"
                 ),
                 "type": "value_error",
             }
