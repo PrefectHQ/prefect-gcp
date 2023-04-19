@@ -277,7 +277,11 @@ class CloudRunWorkerVariables(BaseVariables):
     base job template.
     """
 
-    region: str = Field(..., description="The region where the Cloud Run Job resides.")
+    region: str = Field(
+        ...,
+        description="The region where the Cloud Run Job resides.",
+        example="us-central1",
+    )
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
@@ -290,9 +294,8 @@ class CloudRunWorkerVariables(BaseVariables):
         title="Image Name",
         description=(
             "The image to use for a new Cloud Run Job. "
-            "See https://cloud.google.com/run/docs/deploying#images"
-            "for supported image registries. "
-            "If not set, the latest Prefect image will be used."
+            "If not set, the latest Prefect image will be used. "
+            "See https://cloud.google.com/run/docs/deploying#images."
         ),
         example="docker.io/prefecthq/prefect:2-latest",
     )
@@ -301,9 +304,8 @@ class CloudRunWorkerVariables(BaseVariables):
         title="CPU",
         description=(
             "The amount of compute allocated to the Cloud Run Job. "
-            "The int must be valid based on the rules specified at "
+            "(1000m = 1 CPU). See "
             "https://cloud.google.com/run/docs/configuring/cpu#setting-jobs."
-            "1000m = 1 CPU."
         ),
         example="1000m",
         regex=r"^(\d*000)m$",
@@ -311,9 +313,11 @@ class CloudRunWorkerVariables(BaseVariables):
     memory: Optional[str] = Field(
         default=None,
         title="Memory",
-        description="The amount of memory allocated to the Cloud Run Job. See"
-        "https://cloud.google.com/run/docs/configuring/memory-limits#setting "
-        "for additional details. Must end in 'G', 'Gi', 'M', or 'Mi'.",
+        description=(
+            "The amount of memory allocated to the Cloud Run Job. "
+            "Must be specified in units of 'G', 'Gi', 'M', or 'Mi'. "
+            "See https://cloud.google.com/run/docs/configuring/memory-limits#setting."
+        ),
         example="512Mi",
         regex=r"^\d+(?:G|Gi|M|Mi)$",
     )
@@ -327,8 +331,8 @@ class CloudRunWorkerVariables(BaseVariables):
         title="Service Account Name",
         description="The name of the service account to use for the task execution "
         "of Cloud Run Job. By default Cloud Run jobs run as the default "
-        "Compute Engine Service Account if not specified. See "
-        "https://cloud.google.com/run/docs/configuring/service-accounts.",
+        "Compute Engine Service Account. ",
+        example="service-account@example.iam.gserviceaccount.com",
     )
     args: Optional[List[str]] = Field(
         default=None,
@@ -339,7 +343,7 @@ class CloudRunWorkerVariables(BaseVariables):
     keep_job: Optional[bool] = Field(
         default=False,
         title="Keep Job After Completion",
-        description="Keep the completed Cloud Run Job on Google Cloud Platform.",
+        description="Keep the completed Cloud Run Job after it has run.",
     )
     timeout: Optional[int] = Field(
         default=600,
