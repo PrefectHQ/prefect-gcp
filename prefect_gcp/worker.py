@@ -451,9 +451,6 @@ class CloudRunWorker(BaseWorker):
         """Create a new job wait for it to finish registering."""
         try:
             self._logger.info(f"Creating Cloud Run Job {configuration.job_name}")
-            import pprint
-
-            pprint.pprint(configuration.job_body)
 
             Job.create(
                 client=client,
