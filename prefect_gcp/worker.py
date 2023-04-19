@@ -1,10 +1,10 @@
 """
 TODO docstring!
 """
-
+import shlex
 import re
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import anyio
 import googleapiclient
@@ -53,6 +53,7 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                             "containers": [
                                 {
                                     "image": "{{ image }}",
+                                    "command": "{{ command }}",
                                     "args": "{{ args }}",
                                     "resources": {
                                         "limits": {
@@ -169,10 +170,12 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             flow: The flow associated with the flow run used for preparation.
         """
         super().prepare_for_flow_run(flow_run, deployment, flow)
+
         self._populate_envs()
+        self._populate_or_format_command()
+        self._format_args_if_present()
         self._populate_image_if_not_present()
-        self._populate_command_if_not_present()
-        self._populate_name_if_not_present(flow_run)
+        self._populate_name_if_not_present()
 
     def _populate_envs(self):
         """Populate environment variables. BaseWorker.prepare_for_flow_run handles
@@ -183,11 +186,11 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             "env"
         ] = envs
 
-    def _populate_name_if_not_present(self, flow_run):
+    def _populate_name_if_not_present(self):
         """Adds the flow run name to the job if one is not already provided."""
         try:
             if "name" not in self.job_body["metadata"]:
-                self.job_body["metadata"]["name"] = flow_run.name
+                self.job_body["metadata"]["name"] = self.name
         except KeyError:
             raise ValueError("Unable to verify name due to invalid job body template.")
 
@@ -206,7 +209,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         except KeyError:
             raise ValueError("Unable to verify image due to invalid job body template.")
 
-    def _populate_command_if_not_present(self):
+    def _populate_or_format_command(self):
         """
         Ensures that the command is present in the job manifest. Populates the command
         with the `prefect -m prefect.engine` if a command is not present.
@@ -214,11 +217,11 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         try:
             command = self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                 "containers"
-            ][0].get("args")
+            ][0].get("command")
             if command is None:
                 self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                     "containers"
-                ][0]["args"] = [
+                ][0]["command"] = [
                     "python",
                     "-m",
                     "prefect.engine",
@@ -226,15 +229,23 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             elif isinstance(command, str):
                 self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                     "containers"
-                ][0]["args"] = command.split()
-            elif not isinstance(command, list):
-                raise ValueError(
-                    "Invalid job manifest template: 'command' must be a string or list."
-                )
+                ][0]["command"] = shlex.split(command)
         except KeyError:
             raise ValueError(
-                "Unable to verify command due to invalid job manifest template."
+                "Unable to verify command due to invalid job body template."
             )
+
+    def _format_args_if_present(self):
+        try:
+            args = self.job_body["spec"]["template"]["spec"]["template"]["spec"][
+                "containers"
+            ][0].get("args")
+            if args is not None:
+                self.job_body["spec"]["template"]["spec"]["template"]["spec"][
+                    "containers"
+                ][0]["args"] = shlex.split(args)
+        except KeyError:
+            raise ValueError("Unable to verify args due to invalid job body template.")
 
     @validator("job_body")
     def _ensure_job_includes_all_required_components(cls, value: Dict[str, Any]):
@@ -281,6 +292,13 @@ class CloudRunWorkerVariables(BaseVariables):
         ...,
         description="The region where the Cloud Run Job resides.",
         example="us-central1",
+    )
+    args: Optional[str] = Field(
+        default=None,
+        description=(
+            "Arguments to be passed to your Cloud Run Job's entrypoint command. "
+            "Leave blank if using a prefect image."
+        ),
     )
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
@@ -334,12 +352,6 @@ class CloudRunWorkerVariables(BaseVariables):
         "Compute Engine Service Account. ",
         example="service-account@example.iam.gserviceaccount.com",
     )
-    args: Optional[List[str]] = Field(
-        default=None,
-        description=(
-            "Arguments to be passed to your Cloud Run Job's entrypoint command."
-        ),
-    )
     keep_job: Optional[bool] = Field(
         default=False,
         title="Keep Job After Completion",
@@ -351,8 +363,7 @@ class CloudRunWorkerVariables(BaseVariables):
         le=3600,
         title="Job Timeout",
         description=(
-            "The length of time that Prefect will wait for a Cloud Run Job to complete "
-            "before raising an exception."
+            "The length of time that Prefect will wait for Cloud Run Job state changes."
         ),
     )
 
@@ -644,3 +655,13 @@ class CloudRunWorker(BaseWorker):
                 )
 
             time.sleep(poll_interval)
+
+
+# get the command
+# split first part into command, rest into args
+# while you're setting command and args in the template
+
+
+# if command and args in the template
+# otherwise take command and get
+# set default values for those variables

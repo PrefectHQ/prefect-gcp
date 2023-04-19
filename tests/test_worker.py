@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 from prefect.client.schemas import FlowRun
+from prefect.server.schemas.core import WorkPool, Deployment
 from pydantic import ValidationError
 
 from prefect_gcp.credentials import GcpCredentials
@@ -11,6 +12,11 @@ from prefect_gcp.worker import (
     CloudRunWorkerResult,
     CloudRunWorkerVariables,
 )
+
+
+@pytest.fixture
+def work_pool():
+    return
 
 
 @pytest.fixture(autouse=True)
@@ -47,18 +53,14 @@ def flow_run():
 
 
 @pytest.fixture
-def cloud_run_worker_job_config(service_account_info, jobs_body, flow_run):
+def cloud_run_worker_job_config(service_account_info, jobs_body):
     return CloudRunWorkerJobConfiguration(
+        name="my-job-name",
         image="gcr.io//not-a/real-image",
         region="middle-earth2",
         job_body=jobs_body,
         credentials=GcpCredentials(service_account_info=service_account_info),
     )
-
-
-@pytest.fixture
-def cloud_run_worker():
-    return CloudRunWorker("my-work-pool")
 
 
 class TestCloudRunWorkerJobConfiguration:
@@ -109,27 +111,63 @@ class TestCloudRunWorkerJobConfiguration:
 
         assert container["image"] == image
 
-    def test_populate_args_if_not_present(self, cloud_run_worker_job_config):
-        container = cloud_run_worker_job_config.job_body["spec"]["template"]["spec"][
-            "template"
-        ]["spec"]["containers"][0]
-
-        assert "args" not in container
-
-        cloud_run_worker_job_config._populate_command_if_not_present()
-
-        assert "args" in container
-        assert container["args"] == ["python", "-m", "prefect.engine"]
-
-    def test_populate_name_if_not_present(self, cloud_run_worker_job_config, flow_run):
+    def test_populate_name_if_not_present(self, cloud_run_worker_job_config):
         metadata = cloud_run_worker_job_config.job_body["metadata"]
 
         assert "name" not in metadata
 
-        cloud_run_worker_job_config._populate_name_if_not_present(flow_run)
+        cloud_run_worker_job_config._populate_name_if_not_present()
 
         assert "name" in metadata
-        assert metadata["name"] == flow_run.name
+        assert metadata["name"] == cloud_run_worker_job_config.name
+
+    def test_populate_or_format_command_doesnt_exist(self, cloud_run_worker_job_config):
+        container = cloud_run_worker_job_config.job_body["spec"]["template"]["spec"][
+            "template"
+        ]["spec"]["containers"][0]
+
+        assert "command" not in container
+
+        cloud_run_worker_job_config._populate_or_format_command()
+
+        assert "command" in container
+        assert container["command"] == ["python", "-m", "prefect.engine"]
+
+    def test_populate_or_format_command_already_exists(
+        self, cloud_run_worker_job_config
+    ):
+        command = "my command and args"
+        container = cloud_run_worker_job_config.job_body["spec"]["template"]["spec"][
+            "template"
+        ]["spec"]["containers"][0]
+        container["command"] = command
+
+        cloud_run_worker_job_config._populate_or_format_command()
+
+        assert "command" in container
+        assert container["command"] == command.split()
+
+    def test_format_args_if_present(self, cloud_run_worker_job_config):
+        args = "my args"
+        container = cloud_run_worker_job_config.job_body["spec"]["template"]["spec"][
+            "template"
+        ]["spec"]["containers"][0]
+        container["args"] = args
+
+        cloud_run_worker_job_config._format_args_if_present()
+
+        assert "args" in container
+        assert container["args"] == args.split()
+
+    def test_format_args_if_present_no_args(self, cloud_run_worker_job_config):
+        container = cloud_run_worker_job_config.job_body["spec"]["template"]["spec"][
+            "template"
+        ]["spec"]["containers"][0]
+        assert "args" not in container
+
+        cloud_run_worker_job_config._format_args_if_present()
+
+        assert "args" not in container
 
     def test_populate_name_doesnt_overwrite(
         self, cloud_run_worker_job_config, flow_run
@@ -138,7 +176,7 @@ class TestCloudRunWorkerJobConfiguration:
         metadata = cloud_run_worker_job_config.job_body["metadata"]
         metadata["name"] = name
 
-        cloud_run_worker_job_config._populate_name_if_not_present(flow_run)
+        cloud_run_worker_job_config._populate_name_if_not_present()
 
         assert "name" in metadata
         assert metadata["name"] != flow_run.name
@@ -416,10 +454,9 @@ class TestCloudRunWorker:
             ),
         ],
     )
-    def test_happy_path_api_calls_made_correctly(
+    async def test_happy_path_api_calls_made_correctly(
         self,
         mock_client,
-        cloud_run_worker,
         cloud_run_worker_job_config,
         keep_job,
         flow_run,
@@ -433,33 +470,35 @@ class TestCloudRunWorker:
         - A call to Executions.get and execute (see the status of the Execution)
         - A call to Job.delete and execute if `keep_job` False, otherwise no call
         """
-        cloud_run_worker_job_config.keep_job = keep_job
-        cloud_run_worker_job_config.prepare_for_flow_run(flow_run, None, None)
-        mock_client.jobs().get().execute.return_value = self.job_ready
-        mock_client.jobs().run().execute.return_value = self.job_ready
-        mock_client.executions().get().execute.return_value = (
-            self.execution_complete_and_succeeded
-        )
-        cloud_run_worker.run(flow_run, cloud_run_worker_job_config)
-        calls = list_mock_calls(mock_client, 3)
+        async with CloudRunWorker("my-work-pool") as cloud_run_worker:
+            cloud_run_worker_job_config.keep_job = keep_job
+            cloud_run_worker_job_config.prepare_for_flow_run(flow_run, None, None)
+            mock_client.jobs().get().execute.return_value = self.job_ready
+            mock_client.jobs().run().execute.return_value = self.job_ready
+            mock_client.executions().get().execute.return_value = (
+                self.execution_complete_and_succeeded
+            )
+            await cloud_run_worker.run(flow_run, cloud_run_worker_job_config)
+            calls = list_mock_calls(mock_client, 3)
 
-        for call, expected_call in zip(calls, expected_calls):
-            assert call.startswith(expected_call)
+            for call, expected_call in zip(calls, expected_calls):
+                assert call.startswith(expected_call)
 
-    def test_happy_path_result(
-        self, mock_client, cloud_run_worker, cloud_run_worker_job_config, flow_run
+    async def test_happy_path_result(
+        self, mock_client, cloud_run_worker_job_config, flow_run
     ):
         """Expected behavior: returns a CloudrunJobResult with status_code 0"""
-        cloud_run_worker_job_config.keep_job = True
-        cloud_run_worker_job_config.prepare_for_flow_run(flow_run, None, None)
-        mock_client.jobs().get().execute.return_value = self.job_ready
-        mock_client.jobs().run().execute.return_value = self.job_ready
-        mock_client.executions().get().execute.return_value = (
-            self.execution_complete_and_succeeded
-        )
-        res = cloud_run_worker.run(flow_run, cloud_run_worker_job_config)
-        assert isinstance(res, CloudRunWorkerResult)
-        assert res.status_code == 0
+        async with CloudRunWorker("my-work-pool") as cloud_run_worker:
+            cloud_run_worker_job_config.keep_job = True
+            cloud_run_worker_job_config.prepare_for_flow_run(flow_run, None, None)
+            mock_client.jobs().get().execute.return_value = self.job_ready
+            mock_client.jobs().run().execute.return_value = self.job_ready
+            mock_client.executions().get().execute.return_value = (
+                self.execution_complete_and_succeeded
+            )
+            res = await cloud_run_worker.run(flow_run, cloud_run_worker_job_config)
+            assert isinstance(res, CloudRunWorkerResult)
+            assert res.status_code == 0
 
     @pytest.mark.parametrize(
         "keep_job,expected_calls",
@@ -482,11 +521,10 @@ class TestCloudRunWorker:
             ),
         ],
     )
-    def test_behavior_called_when_job_get_fails(
+    async def test_behavior_called_when_job_get_fails(
         self,
         monkeypatch,
         mock_client,
-        cloud_run_worker,
         cloud_run_worker_job_config,
         flow_run,
         keep_job,
@@ -496,20 +534,21 @@ class TestCloudRunWorker:
         When job create is called, but there is a subsequent exception on a get,
         there should be a delete call for that job if `keep_job` is False
         """
-        cloud_run_worker_job_config.keep_job = keep_job
+        async with CloudRunWorker("my-work-pool") as cloud_run_worker:
+            cloud_run_worker_job_config.keep_job = keep_job
 
-        # Getting job will raise error
-        def raise_exception(*args, **kwargs):
-            raise Exception("This is an intentional exception")
+            # Getting job will raise error
+            def raise_exception(*args, **kwargs):
+                raise Exception("This is an intentional exception")
 
-        monkeypatch.setattr("prefect_gcp.cloud_run.Job.get", raise_exception)
+            monkeypatch.setattr("prefect_gcp.cloud_run.Job.get", raise_exception)
 
-        with pytest.raises(Exception):
-            cloud_run_worker.run(flow_run, cloud_run_worker_job_config)
-        calls = list_mock_calls(mock_client, 0)
+            with pytest.raises(Exception):
+                await cloud_run_worker.run(flow_run, cloud_run_worker_job_config)
+            calls = list_mock_calls(mock_client, 0)
 
-        for call, expected_call in zip(calls, expected_calls):
-            assert call.startswith(expected_call)
+            for call, expected_call in zip(calls, expected_calls):
+                assert call.startswith(expected_call)
 
     # Test that RuntimeError raised if something happens with execution
     @pytest.mark.parametrize(
@@ -541,11 +580,10 @@ class TestCloudRunWorker:
             ),
         ],
     )
-    def test_behavior_called_when_execution_get_fails(
+    async def test_behavior_called_when_execution_get_fails(
         self,
         monkeypatch,
         mock_client,
-        cloud_run_worker,
         cloud_run_worker_job_config,
         flow_run,
         keep_job,
@@ -556,19 +594,20 @@ class TestCloudRunWorker:
         job `run` is called, but the execution fails, there should be a delete
         call for that job if `keep_job` is False, and an exception should be raised.
         """
-        cloud_run_worker_job_config.keep_job = keep_job
-        mock_client.jobs().get().execute.return_value = self.job_ready
-        mock_client.jobs().run().execute.return_value = self.job_ready
+        async with CloudRunWorker("my-work-pool") as cloud_run_worker:
+            cloud_run_worker_job_config.keep_job = keep_job
+            mock_client.jobs().get().execute.return_value = self.job_ready
+            mock_client.jobs().run().execute.return_value = self.job_ready
 
-        # Getting execution will raise error
-        def raise_exception(*args, **kwargs):
-            raise Exception("This is an intentional exception")
+            # Getting execution will raise error
+            def raise_exception(*args, **kwargs):
+                raise Exception("This is an intentional exception")
 
-        monkeypatch.setattr("prefect_gcp.cloud_run.Execution.get", raise_exception)
+            monkeypatch.setattr("prefect_gcp.cloud_run.Execution.get", raise_exception)
 
-        with pytest.raises(Exception):
-            cloud_run_worker.run(flow_run, cloud_run_worker_job_config)
-        calls = list_mock_calls(mock_client, 2)
-        # breakpoint()
-        for call, expected_call in zip(calls, expected_calls):
-            assert call.startswith(expected_call)
+            with pytest.raises(Exception):
+                await cloud_run_worker.run(flow_run, cloud_run_worker_job_config)
+            calls = list_mock_calls(mock_client, 2)
+            # breakpoint()
+            for call, expected_call in zip(calls, expected_calls):
+                assert call.startswith(expected_call)
