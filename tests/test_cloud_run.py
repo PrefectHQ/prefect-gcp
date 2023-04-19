@@ -765,7 +765,6 @@ class TestCloudRunJobRun:
         with pytest.raises(Exception):
             cloud_run_job.run()
         calls = list_mock_calls(mock_client, 2)
-        # breakpoint()
         for call, expected_call in zip(calls, expected_calls):
             assert call.startswith(expected_call)
 
