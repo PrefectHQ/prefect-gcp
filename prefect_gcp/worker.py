@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 import time
 from typing import Any, Dict, List, Optional
@@ -93,7 +95,9 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
-        description="The GCP Credentials used to connect to Cloud Run. If not provided credentials will be inferred from the local environment.",
+        description="The GCP Credentials used to connect to Cloud Run. "
+        "If not provided credentials will be inferred from "
+        "the local environment.",
     )
     job_body: Dict[str, Any] = Field(template=_get_default_job_body_template())
     timeout: Optional[int] = Field(
@@ -241,14 +245,18 @@ class CloudRunWorkerVariables(BaseVariables):
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
-        description="The GCP Credentials used to initiate the Cloud Run Job. If not provided credentials will be inferred from the local environment.",
+        description="The GCP Credentials used to initiate the "
+        "Cloud Run Job. If not provided credentials will be "
+        "inferred from the local environment.",
     )
     image: Optional[str] = Field(
         default=None,
         title="Image Name",
         description=(
-            "The image to use for a new Cloud Run Job. See https://cloud.google.com/run/docs/deploying#images"
-            "for supported image registries. If not set, the latest Prefect image will be used."
+            "The image to use for a new Cloud Run Job. "
+            "See https://cloud.google.com/run/docs/deploying#images"
+            "for supported image registries. "
+            "If not set, the latest Prefect image will be used."
         ),
         example="docker.io/prefecthq/prefect:2-latest",
     )
@@ -262,7 +270,7 @@ class CloudRunWorkerVariables(BaseVariables):
             "1000m = 1 CPU."
         ),
         example="1000m",
-        regex="^(\d*000)m$",
+        regex=r"^(\d*000)m$",
     )
     memory: Optional[str] = Field(
         default=None,
@@ -281,9 +289,10 @@ class CloudRunWorkerVariables(BaseVariables):
     service_account_name: Optional[str] = Field(
         default=None,
         title="Service Account Name",
-        description="The name of the service account to use for the task execution of Cloud Run Job."
-        "By default Cloud Run jobs run as the default Compute Engine Service Account if not specified."
-        "See https://cloud.google.com/run/docs/configuring/service-accounts.",
+        description="The name of the service account to use for the task execution "
+        "of Cloud Run Job. By default Cloud Run jobs run as the default "
+        "Compute Engine Service Account if not specified. See "
+        "https://cloud.google.com/run/docs/configuring/service-accounts.",
     )
     args: Optional[List[str]] = Field(
         default=None,
@@ -417,7 +426,8 @@ class CloudRunWorker(BaseWorker):
             )
             if not configuration.keep_job:
                 self._logger.info(
-                    f"Deleting Cloud Run Job {configuration.job_name} from Google Cloud Run."
+                    f"Deleting Cloud Run Job {configuration.job_name} from "
+                    "Google Cloud Run."
                 )
                 try:
                     Job.delete(
@@ -487,7 +497,8 @@ class CloudRunWorker(BaseWorker):
             status_code = 1
             error_msg = job_execution.condition_after_completion()["message"]
             self._logger.error(
-                f"Job Run {configuration.job_name} did not complete successfully. {error_msg}"
+                "Job Run {configuration.job_name} did not complete successfully. "
+                f"{error_msg}"
             )
 
         self._logger.info(
@@ -496,8 +507,8 @@ class CloudRunWorker(BaseWorker):
 
         if not configuration.keep_job:
             self._logger.info(
-                f"Deleting completed Cloud Run Job {configuration.job_name!r} from Google Cloud"
-                " Run..."
+                f"Deleting completed Cloud Run Job {configuration.job_name!r} "
+                "from Google Cloud Run..."
             )
             try:
                 Job.delete(

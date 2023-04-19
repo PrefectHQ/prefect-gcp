@@ -13,6 +13,11 @@ from prefect_gcp.worker import (
 )
 
 
+@pytest.fixture(autouse=True)
+def mock_credentials(gcp_credentials):
+    yield
+
+
 @pytest.fixture
 def jobs_body():
     return {
