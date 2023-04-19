@@ -34,59 +34,59 @@ pool basis or do so on a per-deployment basis via the `infra_overrides` field.
 !!! example "Using a custom Cloud Run job template"
     The default template used for Cloud Run jobs looks like this:
     ```json
+{
+    "apiVersion": "run.googleapis.com/v1",
+    "kind": "Job",
+    "metadata":
         {
-            "apiVersion": "run.googleapis.com/v1",
-            "kind": "Job",
-            "metadata":
+            "name": "{{ name }}",
+            "annotations":
             {
-                "name": "{{ name }}",
-                "annotations":
-                {
-                    "run.googleapis.com/launch-stage": "BETA",
-                    "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
-                }
-            },
-            "spec":
+                "run.googleapis.com/launch-stage": "BETA",
+                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
+            }
+        },
+        "spec":
+        {
+            "template":
             {
-                "template":
+                "spec":
                 {
-                    "spec":
+                    "template":
                     {
-                        "template":
+                        "spec":
                         {
-                            "spec":
-                            {
-                                "containers":
-                                [
+                            "containers":
+                            [
+                                {
+                                    "image": "{{ image }}",
+                                    "args": "{{ args }}",
+                                    "resources":
                                     {
-                                        "image": "{{ image }}",
-                                        "args": "{{ args }}",
-                                        "resources":
+                                        "limits":
                                         {
-                                            "limits":
-                                            {
-                                                "cpu": "{{ cpu }}",
-                                                "memory": "{{ memory }}"
-                                            },
-                                            "requests":
-                                            {
-                                                "cpu": "{{ cpu }}",
-                                                "memory": "{{ memory }}"
-                                            }
+                                            "cpu": "{{ cpu }}",
+                                            "memory": "{{ memory }}"
+                                        },
+                                        "requests":
+                                        {
+                                            "cpu": "{{ cpu }}",
+                                            "memory": "{{ memory }}"
                                         }
                                     }
-                                ],
-                                "timeoutSeconds": "{{ timeout }}",
-                                "serviceAccountName": "{{ service_account_name }}"
-                            }
+                                }
+                            ],
+                            "timeoutSeconds": "{{ timeout }}",
+                            "serviceAccountName": "{{ service_account_name }}"
                         }
                     }
                 }
+                }
             }
-        },
-        "timeout": "{{ timeout }}",
-        "keep_job": "{{ keep_job }}"
-    }
+    },
+    "timeout": "{{ timeout }}",
+    "keep_job": "{{ keep_job }}"
+}
     ```
 
     Each values enclosed in `{{ }}` is a placeholder that will be replaced with
@@ -101,24 +101,24 @@ pool basis or do so on a per-deployment basis via the `infra_overrides` field.
     the default job template, you can add the following
 
     ```json
+{
+    "apiVersion": "run.googleapis.com/v1",
+    "kind": "Job",
+    "metadata":
+    {
+        "name": "{{ name }}",
+        "annotations":
         {
-            "apiVersion": "run.googleapis.com/v1",
-            "kind": "Job",
-            "metadata":
-            {
-                "name": "{{ name }}",
-                "annotations":
-                {
-                    "run.googleapis.com/my-custom-annotation": "{{ my_custom_annotation }}",
-                    "run.googleapis.com/launch-stage": "BETA",
-                    "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
-                }
-              ...
-            },
-          ...
-        },
-        ...
-    }
+            "run.googleapis.com/my-custom-annotation": "{{ my_custom_annotation }}",
+            "run.googleapis.com/launch-stage": "BETA",
+            "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
+        }
+      ...
+    },
+  ...
+},
+...
+}
     ```
     my-custom-annotation can now be used as a placeholder in the job template and set
     via infra_overrides.
@@ -127,28 +127,28 @@ pool basis or do so on a per-deployment basis via the `infra_overrides` field.
     infra_overrides: {region: "us-central1", "my_custom_annotation": "my-custom-value"}
     ```
 
-    Additionally, you can hardcode fields to prevent configuration at the deployment level.
-    For example to configure the `vpc_connector_name` field, you can remove the templated
-    value and replace it with a hardcoded value.
+    Additionally, you can hardcode fields to prevent configuration at the deployment
+    level.For example to configure the `vpc_connector_name` field, you can remove
+    the templated value and replace it with a hardcoded value.
 
-        ```json
+    ```json
+{
+    "apiVersion": "run.googleapis.com/v1",
+    "kind": "Job",
+    "metadata":
         {
-            "apiVersion": "run.googleapis.com/v1",
-            "kind": "Job",
-            "metadata":
+            "name": "{{ name }}",
+            "annotations":
             {
-                "name": "{{ name }}",
-                "annotations":
-                {
-                    "run.googleapis.com/launch-stage": "BETA",
-                    "run.googleapis.com/vpc-access-connector": "my-hardcoded-vpc-connector"
-                }
-              ...
-            },
+                "run.googleapis.com/launch-stage": "BETA",
+                "run.googleapis.com/vpc-access-connector": "my-hardcoded-vpc-connector"
+            }
           ...
         },
-        ...
-    }
+      ...
+    },
+  ...
+}
     ```
 """
 
