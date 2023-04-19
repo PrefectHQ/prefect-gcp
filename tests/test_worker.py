@@ -2,7 +2,6 @@ from unittest.mock import Mock
 
 import pytest
 from prefect.client.schemas import FlowRun
-from prefect.server.schemas.core import WorkPool, Deployment
 from pydantic import ValidationError
 
 from prefect_gcp.credentials import GcpCredentials
@@ -12,11 +11,6 @@ from prefect_gcp.worker import (
     CloudRunWorkerResult,
     CloudRunWorkerVariables,
 )
-
-
-@pytest.fixture
-def work_pool():
-    return
 
 
 @pytest.fixture(autouse=True)
