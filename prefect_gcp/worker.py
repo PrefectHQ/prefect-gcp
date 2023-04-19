@@ -15,82 +15,141 @@ Replace `my-work-pool` with the name of the work pool you want the worker
 to poll for flow runs.
 
 ## Configuration
+
+### Required Fields
 The only required field for a cloud-run work pool is `region`.
-When attaching a work pool to a deployment, the deployment must have
 
+Either go to the UI and edit your newly created work pool to point to the correct
+or be sure to include the following in your `deployment.yaml` file:
+```yaml
+# deployment.yaml
+infra_overrides: {region: "us-central1"}
+```
 
-!!! example "Using a custom Kubernetes job manifest template"
-    The default template used for Kubernetes job manifests looks like this:
-    ```yaml
-    ---
-    apiVersion: batch/v1
-    kind: Job
-    metadata:
-    labels: "{{ labels }}"
-    namespace: "{{ namespace }}"
-    generateName: "{{ name }}-"
-    spec:
-    ttlSecondsAfterFinished: "{{ finished_job_ttl }}"
-    template:
-        spec:
-        parallelism: 1
-        completions: 1
-        restartPolicy: Never
-        serviceAccountName: "{{ service_account_name }}"
-        containers:
-        - name: prefect-job
-            env: "{{ env }}"
-            image: "{{ image }}"
-            imagePullPolicy: "{{ image_pull_policy }}"
-            args: "{{ command }}"
+### Optional Fields
+All other fields on your work pool are optional. You can configure them on a per work
+pool basis or do so on a per-deployment basis via the `infra_overrides` field.
+
+### Advanced Configuration
+!!! example "Using a custom Cloud Run job template"
+    The default template used for Cloud Run jobs looks like this:
+    ```json
+        {
+            "apiVersion": "run.googleapis.com/v1",
+            "kind": "Job",
+            "metadata":
+            {
+                "name": "{{ name }}",
+                "annotations":
+                {
+                    "run.googleapis.com/launch-stage": "BETA",
+                    "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
+                }
+            },
+            "spec":
+            {
+                "template":
+                {
+                    "spec":
+                    {
+                        "template":
+                        {
+                            "spec":
+                            {
+                                "containers":
+                                [
+                                    {
+                                        "image": "{{ image }}",
+                                        "args": "{{ args }}",
+                                        "resources":
+                                        {
+                                            "limits":
+                                            {
+                                                "cpu": "{{ cpu }}",
+                                                "memory": "{{ memory }}"
+                                            },
+                                            "requests":
+                                            {
+                                                "cpu": "{{ cpu }}",
+                                                "memory": "{{ memory }}"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "timeoutSeconds": "{{ timeout }}",
+                                "serviceAccountName": "{{ service_account_name }}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "timeout": "{{ timeout }}",
+        "keep_job": "{{ keep_job }}"
+    }
     ```
 
     Each values enclosed in `{{ }}` is a placeholder that will be replaced with
     a value at runtime. The values that can be used a placeholders are defined
     by the `variables` schema defined in the base job template.
 
-    The default job manifest and available variables can be customized on a work pool
+    The default job template and available variables can be customized on a work pool
     by work pool basis. These customizations can be made via the Prefect UI when
     creating or editing a work pool.
 
-    For example, if you wanted to allow custom memory requests for a Kubernetes work
-    pool you could update the job manifest template to look like this:
+    For example, to allow for extra customization of a new annotation not described in
+    the default job template, you can add the following
 
+    ```json
+        {
+            "apiVersion": "run.googleapis.com/v1",
+            "kind": "Job",
+            "metadata":
+            {
+                "name": "{{ name }}",
+                "annotations":
+                {
+                    "run.googleapis.com/my-custom-annotation": "{{ my_custom_annotation }}",
+                    "run.googleapis.com/launch-stage": "BETA",
+                    "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
+                }
+              ...
+            },
+          ...
+        },
+        ...
+    }
+    ```
+    my-custom-annotation can now be used as a placeholder in the job template and set
+    via infra_overrides.
     ```yaml
-    ---
-    apiVersion: batch/v1
-    kind: Job
-    metadata:
-    labels: "{{ labels }}"
-    namespace: "{{ namespace }}"
-    generateName: "{{ name }}-"
-    spec:
-    ttlSecondsAfterFinished: "{{ finished_job_ttl }}"
-    template:
-        spec:
-        parallelism: 1
-        completions: 1
-        restartPolicy: Never
-        serviceAccountName: "{{ service_account_name }}"
-        containers:
-        - name: prefect-job
-            env: "{{ env }}"
-            image: "{{ image }}"
-            imagePullPolicy: "{{ image_pull_policy }}"
-            args: "{{ command }}"
-            resources:
-                requests:
-                    memory: "{{ memory }}Mi"
-                limits:
-                    memory: 128Mi
+    # deployment.yaml
+    infra_overrides: {region: "us-central1", "my_custom_annotation": "my-custom-value"}
     ```
 
-    In this new template, the `memory` placeholder allows customization of the memory
-    allocated to Kubernetes jobs created by workers in this work pool, but the limit
-    is hard-coded and cannot be changed by deployments.
+    Additionally, you can hardcode fields to prevent configuration at the deployment level.
+    For example to configure the `vpc_connector_name` field, you can remove the templated
+    value and replace it with a hardcoded value.
 
-For more information about work pools and workers,
-checkout out the [Prefect docs](https://docs.prefect.io/concepts/work-pools/).
+        ```json
+        {
+            "apiVersion": "run.googleapis.com/v1",
+            "kind": "Job",
+            "metadata":
+            {
+                "name": "{{ name }}",
+                "annotations":
+                {
+                    "run.googleapis.com/launch-stage": "BETA",
+                    "run.googleapis.com/vpc-access-connector": "my-hardcoded-vpc-connector"
+                }
+              ...
+            },
+          ...
+        },
+        ...
+    }
+    ```
 """
 
 import re
