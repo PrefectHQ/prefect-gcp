@@ -18,9 +18,9 @@ from prefect.workers.base import (
     BaseWorkerResult,
 )
 from pydantic import Field, validator
-
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
+from prefect.utilities.pydantic import JsonPatch
 
 
 def _get_default_job_body_template() -> Dict[str, Any]:
@@ -66,9 +66,39 @@ def _get_default_job_body_template() -> Dict[str, Any]:
     }
 
 
+def _get_base_job_body() -> Dict[str, Any]:
+    return {
+        "apiVersion": "run.googleapis.com/v1",
+        "kind": "Job",
+        "metadata": {
+            "annotations": {
+                # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
+                "run.googleapis.com/launch-stage": "BETA",
+            },
+        },
+        "spec": {  # JobSpec
+            "template": {  # ExecutionTemplateSpec
+                "spec": {  # ExecutionSpec
+                    "template": {  # TaskTemplateSpec
+                        "spec": {  # TaskSpec
+                            "containers": [
+                                {}
+                            ]
+                        },
+                    },
+                },
+            },
+        }
+    }
+
+
 class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
-    credentials: GcpCredentials  # cannot be Field; else it shows as Json
+    credentials: Optional[GcpCredentials] = Field(
+        title="GCP Credentials",
+        default_factory=GcpCredentials,
+        description="The GCP Credentials used to connect to Cloud Run. If not provided credentials will be inferred from the local environment."
+    )
     job_body: Dict[str, Any] = Field(template=_get_default_job_body_template())
     timeout: Optional[int] = Field(
         default=600,
@@ -114,24 +144,9 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         """
         super().prepare_for_flow_run(flow_run, deployment, flow)
         self._populate_envs()
-        self._populate_service_account_if_not_present()
         self._populate_image_if_not_present()
         self._populate_command_if_not_present()
-        self._populate_name_if_not_present()
-
-    def _populate_service_account_if_not_present(self):
-        """Populate the service account used for Cloud Run Job Execution if not provided.
-        The service account will be the one from `credentials`."""
-
-        try:
-            if "serviceAccountName" not in self.job_body["spec"]["template"]["spec"]["template"]["spec"]:
-                self.job_body["spec"]["template"]["spec"]["template"]["spec"][
-                    "serviceAccountName"
-                ] = self.credentials.client_email
-        except KeyError:
-            raise ValueError(
-                "Unable to verify service account due to invalid job body template."
-            )
+        self._populate_name_if_not_present(flow_run)
 
     def _populate_envs(self):
         """Populate environment variables. BaseWorker.prepare_for_flow_run handles
@@ -142,11 +157,10 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             "env"
         ] = envs
 
-    def _populate_name_if_not_present(self):
-        # TODO should we give this a flow run id?
+    def _populate_name_if_not_present(self, flow_run):
         try:
             if "name" not in self.job_body["metadata"]:
-                self.job_body["metadata"]["name"] = f"prefect-job-{uuid4()}"
+                self.job_body["metadata"]["name"] = flow_run.name
         except KeyError:
             raise ValueError("Unable to verify name due to invalid job body template.")
 
@@ -194,15 +208,50 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
                 "Unable to verify command due to invalid job manifest template."
             )
 
+    @validator("job_body")
+    def _ensure_job_includes_all_required_components(cls, value: Dict[str, Any]):
+        """
+        Ensures that the job body includes all required components.
+        """
+        patch = JsonPatch.from_diff(value, _get_base_job_body())
+        missing_paths = sorted([op["path"] for op in patch if op["op"] == "add"])
+        if missing_paths:
+            raise ValueError(
+                "Job is missing required attributes at the following paths: "
+                f"{', '.join(missing_paths)}"
+            )
+        return value
+
+    @validator("job_body")
+    def _ensure_job_has_compatible_values(cls, value: Dict[str, Any]):
+        patch = JsonPatch.from_diff(value, _get_base_job_body())
+        incompatible = sorted(
+            [
+                f"{op['path']} must have value {op['value']!r}"
+                for op in patch
+                if op["op"] == "replace"
+            ]
+        )
+        if incompatible:
+            raise ValueError(
+                "Job has incompatible values for the following attributes: "
+                f"{', '.join(incompatible)}"
+            )
+        return value
+
 
 class CloudRunWorkerVariables(BaseVariables):
     region: str = Field(..., description="The region where the Cloud Run Job resides.")
-    credentials: GcpCredentials  # cannot be Field; else it shows as Json
+    credentials: Optional[GcpCredentials] = Field(
+        title="GCP Credentials",
+        default_factory=GcpCredentials,
+        description="The GCP Credentials used to initiate the Cloud Run Job. If not provided credentials will be inferred from the local environment."
+    )
     image: Optional[str] = Field(
         default=None,
         title="Image Name",
         description=(
-            "The full image to use for a new Cloud Run Job. See https://cloud.google.com/run/docs/deploying#images"
+            "The image to use for a new Cloud Run Job. See https://cloud.google.com/run/docs/deploying#images"
             "for supported image registries. If not set, the latest Prefect image will be used."
         ),
         example="docker.io/prefecthq/prefect:2-latest",
@@ -233,6 +282,12 @@ class CloudRunWorkerVariables(BaseVariables):
         title="VPC Connector Name",
         description="The name of the VPC connector to use for the Cloud Run Job.",
     )
+    service_account_name: Optional[str] = Field(
+        default=None,
+        title="Service Account Name",
+        description="The name of the service account to use for the task execution of Cloud Run Job."
+                    "By default Cloud Run jobs run as the default Compute Engine Service Account if not specified."
+                    "See https://cloud.google.com/run/docs/configuring/service-accounts.")
     args: Optional[List[str]] = Field(
         default=None,
         description=(
@@ -263,10 +318,6 @@ class CloudRunWorker(BaseWorker):
     type = "cloud-run"
     job_configuration = CloudRunWorkerJobConfiguration
     job_configuration_variables = CloudRunWorkerVariables
-
-    # TODO: remove! this is only to use remote storage for testing convience
-    async def _check_flow_run(self, flow_run: "FlowRun") -> None:
-        pass
 
     def _create_job_error(self, exc, configuration):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""
@@ -350,6 +401,7 @@ class CloudRunWorker(BaseWorker):
             self._logger.info(f"Creating Cloud Run Job {configuration.job_name}")
             import pprint
             pprint.pprint(configuration.job_body)
+
             Job.create(
                 client=client,
                 namespace=configuration.credentials.project,
