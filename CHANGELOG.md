@@ -16,9 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
-- Fix `CloudRunJob` with VPC Connector usage. - [#170](https://github.com/PrefectHQ/prefect-gcp/pull/170)
 
 ### Security
+
+## 0.4.1
+
+Released on April 20th, 2023.
+
+### Added
+
+- `CloudRunWorker` for executing Prefect flows via Google Cloud Run - [#172](https://github.com/PrefectHQ/prefect-gcp/pull/172)
+### Fixed
+
+- Fix `CloudRunJob` with VPC Connector usage. - [#170](https://github.com/PrefectHQ/prefect-gcp/pull/170)
 
 ## 0.4.0
 
