@@ -5,16 +5,17 @@ Module containing the Cloud Run worker used for executing flow runs as Cloud Run
 
 Note this module is in **beta**. The interfaces within may change without notice.
 
-## Starting a Cloud Run worker
-
-To start a Cloud Run worker, run the following command:
+Get started by creating a Cloud Run work pool:
 
 ```bash
-prefect worker start --pool 'my-work-pool' --type cloud-run
+prefect work-pool create 'my-cloud-run-pool' --type cloud-run
 ```
 
-This will automatically create a `cloud-run` work pool named `my-work-pool`.
-You can replace `my-work-pool` with the name of any existing `cloud-run` work pool.
+Then start a Cloud Run worker with the following command:
+
+```bash
+prefect worker start --pool 'my-cloud-run-pool'
+```
 
 ## Configuration
 Read more about configuring work pools
