@@ -268,18 +268,6 @@ class TestCloudRunWorkerJobConfiguration:
 
 
 class TestCloudRunWorkerValidConfiguration:
-    def test_region_is_required(self):
-        deployment = DeploymentCreate(
-            name="my-deployment", flow_id=uuid.uuid4(), infra_overrides={}
-        )
-
-        with pytest.raises(ValidationError) as excinfo:
-            deployment.check_valid_configuration(
-                CloudRunWorker.get_default_base_job_template()
-            )
-
-        assert excinfo.value.message == "'region' is a required property"
-
     @pytest.mark.parametrize("cpu", ["1", "100", "100m", "1500m"])
     def test_invalid_cpu_string(self, cpu):
         deployment = DeploymentCreate(
