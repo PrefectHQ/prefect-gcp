@@ -84,6 +84,7 @@ nav:
         - Secret Manager: secret_manager.md
         - Cloud Run: cloud_run.md
         - AI Platform: aiplatform.md
+        - Project Steps: projects/steps.md
         - Worker: worker.md
 
 extra:
