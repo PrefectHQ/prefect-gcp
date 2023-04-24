@@ -79,7 +79,7 @@ async def bigquery_query(
             (e.g., dataset references will be rejected).
         project: The project to initialize the BigQuery Client with; if not
             provided, will default to the one inferred from your credentials.
-        result_transformer: Converts bigquery client Row to python dictionaries in returned list.
+        result_transformer: Executes callable on end of function.
         location: Location of the dataset that will be queried.
 
     Returns:
