@@ -147,6 +147,20 @@ class TestVertexAICustomTrainingJob:
         with pytest.raises(RuntimeError, match="my error msg"):
             vertex_ai_custom_training_job.run()
 
+    def test_machine_spec(
+        self, vertex_ai_custom_training_job: VertexAICustomTrainingJob
+    ):
+        vertex_ai_custom_training_job.accelerator_count = 1
+        vertex_ai_custom_training_job.accelerator_type = "NVIDIA_TESLA_T4"
+
+        job_spec = vertex_ai_custom_training_job._build_job_spec()
+
+        assert job_spec.worker_pool_specs[0].machine_spec.accelerator_count == 1
+        assert (
+            job_spec.worker_pool_specs[0].machine_spec.accelerator_type
+            == AcceleratorType.NVIDIA_TESLA_T4
+        )
+
     def test_run_start_error(
         self, vertex_ai_custom_training_job: VertexAICustomTrainingJob
     ):
