@@ -17,8 +17,9 @@ from prefect_gcp.bigquery import (
 
 
 @pytest.mark.parametrize("to_dataframe", [False, True])
+@pytest.mark.parametrize("result_transformer", [None, lambda _: ("test_transformer",)])
 @pytest.mark.parametrize("dry_run_max_bytes", [None, 5, 15])
-def test_bigquery_query(to_dataframe, dry_run_max_bytes, gcp_credentials):
+def test_bigquery_query(to_dataframe, result_transformer, dry_run_max_bytes, gcp_credentials):
     @flow
     def test_flow():
         return bigquery_query(
@@ -32,6 +33,7 @@ def test_bigquery_query(to_dataframe, dry_run_max_bytes, gcp_credentials):
             job_config={},
             project="project",
             location="US",
+            result_transformer=result_transformer,
         )
 
     if dry_run_max_bytes is not None and dry_run_max_bytes < 10:
@@ -42,7 +44,10 @@ def test_bigquery_query(to_dataframe, dry_run_max_bytes, gcp_credentials):
         if to_dataframe:
             assert result == "dataframe_query"
         else:
-            assert result == ["query"]
+            if result_transformer:
+                assert result == ("test_transformer",)
+            else:
+                assert result == ["query"]
 
 
 def test_bigquery_create_table(gcp_credentials):
