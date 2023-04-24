@@ -29,6 +29,7 @@ try:
     from google.cloud.bigquery.dbapi.cursor import Cursor
     from google.cloud.bigquery.table import Row
     from google.cloud.exceptions import NotFound
+    import pandas as pd
 except ModuleNotFoundError:
     pass
 
@@ -52,8 +53,9 @@ async def bigquery_query(
     to_dataframe: bool = False,
     job_config: Optional[dict] = None,
     project: Optional[str] = None,
+    rows_as_dict: Optional[bool] = False,
     location: str = "US",
-) -> List["Row"]:
+) -> Union[List["Row"], List[dict], pd.DataFrame]:
     """
     Runs a BigQuery query.
 
@@ -78,6 +80,7 @@ async def bigquery_query(
             (e.g., dataset references will be rejected).
         project: The project to initialize the BigQuery Client with; if not
             provided, will default to the one inferred from your credentials.
+        rows_as_dict: Converts bigquery client Row to python dictionaries in returned list.
         location: Location of the dataset that will be queried.
 
     Returns:
@@ -159,7 +162,10 @@ async def bigquery_query(
     if to_dataframe:
         return result.to_dataframe()
     else:
-        return list(result)
+        if rows_as_dict:
+            return [dict(row) for row in list(result)]
+        else:
+            return list(result)
 
 
 @task
