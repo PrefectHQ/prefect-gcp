@@ -138,6 +138,9 @@ class VertexAICustomTrainingJob(Infrastructure):
     accelerator_type: Optional[str] = Field(
         default=None, description="The type of accelerator to attach to the machine."
     )
+    accelerator_count: Optional[int] = Field(
+        default=None, description="The number of accelerators to attach to the machine."
+    )
     maximum_run_time: datetime.timedelta = Field(
         default=datetime.timedelta(days=7), description="The maximum job running time."
     )
@@ -215,7 +218,9 @@ class VertexAICustomTrainingJob(Infrastructure):
             image_uri=self.image, command=self.command, args=[], env=env_list
         )
         machine_spec = MachineSpec(
-            machine_type=self.machine_type, accelerator_type=self.accelerator_type
+            machine_type=self.machine_type,
+            accelerator_type=self.accelerator_type,
+            accelerator_count=self.accelerator_count,
         )
         worker_pool_spec = WorkerPoolSpec(
             container_spec=container_spec, machine_spec=machine_spec, replica_count=1
