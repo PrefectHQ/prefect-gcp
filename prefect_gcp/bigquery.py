@@ -3,7 +3,7 @@
 import os
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 from anyio import to_thread
 from prefect import get_run_logger, task
@@ -29,7 +29,6 @@ try:
     from google.cloud.bigquery.dbapi.cursor import Cursor
     from google.cloud.bigquery.table import Row
     from google.cloud.exceptions import NotFound
-    import pandas as pd
 except ModuleNotFoundError:
     pass
 
@@ -53,9 +52,9 @@ async def bigquery_query(
     to_dataframe: bool = False,
     job_config: Optional[dict] = None,
     project: Optional[str] = None,
-    rows_as_dict: Optional[bool] = False,
+    result_transformer: Optional[Callable[[List["Row"]], Any]] = None,
     location: str = "US",
-) -> Union[List["Row"], List[dict], pd.DataFrame]:
+) -> Any:
     """
     Runs a BigQuery query.
 
@@ -80,7 +79,7 @@ async def bigquery_query(
             (e.g., dataset references will be rejected).
         project: The project to initialize the BigQuery Client with; if not
             provided, will default to the one inferred from your credentials.
-        rows_as_dict: Converts bigquery client Row to python dictionaries in returned list.
+        result_transformer: Converts bigquery client Row to python dictionaries in returned list.
         location: Location of the dataset that will be queried.
 
     Returns:
@@ -159,11 +158,12 @@ async def bigquery_query(
         job_config=job_config,
     )
     result = await to_thread.run_sync(partial_query)
+
     if to_dataframe:
         return result.to_dataframe()
     else:
-        if rows_as_dict:
-            return [dict(row) for row in list(result)]
+        if result_transformer:
+            return result_transformer(result)
         else:
             return list(result)
 
