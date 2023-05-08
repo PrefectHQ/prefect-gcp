@@ -19,7 +19,9 @@ from prefect_gcp.bigquery import (
 @pytest.mark.parametrize("to_dataframe", [False, True])
 @pytest.mark.parametrize("result_transformer", [None, lambda _: ("test_transformer",)])
 @pytest.mark.parametrize("dry_run_max_bytes", [None, 5, 15])
-def test_bigquery_query(to_dataframe, result_transformer, dry_run_max_bytes, gcp_credentials):
+def test_bigquery_query(
+    to_dataframe, result_transformer, dry_run_max_bytes, gcp_credentials
+):
     @flow
     def test_flow():
         return bigquery_query(

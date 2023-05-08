@@ -3,7 +3,7 @@
 import os
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, Callable
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from anyio import to_thread
 from prefect import get_run_logger, task
