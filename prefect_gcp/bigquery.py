@@ -79,7 +79,7 @@ async def bigquery_query(
             (e.g., dataset references will be rejected).
         project: The project to initialize the BigQuery Client with; if not
             provided, will default to the one inferred from your credentials.
-        result_transformer: Executes callable on end of function.
+        result_transformer: Function that can be passed to transform the result of a query before returning. The function will be passed the list of rows returned by BigQuery for the given query.
         location: Location of the dataset that will be queried.
 
     Returns:
