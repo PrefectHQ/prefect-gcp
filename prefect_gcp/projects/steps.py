@@ -44,7 +44,7 @@ def push_project_to_gcs(
     Args:
         bucket: The name of the GCS bucket where the project files will be uploaded.
         folder: The folder in the GCS bucket where the project files will be uploaded.
-        project: The project the bucket belongs to. If not provided, the project will be
+        project: The GCP project the bucket belongs to. If not provided, the project will be
             inferred from the credentials or the local environment.
         credentials: A dictionary containing the service account information and project
             used for authentication. If not provided, the application default
@@ -147,7 +147,7 @@ def pull_project_from_gcs(
     Args:
         bucket: The name of the GCS bucket where the project files are stored.
         folder: The folder in the GCS bucket where the project files are stored.
-        project: The project the bucket belongs to. If not provided, the project will be
+        project: The GCP project the bucket belongs to. If not provided, the project will be
             inferred from the credentials or the local environment.
         credentials: A dictionary containing the service account information and project
             used for authentication. If not provided, the application default
