@@ -37,12 +37,12 @@ def push_project_to_gcs(
     ignore_file=".prefectignore",
 ) -> PushProjectToGcsOutput:
     """
-    Pushes the contents of the current working directory to an S3 bucket,
+    Pushes the contents of the current working directory to a GCS bucket,
     excluding files and folders specified in the ignore_file.
 
     Args:
-        bucket: The name of the S3 bucket where the project files will be uploaded.
-        folder: The folder in the S3 bucket where the project files will be uploaded.
+        bucket: The name of the GCS bucket where the project files will be uploaded.
+        folder: The folder in the GCS bucket where the project files will be uploaded.
         project: The project the bucket belongs to.
         credentials: A dictionary containing the service account information and project
             used for authentication. If not provided, the application default
