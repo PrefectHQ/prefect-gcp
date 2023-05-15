@@ -33,6 +33,7 @@ class PullProjectFromGcsOutput(TypedDict):
 def push_project_to_gcs(
     bucket: str,
     folder: str,
+    project: Optional[str] = None,
     credentials: Optional[Dict] = None,
     ignore_file=".prefectignore",
 ) -> PushProjectToGcsOutput:
@@ -43,7 +44,8 @@ def push_project_to_gcs(
     Args:
         bucket: The name of the GCS bucket where the project files will be uploaded.
         folder: The folder in the GCS bucket where the project files will be uploaded.
-        project: The project the bucket belongs to.
+        project: The project the bucket belongs to. If not provided, the project will be
+            inferred from the credentials or the local environment.
         credentials: A dictionary containing the service account information and project
             used for authentication. If not provided, the application default
             credentials will be used.
@@ -136,6 +138,7 @@ def push_project_to_gcs(
 def pull_project_from_gcs(
     bucket: str,
     folder: str,
+    project: Optional[str] = None,
     credentials: Optional[Dict] = None,
 ) -> PullProjectFromGcsOutput:
     """
@@ -144,7 +147,8 @@ def pull_project_from_gcs(
     Args:
         bucket: The name of the GCS bucket where the project files are stored.
         folder: The folder in the GCS bucket where the project files are stored.
-        project: The project the bucket belongs to.
+        project: The project the bucket belongs to. If not provided, the project will be
+            inferred from the credentials or the local environment.
         credentials: A dictionary containing the service account information and project
             used for authentication. If not provided, the application default
             credentials will be used.
