@@ -78,7 +78,7 @@ try:
     )
     from google.cloud.aiplatform_v1.types.job_service import CancelCustomJobRequest
     from google.cloud.aiplatform_v1.types.job_state import JobState
-    from google.cloud.aiplatform_v1.types.machine_resources import MachineSpec
+    from google.cloud.aiplatform_v1.types.machine_resources import DiskSpec, MachineSpec
     from google.protobuf.duration_pb2 import Duration
 except ModuleNotFoundError:
     pass
@@ -140,6 +140,16 @@ class VertexAICustomTrainingJob(Infrastructure):
     )
     accelerator_count: Optional[int] = Field(
         default=None, description="The number of accelerators to attach to the machine."
+    )
+    boot_disk_type: str = Field(
+        default="pd-ssd",
+        title="Boot Disk Type",
+        description="The type of boot disk to attach to the machine.",
+    )
+    boot_disk_size_gb: int = Field(
+        default=100,
+        title="Boot Disk Size",
+        description="The size of the boot disk to attach to the machine, in gigabytes.",
     )
     maximum_run_time: datetime.timedelta = Field(
         default=datetime.timedelta(days=7), description="The maximum job running time."
@@ -223,9 +233,14 @@ class VertexAICustomTrainingJob(Infrastructure):
             accelerator_count=self.accelerator_count,
         )
         worker_pool_spec = WorkerPoolSpec(
-            container_spec=container_spec, machine_spec=machine_spec, replica_count=1
+            container_spec=container_spec,
+            machine_spec=machine_spec,
+            replica_count=1,
+            disk_spec=DiskSpec(
+                boot_disk_type=self.boot_disk_type,
+                boot_disk_size_gb=self.boot_disk_size_gb,
+            ),
         )
-
         # look for service account
         service_account = (
             self.service_account or self.gcp_credentials._service_account_email

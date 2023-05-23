@@ -46,6 +46,10 @@ class TestVertexAICustomTrainingJob:
                         machine_type: "n1-standard-4"
                     }
                     replica_count: 1
+                    disk_spec {
+                        boot_disk_type: "pd-ssd"
+                        boot_disk_size_gb: 100
+                    }
                 }
                 scheduling {
                 }
