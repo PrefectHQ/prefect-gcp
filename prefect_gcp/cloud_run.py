@@ -32,12 +32,6 @@ from __future__ import annotations
 import json
 import re
 import time
-
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
-
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -50,6 +44,7 @@ from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import BaseModel, Field, root_validator, validator
+from typing_extensions import Literal
 
 from prefect_gcp.credentials import GcpCredentials
 
