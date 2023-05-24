@@ -157,6 +157,7 @@ from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.docker import get_prefect_image_name
 from prefect.exceptions import InfrastructureNotFound
+from prefect.logging.loggers import PrefectLogAdapter
 from prefect.utilities.asyncutils import run_sync_in_worker_thread
 from prefect.utilities.pydantic import JsonPatch
 from prefect.workers.base import (
@@ -169,7 +170,6 @@ from pydantic import Field, validator
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
-from prefect.logging.loggers import PrefectLogAdapter
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -588,7 +588,10 @@ class CloudRunWorker(BaseWorker):
 
         with self._get_client(configuration) as client:
             await run_sync_in_worker_thread(
-                self._create_job_and_wait_for_registration, configuration, client, logger
+                self._create_job_and_wait_for_registration,
+                configuration,
+                client,
+                logger,
             )
             job_execution = await run_sync_in_worker_thread(
                 self._begin_job_execution, configuration, client, logger
@@ -618,7 +621,10 @@ class CloudRunWorker(BaseWorker):
         ).namespaces()
 
     def _create_job_and_wait_for_registration(
-        self, configuration: CloudRunWorkerJobConfiguration, client: Resource, logger: PrefectLogAdapter
+        self,
+        configuration: CloudRunWorkerJobConfiguration,
+        client: Resource,
+        logger: PrefectLogAdapter,
     ) -> None:
         """Create a new job wait for it to finish registering."""
         try:
@@ -633,7 +639,9 @@ class CloudRunWorker(BaseWorker):
             self._create_job_error(exc, configuration)
 
         try:
-            self._wait_for_job_creation(client=client, configuration=configuration, logger=logger)
+            self._wait_for_job_creation(
+                client=client, configuration=configuration, logger=logger
+            )
         except Exception:
             logger.exception(
                 "Encountered an exception while waiting for job run creation"
@@ -657,7 +665,10 @@ class CloudRunWorker(BaseWorker):
             raise
 
     def _begin_job_execution(
-        self, configuration: CloudRunWorkerJobConfiguration, client: Resource, logger: PrefectLogAdapter
+        self,
+        configuration: CloudRunWorkerJobConfiguration,
+        client: Resource,
+        logger: PrefectLogAdapter,
     ) -> Execution:
         """Submit a job run for execution and return the execution object."""
         try:
@@ -705,9 +716,7 @@ class CloudRunWorker(BaseWorker):
 
         if job_execution.succeeded():
             status_code = 0
-            logger.info(
-                f"Job Run {configuration.job_name} completed successfully"
-            )
+            logger.info(f"Job Run {configuration.job_name} completed successfully")
         else:
             status_code = 1
             error_msg = job_execution.condition_after_completion()["message"]
@@ -716,9 +725,7 @@ class CloudRunWorker(BaseWorker):
                 f"{error_msg}"
             )
 
-        logger.info(
-            f"Job Run logs can be found on GCP at: {job_execution.log_uri}"
-        )
+        logger.info(f"Job Run logs can be found on GCP at: {job_execution.log_uri}")
 
         if not configuration.keep_job:
             logger.info(
@@ -787,9 +794,7 @@ class CloudRunWorker(BaseWorker):
                 if job.ready_condition
                 else "waiting for condition update"
             )
-            logger.info(
-                f"Job is not yet ready... Current condition: {ready_condition}"
-            )
+            logger.info(f"Job is not yet ready... Current condition: {ready_condition}")
             job = Job.get(
                 client=client,
                 namespace=configuration.project,
