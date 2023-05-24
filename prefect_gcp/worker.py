@@ -169,6 +169,7 @@ from pydantic import Field, validator
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
+from prefect.logging.loggers import PrefectLogAdapter
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -583,14 +584,14 @@ class CloudRunWorker(BaseWorker):
                 final state of the flow run
         """
 
-        self._run_logger = self.get_flow_run_logger(flow_run)
+        logger = self.get_flow_run_logger(flow_run)
 
         with self._get_client(configuration) as client:
             await run_sync_in_worker_thread(
-                self._create_job_and_wait_for_registration, configuration, client
+                self._create_job_and_wait_for_registration, configuration, client, logger
             )
             job_execution = await run_sync_in_worker_thread(
-                self._begin_job_execution, configuration, client
+                self._begin_job_execution, configuration, client, logger
             )
 
             if task_status:
@@ -601,6 +602,7 @@ class CloudRunWorker(BaseWorker):
                 configuration,
                 client,
                 job_execution,
+                logger,
             )
             return result
 
@@ -616,11 +618,11 @@ class CloudRunWorker(BaseWorker):
         ).namespaces()
 
     def _create_job_and_wait_for_registration(
-        self, configuration: CloudRunWorkerJobConfiguration, client: Resource
+        self, configuration: CloudRunWorkerJobConfiguration, client: Resource, logger: PrefectLogAdapter
     ) -> None:
         """Create a new job wait for it to finish registering."""
         try:
-            self._run_logger.info(f"Creating Cloud Run Job {configuration.job_name}")
+            logger.info(f"Creating Cloud Run Job {configuration.job_name}")
 
             Job.create(
                 client=client,
@@ -631,13 +633,13 @@ class CloudRunWorker(BaseWorker):
             self._create_job_error(exc, configuration)
 
         try:
-            self._wait_for_job_creation(client=client, configuration=configuration)
+            self._wait_for_job_creation(client=client, configuration=configuration, logger=logger)
         except Exception:
-            self._run_logger.exception(
+            logger.exception(
                 "Encountered an exception while waiting for job run creation"
             )
             if not configuration.keep_job:
-                self._run_logger.info(
+                logger.info(
                     f"Deleting Cloud Run Job {configuration.job_name} from "
                     "Google Cloud Run."
                 )
@@ -648,18 +650,18 @@ class CloudRunWorker(BaseWorker):
                         job_name=configuration.job_name,
                     )
                 except Exception:
-                    self._run_logger.exception(
+                    logger.exception(
                         "Received an unexpected exception while attempting to delete"
                         f" Cloud Run Job {configuration.job_name!r}"
                     )
             raise
 
     def _begin_job_execution(
-        self, configuration: CloudRunWorkerJobConfiguration, client: Resource
+        self, configuration: CloudRunWorkerJobConfiguration, client: Resource, logger: PrefectLogAdapter
     ) -> Execution:
         """Submit a job run for execution and return the execution object."""
         try:
-            self._run_logger.info(
+            logger.info(
                 f"Submitting Cloud Run Job {configuration.job_name!r} for execution."
             )
             submission = Job.run(
@@ -683,6 +685,7 @@ class CloudRunWorker(BaseWorker):
         configuration: CloudRunWorkerJobConfiguration,
         client: Resource,
         execution: Execution,
+        logger: PrefectLogAdapter,
         poll_interval: int = 5,
     ) -> CloudRunWorkerResult:
         """Wait for execution to complete and then return result."""
@@ -694,7 +697,7 @@ class CloudRunWorker(BaseWorker):
                 poll_interval=poll_interval,
             )
         except Exception:
-            self._run_logger.exception(
+            logger.exception(
                 "Received an unexpected exception while monitoring Cloud Run Job "
                 f"{configuration.job_name!r}"
             )
@@ -702,23 +705,23 @@ class CloudRunWorker(BaseWorker):
 
         if job_execution.succeeded():
             status_code = 0
-            self._run_logger.info(
+            logger.info(
                 f"Job Run {configuration.job_name} completed successfully"
             )
         else:
             status_code = 1
             error_msg = job_execution.condition_after_completion()["message"]
-            self._run_logger.error(
+            logger.error(
                 "Job Run {configuration.job_name} did not complete successfully. "
                 f"{error_msg}"
             )
 
-        self._run_logger.info(
+        logger.info(
             f"Job Run logs can be found on GCP at: {job_execution.log_uri}"
         )
 
         if not configuration.keep_job:
-            self._run_logger.info(
+            logger.info(
                 f"Deleting completed Cloud Run Job {configuration.job_name!r} "
                 "from Google Cloud Run..."
             )
@@ -729,7 +732,7 @@ class CloudRunWorker(BaseWorker):
                     job_name=configuration.job_name,
                 )
             except Exception:
-                self._run_logger.exception(
+                logger.exception(
                     "Received an unexpected exception while attempting to delete Cloud"
                     f" Run Job {configuration.job_name}"
                 )
@@ -767,6 +770,7 @@ class CloudRunWorker(BaseWorker):
         self,
         client: Resource,
         configuration: CloudRunWorkerJobConfiguration,
+        logger: PrefectLogAdapter,
         poll_interval: int = 5,
     ):
         """Give created job time to register."""
@@ -783,7 +787,7 @@ class CloudRunWorker(BaseWorker):
                 if job.ready_condition
                 else "waiting for condition update"
             )
-            self._run_logger.info(
+            logger.info(
                 f"Job is not yet ready... Current condition: {ready_condition}"
             )
             job = Job.get(
