@@ -582,6 +582,9 @@ class CloudRunWorker(BaseWorker):
             CloudRunWorkerResult: A result object containing information about the
                 final state of the flow run
         """
+
+        self._run_logger = self.get_flow_run_logger(flow_run)
+
         with self._get_client(configuration) as client:
             await run_sync_in_worker_thread(
                 self._create_job_and_wait_for_registration, configuration, client
@@ -617,7 +620,7 @@ class CloudRunWorker(BaseWorker):
     ) -> None:
         """Create a new job wait for it to finish registering."""
         try:
-            self._logger.info(f"Creating Cloud Run Job {configuration.job_name}")
+            self._run_logger.info(f"Creating Cloud Run Job {configuration.job_name}")
 
             Job.create(
                 client=client,
@@ -630,11 +633,11 @@ class CloudRunWorker(BaseWorker):
         try:
             self._wait_for_job_creation(client=client, configuration=configuration)
         except Exception:
-            self._logger.exception(
+            self._run_logger.exception(
                 "Encountered an exception while waiting for job run creation"
             )
             if not configuration.keep_job:
-                self._logger.info(
+                self._run_logger.info(
                     f"Deleting Cloud Run Job {configuration.job_name} from "
                     "Google Cloud Run."
                 )
@@ -645,7 +648,7 @@ class CloudRunWorker(BaseWorker):
                         job_name=configuration.job_name,
                     )
                 except Exception:
-                    self._logger.exception(
+                    self._run_logger.exception(
                         "Received an unexpected exception while attempting to delete"
                         f" Cloud Run Job {configuration.job_name!r}"
                     )
@@ -656,7 +659,7 @@ class CloudRunWorker(BaseWorker):
     ) -> Execution:
         """Submit a job run for execution and return the execution object."""
         try:
-            self._logger.info(
+            self._run_logger.info(
                 f"Submitting Cloud Run Job {configuration.job_name!r} for execution."
             )
             submission = Job.run(
@@ -691,7 +694,7 @@ class CloudRunWorker(BaseWorker):
                 poll_interval=poll_interval,
             )
         except Exception:
-            self._logger.exception(
+            self._run_logger.exception(
                 "Received an unexpected exception while monitoring Cloud Run Job "
                 f"{configuration.job_name!r}"
             )
@@ -699,23 +702,23 @@ class CloudRunWorker(BaseWorker):
 
         if job_execution.succeeded():
             status_code = 0
-            self._logger.info(
+            self._run_logger.info(
                 f"Job Run {configuration.job_name} completed successfully"
             )
         else:
             status_code = 1
             error_msg = job_execution.condition_after_completion()["message"]
-            self._logger.error(
+            self._run_logger.error(
                 "Job Run {configuration.job_name} did not complete successfully. "
                 f"{error_msg}"
             )
 
-        self._logger.info(
+        self._run_logger.info(
             f"Job Run logs can be found on GCP at: {job_execution.log_uri}"
         )
 
         if not configuration.keep_job:
-            self._logger.info(
+            self._run_logger.info(
                 f"Deleting completed Cloud Run Job {configuration.job_name!r} "
                 "from Google Cloud Run..."
             )
@@ -726,7 +729,7 @@ class CloudRunWorker(BaseWorker):
                     job_name=configuration.job_name,
                 )
             except Exception:
-                self._logger.exception(
+                self._run_logger.exception(
                     "Received an unexpected exception while attempting to delete Cloud"
                     f" Run Job {configuration.job_name}"
                 )
@@ -780,7 +783,7 @@ class CloudRunWorker(BaseWorker):
                 if job.ready_condition
                 else "waiting for condition update"
             )
-            self._logger.info(
+            self._run_logger.info(
                 f"Job is not yet ready... Current condition: {ready_condition}"
             )
             job = Job.get(
