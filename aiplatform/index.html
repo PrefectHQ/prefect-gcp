@@ -1159,7 +1159,22 @@
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
-<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAICustomTrainingJob</span><span class="p">(</span><span class="n">Infrastructure</span><span class="p">):</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAICustomTrainingJob</span><span class="p">(</span><span class="n">Infrastructure</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Infrastructure block used to run Vertex AI custom training jobs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1209,6 +1224,16 @@
     <span class="p">)</span>
     <span class="n">accelerator_count</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The number of accelerators to attach to the machine.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">boot_disk_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;pd-ssd&quot;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Boot Disk Type&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The type of boot disk to attach to the machine.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">boot_disk_size_gb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Boot Disk Size&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The size of the boot disk to attach to the machine, in gigabytes.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">maximum_run_time</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">),</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The maximum job running time.&quot;</span>
@@ -1292,9 +1317,14 @@
             <span class="n">accelerator_count</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">accelerator_count</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">worker_pool_spec</span> <span class="o">=</span> <span class="n">WorkerPoolSpec</span><span class="p">(</span>
-            <span class="n">container_spec</span><span class="o">=</span><span class="n">container_spec</span><span class="p">,</span> <span class="n">machine_spec</span><span class="o">=</span><span class="n">machine_spec</span><span class="p">,</span> <span class="n">replica_count</span><span class="o">=</span><span class="mi">1</span>
+            <span class="n">container_spec</span><span class="o">=</span><span class="n">container_spec</span><span class="p">,</span>
+            <span class="n">machine_spec</span><span class="o">=</span><span class="n">machine_spec</span><span class="p">,</span>
+            <span class="n">replica_count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">disk_spec</span><span class="o">=</span><span class="n">DiskSpec</span><span class="p">(</span>
+                <span class="n">boot_disk_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boot_disk_type</span><span class="p">,</span>
+                <span class="n">boot_disk_size_gb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boot_disk_size_gb</span><span class="p">,</span>
+            <span class="p">),</span>
         <span class="p">)</span>
-
         <span class="c1"># look for service account</span>
         <span class="n">service_account</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">service_account</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcp_credentials</span><span class="o">.</span><span class="n">_service_account_email</span>
@@ -1600,22 +1630,7 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 
       <details class="quote">
         <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">394</span>
 <span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
@@ -1623,7 +1638,22 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 <span class="normal">399</span>
 <span class="normal">400</span>
 <span class="normal">401</span>
-<span class="normal">402</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">grace_seconds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Kill a job running Cloud Run.</span>
@@ -1669,11 +1699,11 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 
       <details class="quote">
         <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">preview</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">preview</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a preview of the job definition that will be sent to GCP.&quot;&quot;&quot;</span>
     <span class="n">job_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_job_spec</span><span class="p">()</span>
     <span class="n">custom_job</span> <span class="o">=</span> <span class="n">CustomJob</span><span class="p">(</span><span class="n">display_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">job_name</span><span class="p">,</span> <span class="n">job_spec</span><span class="o">=</span><span class="n">job_spec</span><span class="p">)</span>
@@ -1746,22 +1776,7 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 
       <details class="quote">
         <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
 <span class="normal">349</span>
@@ -1792,7 +1807,22 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 <span class="normal">374</span>
 <span class="normal">375</span>
 <span class="normal">376</span>
-<span class="normal">377</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">task_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;TaskStatus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VertexAICustomTrainingJobResult</span><span class="p">:</span>

@@ -1036,8 +1036,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">513</span>
-<span class="normal">514</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">514</span>
 <span class="normal">515</span>
 <span class="normal">516</span>
 <span class="normal">517</span>
@@ -1353,12 +1352,40 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 <span class="normal">827</span>
 <span class="normal">828</span>
 <span class="normal">829</span>
-<span class="normal">830</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorker</span><span class="p">(</span><span class="n">BaseWorker</span><span class="p">):</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorker</span><span class="p">(</span><span class="n">BaseWorker</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prefect worker that executes flow runs within Cloud Run Jobs.&quot;&quot;&quot;</span>
 
     <span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;cloud-run&quot;</span>
     <span class="n">job_configuration</span> <span class="o">=</span> <span class="n">CloudRunWorkerJobConfiguration</span>
     <span class="n">job_configuration_variables</span> <span class="o">=</span> <span class="n">CloudRunWorkerVariables</span>
+    <span class="n">_description</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Execute flow runs within containers on Google Cloud Run. Requires &quot;</span>
+        <span class="s2">&quot;a Google Cloud Platform account.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">_display_name</span> <span class="o">=</span> <span class="s2">&quot;Google Cloud Run&quot;</span>
+    <span class="n">_documentation_url</span> <span class="o">=</span> <span class="s2">&quot;https://prefecthq.github.io/prefect-gcp/worker/&quot;</span>
+    <span class="n">_is_beta</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_logo_url</span> <span class="o">=</span> <span class="s2">&quot;https://images.ctfassets.net/gm98wzqotmnx/4SpnOBvMYkHp6z939MDKP6/549a91bc1ce9afd4fb12c68db7b68106/social-icon-google-cloud-1200-630.png?h=250&quot;</span>  <span class="c1"># noqa</span>
 
     <span class="k">def</span> <span class="nf">_create_job_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">configuration</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provides a nicer error for 404s when trying to create a Cloud Run Job.&quot;&quot;&quot;</span>
@@ -1417,12 +1444,18 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 <span class="sd">            CloudRunWorkerResult: A result object containing information about the</span>
 <span class="sd">                final state of the flow run</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flow_run_logger</span><span class="p">(</span><span class="n">flow_run</span><span class="p">)</span>
+
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_create_job_and_wait_for_registration</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">client</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_create_job_and_wait_for_registration</span><span class="p">,</span>
+                <span class="n">configuration</span><span class="p">,</span>
+                <span class="n">client</span><span class="p">,</span>
+                <span class="n">logger</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">job_execution</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_begin_job_execution</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">client</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_begin_job_execution</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">logger</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">task_status</span><span class="p">:</span>
@@ -1433,6 +1466,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
                 <span class="n">configuration</span><span class="p">,</span>
                 <span class="n">client</span><span class="p">,</span>
                 <span class="n">job_execution</span><span class="p">,</span>
+                <span class="n">logger</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">result</span>
 
@@ -1448,11 +1482,14 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
         <span class="p">)</span><span class="o">.</span><span class="n">namespaces</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_create_job_and_wait_for_registration</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">Resource</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
+        <span class="n">client</span><span class="p">:</span> <span class="n">Resource</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">PrefectLogAdapter</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new job wait for it to finish registering.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating Cloud Run Job </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating Cloud Run Job </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">Job</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
                 <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
@@ -1463,13 +1500,15 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">_create_job_error</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">configuration</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_job_creation</span><span class="p">(</span><span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_job_creation</span><span class="p">(</span>
+                <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+            <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
                 <span class="s2">&quot;Encountered an exception while waiting for job run creation&quot;</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">configuration</span><span class="o">.</span><span class="n">keep_job</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Deleting Cloud Run Job </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">}</span><span class="s2"> from &quot;</span>
                     <span class="s2">&quot;Google Cloud Run.&quot;</span>
                 <span class="p">)</span>
@@ -1480,18 +1519,21 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
                         <span class="n">job_name</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
                         <span class="s2">&quot;Received an unexpected exception while attempting to delete&quot;</span>
                         <span class="sa">f</span><span class="s2">&quot; Cloud Run Job </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">!r}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
             <span class="k">raise</span>
 
     <span class="k">def</span> <span class="nf">_begin_job_execution</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">Resource</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
+        <span class="n">client</span><span class="p">:</span> <span class="n">Resource</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">PrefectLogAdapter</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Execution</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit a job run for execution and return the execution object.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Submitting Cloud Run Job </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">!r}</span><span class="s2"> for execution.&quot;</span>
             <span class="p">)</span>
             <span class="n">submission</span> <span class="o">=</span> <span class="n">Job</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
@@ -1515,6 +1557,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
         <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
         <span class="n">client</span><span class="p">:</span> <span class="n">Resource</span><span class="p">,</span>
         <span class="n">execution</span><span class="p">:</span> <span class="n">Execution</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">PrefectLogAdapter</span><span class="p">,</span>
         <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CloudRunWorkerResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait for execution to complete and then return result.&quot;&quot;&quot;</span>
@@ -1526,7 +1569,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
                 <span class="n">poll_interval</span><span class="o">=</span><span class="n">poll_interval</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
                 <span class="s2">&quot;Received an unexpected exception while monitoring Cloud Run Job &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">!r}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
@@ -1534,23 +1577,19 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
         <span class="k">if</span> <span class="n">job_execution</span><span class="o">.</span><span class="n">succeeded</span><span class="p">():</span>
             <span class="n">status_code</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Job Run </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">}</span><span class="s2"> completed successfully&quot;</span>
-            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job Run </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">}</span><span class="s2"> completed successfully&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">status_code</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">error_msg</span> <span class="o">=</span> <span class="n">job_execution</span><span class="o">.</span><span class="n">condition_after_completion</span><span class="p">()[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                 <span class="s2">&quot;Job Run </span><span class="si">{configuration.job_name}</span><span class="s2"> did not complete successfully. &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Job Run logs can be found on GCP at: </span><span class="si">{</span><span class="n">job_execution</span><span class="o">.</span><span class="n">log_uri</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job Run logs can be found on GCP at: </span><span class="si">{</span><span class="n">job_execution</span><span class="o">.</span><span class="n">log_uri</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">configuration</span><span class="o">.</span><span class="n">keep_job</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Deleting completed Cloud Run Job </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">!r}</span><span class="s2"> &quot;</span>
                 <span class="s2">&quot;from Google Cloud Run...&quot;</span>
             <span class="p">)</span>
@@ -1561,7 +1600,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
                     <span class="n">job_name</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
                     <span class="s2">&quot;Received an unexpected exception while attempting to delete Cloud&quot;</span>
                     <span class="sa">f</span><span class="s2">&quot; Run Job </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
@@ -1599,6 +1638,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">client</span><span class="p">:</span> <span class="n">Resource</span><span class="p">,</span>
         <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">PrefectLogAdapter</span><span class="p">,</span>
         <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Give created job time to register.&quot;&quot;&quot;</span>
@@ -1615,9 +1655,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
                 <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">ready_condition</span>
                 <span class="k">else</span> <span class="s2">&quot;waiting for condition update&quot;</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Job is not yet ready... Current condition: </span><span class="si">{</span><span class="n">ready_condition</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job is not yet ready... Current condition: </span><span class="si">{</span><span class="n">ready_condition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
                 <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
                 <span class="n">namespace</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
@@ -1707,30 +1745,30 @@ and run configuration.</p>
 
       <details class="quote">
         <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
-<span class="normal">801</span>
-<span class="normal">802</span>
-<span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
-<span class="normal">806</span>
-<span class="normal">807</span>
-<span class="normal">808</span>
-<span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">816</span>
 <span class="normal">817</span>
 <span class="normal">818</span>
-<span class="normal">819</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">kill_infrastructure</span><span class="p">(</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">kill_infrastructure</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">infrastructure_pid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
@@ -1845,16 +1883,7 @@ final state of the flow run</p></td>
 
       <details class="quote">
         <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">566</span>
 <span class="normal">567</span>
 <span class="normal">568</span>
 <span class="normal">569</span>
@@ -1882,7 +1911,23 @@ final state of the flow run</p></td>
 <span class="normal">591</span>
 <span class="normal">592</span>
 <span class="normal">593</span>
-<span class="normal">594</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
     <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
@@ -1902,12 +1947,18 @@ final state of the flow run</p></td>
 <span class="sd">        CloudRunWorkerResult: A result object containing information about the</span>
 <span class="sd">            final state of the flow run</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flow_run_logger</span><span class="p">(</span><span class="n">flow_run</span><span class="p">)</span>
+
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_client</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_create_job_and_wait_for_registration</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">client</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_job_and_wait_for_registration</span><span class="p">,</span>
+            <span class="n">configuration</span><span class="p">,</span>
+            <span class="n">client</span><span class="p">,</span>
+            <span class="n">logger</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">job_execution</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_begin_job_execution</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">client</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_begin_job_execution</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">logger</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">task_status</span><span class="p">:</span>
@@ -1918,6 +1969,7 @@ final state of the flow run</p></td>
             <span class="n">configuration</span><span class="p">,</span>
             <span class="n">client</span><span class="p">,</span>
             <span class="n">job_execution</span><span class="p">,</span>
+            <span class="n">logger</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
@@ -2006,8 +2058,7 @@ the flow run as a Cloud Run Job.</p>
 
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">246</span>
-<span class="normal">247</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
@@ -2185,7 +2236,8 @@ the flow run as a Cloud Run Job.</p>
 <span class="normal">422</span>
 <span class="normal">423</span>
 <span class="normal">424</span>
-<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerJobConfiguration</span><span class="p">(</span><span class="n">BaseJobConfiguration</span><span class="p">):</span>
+<span class="normal">425</span>
+<span class="normal">426</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerJobConfiguration</span><span class="p">(</span><span class="n">BaseJobConfiguration</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Configuration class used by the Cloud Run Worker to create a Cloud Run Job.</span>
 
@@ -2485,8 +2537,7 @@ preparation.</p></td>
 
       <details class="quote">
         <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">299</span>
-<span class="normal">300</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span>
@@ -2509,7 +2560,8 @@ preparation.</p></td>
 <span class="normal">320</span>
 <span class="normal">321</span>
 <span class="normal">322</span>
-<span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">prepare_for_flow_run</span><span class="p">(</span>
+<span class="normal">323</span>
+<span class="normal">324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">prepare_for_flow_run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
     <span class="n">deployment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;DeploymentResponse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2569,8 +2621,8 @@ preparation.</p></td>
 
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">509</span>
-<span class="normal">510</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerResult</span><span class="p">(</span><span class="n">BaseWorkerResult</span><span class="p">):</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">510</span>
+<span class="normal">511</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerResult</span><span class="p">(</span><span class="n">BaseWorkerResult</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains information about the final state of a completed process&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
         </details>
@@ -2602,8 +2654,7 @@ base job template.</p>
 
         <details class="quote">
           <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">428</span>
-<span class="normal">429</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">429</span>
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
@@ -2680,7 +2731,8 @@ base job template.</p>
 <span class="normal">503</span>
 <span class="normal">504</span>
 <span class="normal">505</span>
-<span class="normal">506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerVariables</span><span class="p">(</span><span class="n">BaseVariables</span><span class="p">):</span>
+<span class="normal">506</span>
+<span class="normal">507</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerVariables</span><span class="p">(</span><span class="n">BaseVariables</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default variables for the Cloud Run worker.</span>
 
