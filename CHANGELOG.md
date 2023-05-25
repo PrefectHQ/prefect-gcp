@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
-- Added optional `accelerator_count` property for `VertexAICustomTrainingJob`.
 
 ### Changed
 
@@ -19,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## 0.4.2
+
+Released on May 25th, 2023.
+
+### Added
+
+- `accelerator_count` property for `VertexAICustomTrainingJob` - [#174](https://github.com/PrefectHQ/prefect-gcp/pull/174)
+- `result_transformer` parameter to customize the return structure of `bigquery_query` - [#176](https://github.com/PrefectHQ/prefect-gcp/pull/176)
+- `boot_disk_type` and `boot_disk_size_gb` properties for `VertexAICustomTrainingJob` - [#177](https://github.com/PrefectHQ/prefect-gcp/pull/177)
+- Support to stream worker logs for executed flow runs - [#183](https://github.com/PrefectHQ/prefect-gcp/pull/183)
 
 ## 0.4.1
 
