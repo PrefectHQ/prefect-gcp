@@ -235,24 +235,28 @@ class TestGcsBucket:
         )
 
     def test_list_folders_root_folder(self, gcs_bucket_no_bucket_folder):
-        blobs = gcs_bucket_no_bucket_folder.list_folders()
-        assert len(blobs) == 3
-        assert set(blobs) == {"base_folder", "base_folder/sub_folder", "dotted.folder"}
+        folders = gcs_bucket_no_bucket_folder.list_folders()
+        assert len(folders) == 3
+        assert set(folders) == {
+            "base_folder",
+            "base_folder/sub_folder",
+            "dotted.folder",
+        }
 
     def test_list_folders_with_root_only(self, gcs_bucket_with_bucket_folder):
-        blobs = gcs_bucket_with_bucket_folder.list_folders()
-        assert len(blobs) == 2
-        assert set(blobs) == {"base_folder", "base_folder/sub_folder"}
+        folders = gcs_bucket_with_bucket_folder.list_folders()
+        assert len(folders) == 2
+        assert set(folders) == {"base_folder", "base_folder/sub_folder"}
 
     def test_list_folders_with_sub_folders(self, gcs_bucket_with_bucket_folder):
-        blobs = gcs_bucket_with_bucket_folder.list_folders("sub_folder/")
-        assert len(blobs) == 1
-        assert blobs[0] == "base_folder/sub_folder"
+        folders = gcs_bucket_with_bucket_folder.list_folders("sub_folder/")
+        assert len(folders) == 1
+        assert folders[0] == "base_folder/sub_folder"
 
     def test_list_folders_with_dotted_folders(self, gcs_bucket_no_bucket_folder):
-        blobs = gcs_bucket_no_bucket_folder.list_folders("dotted.folder/")
-        assert len(blobs) == 1
-        assert blobs[0] == "dotted.folder"
+        folders = gcs_bucket_no_bucket_folder.list_folders("dotted.folder/")
+        assert len(folders) == 1
+        assert folders[0] == "dotted.folder"
 
     def test_list_blobs(self, gcs_bucket_no_bucket_folder):
         blobs = gcs_bucket_no_bucket_folder.list_blobs(folder="base_folder/")
