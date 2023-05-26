@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
+- Bug that `list_folders` method removes dot(`"."`)s in the middle of paths
 
 ### Security
 

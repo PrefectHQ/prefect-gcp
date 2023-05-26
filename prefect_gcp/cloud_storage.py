@@ -912,11 +912,9 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
 
         blobs = await self.list_blobs(folder)
         # gets all folders with full path
-        folders = {
-            str(PurePosixPath(blob.name).parent).replace(".", "") for blob in blobs
-        }
+        folders = {str(PurePosixPath(blob.name).parent) for blob in blobs}
 
-        return list(folders)
+        return [folder for folder in folders if folder != "."]
 
     @sync_compatible
     async def download_object_to_path(
