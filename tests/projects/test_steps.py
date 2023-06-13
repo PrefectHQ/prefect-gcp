@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from prefect.utilities.filesystem import relative_path_to_current_platform
 
-from prefect_gcp.projects.steps import pull_project_from_gcs, push_project_to_gcs
+from prefect_gcp.deployment.steps import pull_from_gcs, push_to_gcs
 
 
 @pytest.fixture
@@ -16,13 +16,13 @@ def mock_credentials(monkeypatch):
     mock_credentials.from_service_account_info = mock_authenticated_credentials
     mock_credentials.from_service_account_file = mock_authenticated_credentials
     monkeypatch.setattr(
-        "prefect_gcp.projects.steps.Credentials",  # noqa
+        "prefect_gcp.deployments.steps.Credentials",  # noqa
         mock_credentials,
     )
     mock_auth = MagicMock()
     mock_auth.default.return_value = (mock_authenticated_credentials, "project")
     monkeypatch.setattr(
-        "prefect_gcp.projects.steps.google.auth",  # noqa
+        "prefect_gcp.deployments.steps.google.auth",  # noqa
         mock_auth,
     )
     return mock_credentials
@@ -38,7 +38,7 @@ def gcs_setup(monkeypatch, mock_credentials):
     mocked_bucket.blob.return_value = mocked_blob
 
     monkeypatch.setattr(
-        "prefect_gcp.projects.steps.StorageClient",
+        "prefect_gcp.deployments.steps.StorageClient",
         MagicMock(return_value=mocked_storage_client),
     )
     yield mocked_storage_client, mocked_bucket, mocked_blob
@@ -105,7 +105,7 @@ def dummy_service_account_file(tmp_path):
     return str(file)
 
 
-def test_push_project_to_gcs(gcs_setup, tmp_files, mock_credentials):
+def test_push_to_gcs(gcs_setup, tmp_files, mock_credentials):
     mocked_storage_client, mocked_bucket, mocked_blob = gcs_setup
 
     bucket_name = "my-test-bucket"
@@ -113,7 +113,7 @@ def test_push_project_to_gcs(gcs_setup, tmp_files, mock_credentials):
 
     os.chdir(tmp_files)
 
-    push_project_to_gcs(bucket_name, folder)
+    push_to_gcs(bucket_name, folder)
 
     # Assert that the StorageClient methods are called with the correct arguments
     mocked_storage_client.bucket.assert_called_with(bucket_name)
@@ -130,7 +130,7 @@ def test_push_project_to_gcs(gcs_setup, tmp_files, mock_credentials):
     }
 
 
-def test_pull_project_from_gcs(gcs_setup, tmp_path, mock_credentials):
+def test_pull_from_gcs(gcs_setup, tmp_path, mock_credentials):
     mocked_storage_client, mocked_bucket, mocked_blob = gcs_setup
 
     bucket_name = "my-test-bucket"
@@ -160,7 +160,7 @@ def test_pull_project_from_gcs(gcs_setup, tmp_path, mock_credentials):
     ]
 
     os.chdir(tmp_path)
-    pull_project_from_gcs(bucket_name, folder)
+    pull_from_gcs(bucket_name, folder)
 
     for key, content in files.items():
         target = Path(tmp_path) / PurePosixPath(key).relative_to(folder)
@@ -168,7 +168,7 @@ def test_pull_project_from_gcs(gcs_setup, tmp_path, mock_credentials):
         assert target.read_text() == content
 
 
-def test_pull_project_from_gcs_with_service_account_info(
+def test_pull_from_gcs_with_service_account_info(
     gcs_setup, tmp_path, dummy_service_account_info, mock_credentials
 ):
     mocked_storage_client, mocked_bucket, mocked_blob = gcs_setup
@@ -181,7 +181,7 @@ def test_pull_project_from_gcs_with_service_account_info(
     }
 
     os.chdir(tmp_path)
-    pull_project_from_gcs(bucket_name, folder, credentials=credentials)
+    pull_from_gcs(bucket_name, folder, credentials=credentials)
 
     mock_credentials.from_service_account_info.assert_called_once_with(
         dummy_service_account_info,
@@ -189,7 +189,7 @@ def test_pull_project_from_gcs_with_service_account_info(
     )
 
 
-def test_pull_project_from_gcs_with_service_account_file(
+def test_pull_from_gcs_with_service_account_file(
     gcs_setup, tmp_path, dummy_service_account_file, mock_credentials
 ):
     mocked_storage_client, mocked_bucket, mocked_blob = gcs_setup
@@ -202,7 +202,7 @@ def test_pull_project_from_gcs_with_service_account_file(
     }
 
     os.chdir(tmp_path)
-    pull_project_from_gcs(bucket_name, folder, credentials=credentials)
+    pull_from_gcs(bucket_name, folder, credentials=credentials)
 
     mock_credentials.from_service_account_file.assert_called_once_with(
         dummy_service_account_file,
@@ -210,7 +210,7 @@ def test_pull_project_from_gcs_with_service_account_file(
     )
 
 
-def test_push_project_to_gcs_with_service_account_info(
+def test_push_to_gcs_with_service_account_info(
     gcs_setup, tmp_path, dummy_service_account_info, mock_credentials
 ):
     mocked_storage_client, mocked_bucket, mocked_blob = gcs_setup
@@ -223,7 +223,7 @@ def test_push_project_to_gcs_with_service_account_info(
     }
 
     os.chdir(tmp_path)
-    push_project_to_gcs(bucket_name, folder, credentials=credentials)
+    push_to_gcs(bucket_name, folder, credentials=credentials)
 
     mock_credentials.from_service_account_info.assert_called_once_with(
         dummy_service_account_info,
@@ -231,7 +231,7 @@ def test_push_project_to_gcs_with_service_account_info(
     )
 
 
-def test_push_project_to_gcs_with_service_account_file(
+def test_push_to_gcs_with_service_account_file(
     gcs_setup, tmp_path, dummy_service_account_file, mock_credentials
 ):
     mocked_storage_client, mocked_bucket, mocked_blob = gcs_setup
@@ -244,7 +244,7 @@ def test_push_project_to_gcs_with_service_account_file(
     }
 
     os.chdir(tmp_path)
-    push_project_to_gcs(bucket_name, folder, credentials=credentials)
+    push_to_gcs(bucket_name, folder, credentials=credentials)
 
     mock_credentials.from_service_account_file.assert_called_once_with(
         dummy_service_account_file,
