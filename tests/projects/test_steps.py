@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from prefect.utilities.filesystem import relative_path_to_current_platform
 
-from prefect_gcp.deployment.steps import pull_from_gcs, push_to_gcs
+from prefect_gcp.deployments.steps import pull_from_gcs, push_to_gcs
 
 
 @pytest.fixture
