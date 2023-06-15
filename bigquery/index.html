@@ -17,7 +17,7 @@
         <link rel="next" href="../secret_manager/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.14">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15">
     
     
       
@@ -25,10 +25,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.85bb2934.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.a6bdf11c.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
       
       
 
@@ -628,8 +628,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../projects/steps/" class="md-nav__link">
-        Project Steps
+      <a href="../deployments/steps/" class="md-nav__link">
+        Deployment Steps
       </a>
     </li>
   
@@ -908,17 +908,25 @@ the state of the block's connection and cursor could be lost.</p>
           <td>
                 <code><a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a></code>
           </td>
-          <td><p>The credentials to use to authenticate.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The credentials to use to authenticate.</p>
+            </div>
+          </td>
         </tr>
         <tr>
           <td><code>fetch_size</code></td>
           <td>
                 <code>int</code>
           </td>
-          <td><p>The number of rows to fetch at a time when calling fetch_many.
+          <td>
+            <div class="doc-md-description">
+              <p>The number of rows to fetch at a time when calling fetch_many.
 Note, this parameter is executed on the client side and is not
 passed to the database. To limit on the server side, add the <code>LIMIT</code>
-clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.</p></td>
+clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -1836,7 +1844,11 @@ upon calling.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The SQL query or other operation to be executed.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The SQL query or other operation to be executed.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1846,7 +1858,11 @@ upon calling.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
           </td>
-          <td><p>The parameters for the operation.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The parameters for the operation.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -1856,7 +1872,11 @@ upon calling.</p>
           <td>
                 <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
           </td>
-          <td><p>Additional options to pass to <code>connection.execute</code>.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Additional options to pass to <code>connection.execute</code>.</p>
+            </div>
+          </td>
           <td>
                 <code>{}</code>
           </td>
@@ -2019,7 +2039,11 @@ upon calling.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The SQL query or other operation to be executed.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The SQL query or other operation to be executed.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2029,7 +2053,11 @@ upon calling.</p>
           <td>
                 <code><span title="typing.List">List</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
           </td>
-          <td><p>The sequence of parameters for the operation.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The sequence of parameters for the operation.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2208,7 +2236,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The SQL query or other operation to be executed.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The SQL query or other operation to be executed.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2218,7 +2250,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
           </td>
-          <td><p>The parameters for the operation.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The parameters for the operation.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -2228,7 +2264,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
           </td>
-          <td><p>Additional options to pass to <code>connection.execute</code>.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Additional options to pass to <code>connection.execute</code>.</p>
+            </div>
+          </td>
           <td>
                 <code>{}</code>
           </td>
@@ -2249,8 +2289,12 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.List">List</span>[<span title="google.cloud.bigquery.table.Row">Row</span>]</code>
           </td>
-          <td><p>A list of tuples containing the data returned by the database,
-where each row is a tuple and each column is a value in the tuple.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>A list of tuples containing the data returned by the database,
+where each row is a tuple and each column is a value in the tuple.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -2432,7 +2476,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The SQL query or other operation to be executed.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The SQL query or other operation to be executed.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2442,7 +2490,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
           </td>
-          <td><p>The parameters for the operation.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The parameters for the operation.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -2452,8 +2504,12 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[int]</code>
           </td>
-          <td><p>The number of results to return; if None or 0, uses the value of
-<code>fetch_size</code> configured on the block.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The number of results to return; if None or 0, uses the value of
+<code>fetch_size</code> configured on the block.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -2463,7 +2519,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
           </td>
-          <td><p>Additional options to pass to <code>connection.execute</code>.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Additional options to pass to <code>connection.execute</code>.</p>
+            </div>
+          </td>
           <td>
                 <code>{}</code>
           </td>
@@ -2484,8 +2544,12 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.List">List</span>[<span title="google.cloud.bigquery.table.Row">Row</span>]</code>
           </td>
-          <td><p>A list of tuples containing the data returned by the database,
-where each row is a tuple and each column is a value in the tuple.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>A list of tuples containing the data returned by the database,
+where each row is a tuple and each column is a value in the tuple.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -2693,7 +2757,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The SQL query or other operation to be executed.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The SQL query or other operation to be executed.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2703,7 +2771,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
           </td>
-          <td><p>The parameters for the operation.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The parameters for the operation.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -2713,7 +2785,11 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
           </td>
-          <td><p>Additional options to pass to <code>connection.execute</code>.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Additional options to pass to <code>connection.execute</code>.</p>
+            </div>
+          </td>
           <td>
                 <code>{}</code>
           </td>
@@ -2734,8 +2810,12 @@ until the reset_cursors method is called.</p>
           <td>
                 <code><span title="google.cloud.bigquery.table.Row">Row</span></code>
           </td>
-          <td><p>A tuple containing the data returned by the database,
-where each row is a tuple and each column is a value in the tuple.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>A tuple containing the data returned by the database,
+where each row is a tuple and each column is a value in the tuple.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -3006,7 +3086,11 @@ where each row is a tuple and each column is a value in the tuple.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name of a dataset in that the table will be created.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of a dataset in that the table will be created.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3016,7 +3100,11 @@ where each row is a tuple and each column is a value in the tuple.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name of a table to create.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of a table to create.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3026,7 +3114,11 @@ where each row is a tuple and each column is a value in the tuple.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="google.cloud.bigquery.SchemaField">SchemaField</span>]]</code>
           </td>
-          <td><p>Schema to use when creating the table.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Schema to use when creating the table.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3036,7 +3128,11 @@ where each row is a tuple and each column is a value in the tuple.</p></td>
           <td>
                 <code><a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a></code>
           </td>
-          <td><p>Credentials to use for authentication with GCP.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Credentials to use for authentication with GCP.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3046,7 +3142,11 @@ where each row is a tuple and each column is a value in the tuple.</p></td>
           <td>
                 <code><span title="typing.List">List</span>[str]</code>
           </td>
-          <td><p>List of fields to cluster the table by.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>List of fields to cluster the table by.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3056,8 +3156,12 @@ where each row is a tuple and each column is a value in the tuple.</p></td>
           <td>
                 <code><span title="google.cloud.bigquery.TimePartitioning">TimePartitioning</span></code>
           </td>
-          <td><p><code>bigquery.TimePartitioning</code> object specifying a partitioning
-of the newly created table</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p><code>bigquery.TimePartitioning</code> object specifying a partitioning
+of the newly created table</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3067,8 +3171,12 @@ of the newly created table</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[str]</code>
           </td>
-          <td><p>Project to initialize the BigQuery Client with; if
-not provided, will default to the one inferred from your credentials.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Project to initialize the BigQuery Client with; if
+not provided, will default to the one inferred from your credentials.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3078,7 +3186,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The location of the dataset that will be written to.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The location of the dataset that will be written to.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;US&#39;</code>
           </td>
@@ -3088,7 +3200,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="google.cloud.bigquery.ExternalConfig">ExternalConfig</span>]</code>
           </td>
-          <td><p>The <a href="https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_table#nested_external_data_configuration">external data source</a>.  # noqa</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The <a href="https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_table#nested_external_data_configuration">external data source</a>.  # noqa</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3109,7 +3225,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Table name.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Table name.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -3364,7 +3484,11 @@ API</a>.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name of a dataset where the records will be written to.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of a dataset where the records will be written to.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3374,7 +3498,11 @@ API</a>.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name of a table to write to.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of a table to write to.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3384,9 +3512,13 @@ API</a>.</p>
           <td>
                 <code><span title="typing.List">List</span>[dict]</code>
           </td>
-          <td><p>The list of records to insert as rows into the BigQuery table;
+          <td>
+            <div class="doc-md-description">
+              <p>The list of records to insert as rows into the BigQuery table;
 each item in the list should be a dictionary whose keys correspond to
-columns in the table.</p></td>
+columns in the table.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3396,7 +3528,11 @@ columns in the table.</p></td>
           <td>
                 <code><a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a></code>
           </td>
-          <td><p>Credentials to use for authentication with GCP.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Credentials to use for authentication with GCP.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3406,8 +3542,12 @@ columns in the table.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[str]</code>
           </td>
-          <td><p>The project to initialize the BigQuery Client with; if
-not provided, will default to the one inferred from your credentials.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The project to initialize the BigQuery Client with; if
+not provided, will default to the one inferred from your credentials.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3417,7 +3557,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Location of the dataset that will be written to.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Location of the dataset that will be written to.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;US&#39;</code>
           </td>
@@ -3438,7 +3582,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code><span title="typing.List">List</span></code>
           </td>
-          <td><p>List of inserted rows.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>List of inserted rows.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -3656,7 +3804,11 @@ Task within a Flow context, after initialization.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>GCS path to load data from.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>GCS path to load data from.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3666,7 +3818,11 @@ Task within a Flow context, after initialization.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The id of a destination dataset to write the records to.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The id of a destination dataset to write the records to.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3676,7 +3832,11 @@ Task within a Flow context, after initialization.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The name of a destination table to write the records to.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The name of a destination table to write the records to.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3686,7 +3846,11 @@ Task within a Flow context, after initialization.</p>
           <td>
                 <code><a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a></code>
           </td>
-          <td><p>Credentials to use for authentication with GCP.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Credentials to use for authentication with GCP.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3696,7 +3860,11 @@ Task within a Flow context, after initialization.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="google.cloud.bigquery.SchemaField">SchemaField</span>]]</code>
           </td>
-          <td><p>The schema to use when creating the table.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The schema to use when creating the table.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3706,9 +3874,13 @@ Task within a Flow context, after initialization.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[dict]</code>
           </td>
-          <td><p>Dictionary of job configuration parameters;
+          <td>
+            <div class="doc-md-description">
+              <p>Dictionary of job configuration parameters;
 note that the parameters provided here must be pickleable
-(e.g., dataset references will be rejected).</p></td>
+(e.g., dataset references will be rejected).</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3718,8 +3890,12 @@ note that the parameters provided here must be pickleable
           <td>
                 <code><span title="typing.Optional">Optional</span>[str]</code>
           </td>
-          <td><p>The project to initialize the BigQuery Client with; if
-not provided, will default to the one inferred from your credentials.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The project to initialize the BigQuery Client with; if
+not provided, will default to the one inferred from your credentials.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -3729,7 +3905,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Location of the dataset that will be written to.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Location of the dataset that will be written to.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;US&#39;</code>
           </td>
@@ -3750,7 +3930,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code><span title="google.cloud.bigquery.LoadJob">LoadJob</span></code>
           </td>
-          <td><p>The response from <code>load_table_from_uri</code>.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The response from <code>load_table_from_uri</code>.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -3988,8 +4172,12 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>ID of a destination dataset to write the records to;
-if not provided here, will default to the one provided at initialization.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>ID of a destination dataset to write the records to;
+if not provided here, will default to the one provided at initialization.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -3999,8 +4187,12 @@ if not provided here, will default to the one provided at initialization.</p></t
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name of a destination table to write the records to;
-if not provided here, will default to the one provided at initialization.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of a destination table to write the records to;
+if not provided here, will default to the one provided at initialization.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -4010,7 +4202,11 @@ if not provided here, will default to the one provided at initialization.</p></t
           <td>
                 <code><span title="typing.Union">Union</span>[str, <span title="pathlib.Path">Path</span>]</code>
           </td>
-          <td><p>A string or path-like object of the file to be loaded.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>A string or path-like object of the file to be loaded.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -4020,7 +4216,11 @@ if not provided here, will default to the one provided at initialization.</p></t
           <td>
                 <code><a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a></code>
           </td>
-          <td><p>Credentials to use for authentication with GCP.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Credentials to use for authentication with GCP.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -4030,7 +4230,11 @@ if not provided here, will default to the one provided at initialization.</p></t
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="google.cloud.bigquery.SchemaField">SchemaField</span>]]</code>
           </td>
-          <td><p>Schema to use when creating the table.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Schema to use when creating the table.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4040,9 +4244,13 @@ if not provided here, will default to the one provided at initialization.</p></t
           <td>
                 <code><span title="typing.Optional">Optional</span>[dict]</code>
           </td>
-          <td><p>An optional dictionary of job configuration parameters;
+          <td>
+            <div class="doc-md-description">
+              <p>An optional dictionary of job configuration parameters;
 note that the parameters provided here must be pickleable
-(e.g., dataset references will be rejected).</p></td>
+(e.g., dataset references will be rejected).</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4052,8 +4260,12 @@ note that the parameters provided here must be pickleable
           <td>
                 <code>bool</code>
           </td>
-          <td><p>if True, seek to the beginning of the file handle
-before reading the file.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>if True, seek to the beginning of the file handle
+before reading the file.</p>
+            </div>
+          </td>
           <td>
                 <code>False</code>
           </td>
@@ -4063,8 +4275,12 @@ before reading the file.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[int]</code>
           </td>
-          <td><p>Number of bytes to read from the file handle. If size is None or large,
-resumable upload will be used. Otherwise, multipart upload will be used.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Number of bytes to read from the file handle. If size is None or large,
+resumable upload will be used. Otherwise, multipart upload will be used.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4074,8 +4290,12 @@ resumable upload will be used. Otherwise, multipart upload will be used.</p></td
           <td>
                 <code><span title="typing.Optional">Optional</span>[str]</code>
           </td>
-          <td><p>Project to initialize the BigQuery Client with; if
-not provided, will default to the one inferred from your credentials.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Project to initialize the BigQuery Client with; if
+not provided, will default to the one inferred from your credentials.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4085,7 +4305,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>location of the dataset that will be written to.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>location of the dataset that will be written to.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;US&#39;</code>
           </td>
@@ -4106,7 +4330,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code><span title="google.cloud.bigquery.LoadJob">LoadJob</span></code>
           </td>
-          <td><p>The response from <code>load_table_from_file</code>.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The response from <code>load_table_from_file</code>.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -4377,7 +4605,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>String of the query to execute.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>String of the query to execute.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -4387,7 +4619,11 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code><a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a></code>
           </td>
-          <td><p>Credentials to use for authentication with GCP.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Credentials to use for authentication with GCP.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -4397,10 +4633,14 @@ not provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[tuple]]</code>
           </td>
-          <td><p>List of 3-tuples specifying BigQuery query parameters; currently
+          <td>
+            <div class="doc-md-description">
+              <p>List of 3-tuples specifying BigQuery query parameters; currently
 only scalar query parameters are supported.  See the
 <a href="https://cloud.google.com/bigquery/docs/parameterized-queries#bigquery-query-params-python">Google documentation</a>
-for more details on how both the query and the query parameters should be formatted.</p></td>
+for more details on how both the query and the query parameters should be formatted.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4410,9 +4650,13 @@ for more details on how both the query and the query parameters should be format
           <td>
                 <code><span title="typing.Optional">Optional</span>[int]</code>
           </td>
-          <td><p>If provided, the maximum number of bytes the query
+          <td>
+            <div class="doc-md-description">
+              <p>If provided, the maximum number of bytes the query
 is allowed to process; this will be determined by executing a dry run
-and raising a <code>ValueError</code> if the maximum is exceeded.</p></td>
+and raising a <code>ValueError</code> if the maximum is exceeded.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4422,8 +4666,12 @@ and raising a <code>ValueError</code> if the maximum is exceeded.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[str]</code>
           </td>
-          <td><p>Name of a destination dataset to write the query results to,
-if you don't want them returned; if provided, <code>table</code> must also be provided.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of a destination dataset to write the query results to,
+if you don't want them returned; if provided, <code>table</code> must also be provided.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4433,8 +4681,12 @@ if you don't want them returned; if provided, <code>table</code> must also be pr
           <td>
                 <code><span title="typing.Optional">Optional</span>[str]</code>
           </td>
-          <td><p>Name of a destination table to write the query results to,
-if you don't want them returned; if provided, <code>dataset</code> must also be provided.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of a destination table to write the query results to,
+if you don't want them returned; if provided, <code>dataset</code> must also be provided.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4444,8 +4696,12 @@ if you don't want them returned; if provided, <code>dataset</code> must also be 
           <td>
                 <code>bool</code>
           </td>
-          <td><p>If provided, returns the results of the query as a pandas
-dataframe instead of a list of <code>bigquery.table.Row</code> objects.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>If provided, returns the results of the query as a pandas
+dataframe instead of a list of <code>bigquery.table.Row</code> objects.</p>
+            </div>
+          </td>
           <td>
                 <code>False</code>
           </td>
@@ -4455,9 +4711,13 @@ dataframe instead of a list of <code>bigquery.table.Row</code> objects.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[dict]</code>
           </td>
-          <td><p>Dictionary of job configuration parameters;
+          <td>
+            <div class="doc-md-description">
+              <p>Dictionary of job configuration parameters;
 note that the parameters provided here must be pickleable
-(e.g., dataset references will be rejected).</p></td>
+(e.g., dataset references will be rejected).</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4467,8 +4727,12 @@ note that the parameters provided here must be pickleable
           <td>
                 <code><span title="typing.Optional">Optional</span>[str]</code>
           </td>
-          <td><p>The project to initialize the BigQuery Client with; if not
-provided, will default to the one inferred from your credentials.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The project to initialize the BigQuery Client with; if not
+provided, will default to the one inferred from your credentials.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4478,7 +4742,11 @@ provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="typing.Callable">Callable</span>[[<span title="typing.List">List</span>[<span title="google.cloud.bigquery.table.Row">Row</span>]], <span title="typing.Any">Any</span>]]</code>
           </td>
-          <td><p>Function that can be passed to transform the result of a query before returning. The function will be passed the list of rows returned by BigQuery for the given query.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Function that can be passed to transform the result of a query before returning. The function will be passed the list of rows returned by BigQuery for the given query.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -4488,7 +4756,11 @@ provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Location of the dataset that will be queried.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Location of the dataset that will be queried.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;US&#39;</code>
           </td>
@@ -4509,13 +4781,21 @@ provided, will default to the one inferred from your credentials.</p></td>
           <td>
                 <code><span title="typing.Any">Any</span></code>
           </td>
-          <td><p>A list of rows, or pandas DataFrame if to_dataframe,</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>A list of rows, or pandas DataFrame if to_dataframe,</p>
+            </div>
+          </td>
         </tr>
         <tr>
           <td>
                 <code><span title="typing.Any">Any</span></code>
           </td>
-          <td><p>matching the query criteria.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>matching the query criteria.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>

@@ -11,11 +11,11 @@
         <link rel="canonical" href="https://PrefectHQ.github.io/prefect-gcp/worker/">
       
       
-        <link rel="prev" href="../projects/steps/">
+        <link rel="prev" href="../deployments/steps/">
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.14">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15">
     
     
       
@@ -23,10 +23,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.85bb2934.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.a6bdf11c.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
       
       
 
@@ -449,8 +449,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../projects/steps/" class="md-nav__link">
-        Project Steps
+      <a href="../deployments/steps/" class="md-nav__link">
+        Deployment Steps
       </a>
     </li>
   
@@ -1833,7 +1833,11 @@ to complete.</p>
           <td>
                 <code><span title="prefect.client.schemas.FlowRun">FlowRun</span></code>
           </td>
-          <td><p>The flow run to execute</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The flow run to execute</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1843,7 +1847,11 @@ to complete.</p>
           <td>
                 <code><a class="autorefs autorefs-internal" title="prefect_gcp.worker.CloudRunWorkerJobConfiguration" href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration">CloudRunWorkerJobConfiguration</a></code>
           </td>
-          <td><p>The configuration to use when executing the flow run.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The configuration to use when executing the flow run.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1853,8 +1861,12 @@ to complete.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[anyio.<span title="anyio.abc">abc</span>.<span title="anyio.abc.TaskStatus">TaskStatus</span>]</code>
           </td>
-          <td><p>The task status object for the current flow run. If provided,
-the task will be marked as started.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The task status object for the current flow run. If provided,
+the task will be marked as started.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -1875,8 +1887,12 @@ the task will be marked as started.</p></td>
 <td><code>CloudRunWorkerResult</code></td>          <td>
                 <code><a class="autorefs autorefs-internal" title="prefect_gcp.worker.CloudRunWorkerResult" href="#prefect_gcp.worker.CloudRunWorkerResult">CloudRunWorkerResult</a></code>
           </td>
-          <td><p>A result object containing information about the
-final state of the flow run</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>A result object containing information about the
+final state of the flow run</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -2022,35 +2038,55 @@ the flow run as a Cloud Run Job.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>The region where the Cloud Run Job resides.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The region where the Cloud Run Job resides.</p>
+            </div>
+          </td>
         </tr>
         <tr>
           <td><code>credentials</code></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a>]</code>
           </td>
-          <td><p>The GCP Credentials used to connect to Cloud Run.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The GCP Credentials used to connect to Cloud Run.</p>
+            </div>
+          </td>
         </tr>
         <tr>
           <td><code>job_body</code></td>
           <td>
                 <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
           </td>
-          <td><p>The job body used to create the Cloud Run Job.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The job body used to create the Cloud Run Job.</p>
+            </div>
+          </td>
         </tr>
         <tr>
           <td><code>timeout</code></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[int]</code>
           </td>
-          <td><p>The length of time that Prefect will wait for a Cloud Run Job.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The length of time that Prefect will wait for a Cloud Run Job.</p>
+            </div>
+          </td>
         </tr>
         <tr>
           <td><code>keep_job</code></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[bool]</code>
           </td>
-          <td><p>Whether to delete the Cloud Run Job after it completes.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Whether to delete the Cloud Run Job after it completes.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -2506,7 +2542,11 @@ job body is valid.</p>
           <td>
                 <code><span title="prefect.client.schemas.FlowRun">FlowRun</span></code>
           </td>
-          <td><p>The flow run to prepare the job configuration for</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The flow run to prepare the job configuration for</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2516,8 +2556,12 @@ job body is valid.</p>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="prefect.server.schemas.responses.DeploymentResponse">DeploymentResponse</span>]</code>
           </td>
-          <td><p>The deployment associated with the flow run used for
-preparation.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The deployment associated with the flow run used for
+preparation.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -2527,7 +2571,11 @@ preparation.</p></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<span title="prefect.server.schemas.core.Flow">Flow</span>]</code>
           </td>
-          <td><p>The flow associated with the flow run used for preparation.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The flow associated with the flow run used for preparation.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
