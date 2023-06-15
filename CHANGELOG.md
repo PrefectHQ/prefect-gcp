@@ -13,18 +13,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+### Removed
+
+### Fixed
+
+### Security
+
+## 0.4.3
+
+Released June 15th, 2023.
+
+### Deprecated
+
 - `prefect_gcp.projects` module. Use `prefect_gcp.deployments` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
 - `pull_project_from_gcs` step. Use `pull_from_gcs` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
 - `push_project_to_gcs` step. Use `push_to_gcs` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
 - `PullProjectFromGcsOutput` step output. Use `PullFromGcsOutput` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
 - `PushProjectToGcsOutput` step output. Use `PushToGcsOutput` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
 
-### Removed
-
 ### Fixed
-- Bug that `list_folders` method removes dot(`"."`)s in the middle of paths
 
-### Security
+- Bug that `list_folders` method removes dot(`"."`)s in the middle of paths 
 
 ## 0.4.2
 
