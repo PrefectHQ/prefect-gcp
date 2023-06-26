@@ -21,11 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.4.4
 
-Not yet released
+Released June 26th, 2023.
 
 ### Changed
 
-- Vertex agent now attempts to retry create custom job up to three times to recover from transient errors
+- Vertex agent now attempts to retry create custom job up to three times to recover from transient errors - [#192](https://github.com/PrefectHQ/prefect-gcp/192)
+- Updated `prefect.docker` import to `prefect.utilities.dockerutils` - [#194](https://github.com/PrefectHQ/prefect-gcp/pull/194)
 
 ## 0.4.3
 
