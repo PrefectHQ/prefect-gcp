@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.4.4
+
+Not yet released
+
+### Changed
+
+- Vertex agent now attempts to retry create custom job up to three times to recover from transient errors
+
 ## 0.4.3
 
 Released June 15th, 2023.
