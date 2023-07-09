@@ -48,7 +48,7 @@ def jobs_body():
 
 @pytest.fixture
 def flow_run():
-    return FlowRun(name="my-flow-run-name")
+    return FlowRun(flow_id=uuid.uuid4(), name="my-flow-run-name")
 
 
 @pytest.fixture

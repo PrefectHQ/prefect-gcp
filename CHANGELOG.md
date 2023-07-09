@@ -21,6 +21,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.4.4
+
+Released June 26th, 2023.
+
+### Changed
+
+- Vertex agent now attempts to retry create custom job up to three times to recover from transient errors - [#192](https://github.com/PrefectHQ/prefect-gcp/192)
+- Updated `prefect.docker` import to `prefect.utilities.dockerutils` - [#194](https://github.com/PrefectHQ/prefect-gcp/pull/194)
+
+## 0.4.3
+
+Released June 15th, 2023.
+
+### Deprecated
+
+- `prefect_gcp.projects` module. Use `prefect_gcp.deployments` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
+- `pull_project_from_gcs` step. Use `pull_from_gcs` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
+- `push_project_to_gcs` step. Use `push_to_gcs` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
+- `PullProjectFromGcsOutput` step output. Use `PullFromGcsOutput` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
+- `PushProjectToGcsOutput` step output. Use `PushToGcsOutput` instead. - [#189](https://github.com/PrefectHQ/prefect-gcp/pull/189)
+
+### Fixed
+
+- Bug that `list_folders` method removes dot(`"."`)s in the middle of paths 
+
 ## 0.4.2
 
 Released on May 25th, 2023.

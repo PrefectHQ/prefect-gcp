@@ -1,5 +1,5 @@
 """
-Prefect project steps for code storage in and retrieval from Google Cloud Storage.
+Prefect deployment steps for code storage in and retrieval from Google Cloud Storage.
 """
 from pathlib import Path, PurePosixPath
 from typing import Dict, Optional
@@ -7,22 +7,28 @@ from typing import Dict, Optional
 import google.auth
 from google.cloud.storage import Client as StorageClient
 from google.oauth2.service_account import Credentials
+from prefect._internal.compatibility.deprecated import deprecated_callable
 from prefect.utilities.filesystem import filter_files, relative_path_to_current_platform
 from typing_extensions import TypedDict
 
 
-class PushProjectToGcsOutput(TypedDict):
+class PushToGcsOutput(TypedDict):
     """
-    The output of the `push_project_to_gcs` step.
+    The output of the `push_to_gcs` step.
     """
 
     bucket: str
     folder: str
 
 
-class PullProjectFromGcsOutput(TypedDict):
+@deprecated_callable(start_date="Jun 2023", help="Use `PushToGcsOutput` instead.")
+class PushProjectToGcsOutput(PushToGcsOutput):
+    """Deprecated. Use `PushToGcsOutput` instead."""
+
+
+class PullFromGcsOutput(TypedDict):
     """
-    The output of the `pull_project_from_gcs` step.
+    The output of the `pull_from_gcs` step.
     """
 
     bucket: str
@@ -30,20 +36,25 @@ class PullProjectFromGcsOutput(TypedDict):
     directory: str
 
 
-def push_project_to_gcs(
+@deprecated_callable(start_date="Jun 2023", help="Use `PullFromGcsOutput` instead.")
+class PullProjectFromGcsOutput(PullFromGcsOutput):
+    """Deprecated. Use `PullFromGcsOutput` instead."""
+
+
+def push_to_gcs(
     bucket: str,
     folder: str,
     project: Optional[str] = None,
     credentials: Optional[Dict] = None,
     ignore_file=".prefectignore",
-) -> PushProjectToGcsOutput:
+) -> PushToGcsOutput:
     """
     Pushes the contents of the current working directory to a GCS bucket,
     excluding files and folders specified in the ignore_file.
 
     Args:
-        bucket: The name of the GCS bucket where the project files will be uploaded.
-        folder: The folder in the GCS bucket where the project files will be uploaded.
+        bucket: The name of the GCS bucket where files will be uploaded.
+        folder: The folder in the GCS bucket where files will be uploaded.
         project: The GCP project the bucket belongs to. If not provided, the project
             will be inferred from the credentials or the local environment.
         credentials: A dictionary containing the service account information and project
@@ -52,33 +63,33 @@ def push_project_to_gcs(
         ignore_file: The name of the file containing ignore patterns.
 
     Returns:
-        A dictionary containing the bucket and folder where the project was uploaded.
+        A dictionary containing the bucket and folder where files were uploaded.
 
     Examples:
-        Push a project to an GCS bucket:
+        Push to a GCS bucket:
         ```yaml
         build:
-            - prefect_gcp.projects.steps.push_project_to_gcs:
+            - prefect_gcp.deployments.steps.push_to_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
                 folder: my-project
         ```
 
-        Push a project to an GCS bucket using credentials stored in a block:
+        Push  to a GCS bucket using credentials stored in a block:
         ```yaml
         build:
-            - prefect_gcp.projects.steps.push_project_to_gcs:
+            - prefect_gcp.deployments.steps.push_to_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
                 folder: my-folder
                 credentials: "{{ prefect.blocks.gcp-credentials.dev-credentials }}"
         ```
 
-        Push a project to an GCS bucket using credentials stored in a service account
+        Push to a GCS bucket using credentials stored in a service account
         file:
         ```yaml
         build:
-            - prefect_gcp.projects.steps.push_project_to_gcs:
+            - prefect_gcp.deployments.steps.push_to_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
                 folder: my-folder
@@ -135,7 +146,15 @@ def push_project_to_gcs(
     }
 
 
-def pull_project_from_gcs(
+@deprecated_callable(start_date="Jun 2023", help="Use `push_to_gcs` instead.")
+def push_project_to_gcs(*args, **kwargs) -> PushToGcsOutput:
+    """
+    Deprecated. Use `push_to_gcs` instead.
+    """
+    return push_to_gcs(*args, **kwargs)
+
+
+def pull_from_gcs(
     bucket: str,
     folder: str,
     project: Optional[str] = None,
@@ -145,8 +164,8 @@ def pull_project_from_gcs(
     Pulls the contents of a project from an GCS bucket to the current working directory.
 
     Args:
-        bucket: The name of the GCS bucket where the project files are stored.
-        folder: The folder in the GCS bucket where the project files are stored.
+        bucket: The name of the GCS bucket where files are stored.
+        folder: The folder in the GCS bucket where files are stored.
         project: The GCP project the bucket belongs to. If not provided, the project will be
             inferred from the credentials or the local environment.
         credentials: A dictionary containing the service account information and project
@@ -154,33 +173,32 @@ def pull_project_from_gcs(
             credentials will be used.
 
     Returns:
-        A dictionary containing the bucket, folder, and local directory where the
-            project files were downloaded.
+        A dictionary containing the bucket, folder, and local directory where files were downloaded.
 
     Examples:
-        Pull a project from GCS using the default environment credentials:
+        Pull from GCS using the default environment credentials:
         ```yaml
         build:
-            - prefect_gcp.projects.steps.pull_project_from_gcs:
+            - prefect_gcp.deployments.steps.pull_from_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
                 folder: my-folder
         ```
 
-        Pull a project from GCS using credentials stored in a block:
+        Pull from GCS using credentials stored in a block:
         ```yaml
         build:
-            - prefect_gcp.projects.steps.pull_project_from_gcs:
+            - prefect_gcp.deployments.steps.pull_from_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
                 folder: my-folder
                 credentials: "{{ prefect.blocks.gcp-credentials.dev-credentials }}"
         ```
 
-        Pull from a project to an GCS bucket using credentials stored in a service account file:
+        Pull from to an GCS bucket using credentials stored in a service account file:
         ```yaml
         build:
-            - prefect_gcp.projects.steps.pull_project_from_gcs:
+            - prefect_gcp.deployments.steps.pull_from_gcs:
                 requires: prefect-gcp
                 bucket: my-bucket
                 folder: my-folder
@@ -229,3 +247,11 @@ def pull_project_from_gcs(
         "folder": folder,
         "directory": str(local_path),
     }
+
+
+@deprecated_callable(start_date="Jun 2023", help="Use `pull_from_gcs` instead.")
+def pull_project_from_gcs(*args, **kwargs) -> PullProjectFromGcsOutput:
+    """
+    Deprecated. Use `pull_from_gcs` instead.
+    """
+    return pull_from_gcs(*args, **kwargs)
