@@ -1,9 +1,6 @@
 """ <!-- # noqa -->
-<span class="badge-api beta"/>
 
 Module containing the Cloud Run worker used for executing flow runs as Cloud Run jobs.
-
-Note this module is in **beta**. The interfaces within may change without notice.
 
 Get started by creating a Cloud Run work pool:
 
@@ -523,7 +520,7 @@ class CloudRunWorker(BaseWorker):
     )
     _display_name = "Google Cloud Run"
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/worker/"
-    _is_beta = True
+    _is_beta = False
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4SpnOBvMYkHp6z939MDKP6/549a91bc1ce9afd4fb12c68db7b68106/social-icon-google-cloud-1200-630.png?h=250"  # noqa
 
     def _create_job_error(self, exc, configuration):
