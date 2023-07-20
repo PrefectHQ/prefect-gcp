@@ -17,7 +17,7 @@
         <link rel="next" href="../bigquery/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
@@ -1148,7 +1148,7 @@
 
 
 <h1 id="prefect_gcp.cloud_storage" class="doc doc-heading">
-          <code>prefect_gcp.cloud_storage</code>
+            <code>prefect_gcp.cloud_storage</code>
 
 
 </h1>
@@ -1173,19 +1173,21 @@
 
 
 <h3 id="prefect_gcp.cloud_storage.DataFrameSerializationFormat" class="doc doc-heading">
-        <code>DataFrameSerializationFormat</code>
+          <code>DataFrameSerializationFormat</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="enum.Enum">Enum</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="enum.Enum">Enum</span></code></p>
 
   
       <p>An enumeration class to represent different file formats,
 compression options for upload_from_dataframe</p>
+
+
 
   <p><strong>Attributes:</strong></p>
   <table>
@@ -1255,10 +1257,9 @@ with 'gzip' compression and its related content type and suffix.</p>
     </tbody>
   </table>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">476</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">476</span>
 <span class="normal">477</span>
 <span class="normal">478</span>
 <span class="normal">479</span>
@@ -1390,7 +1391,7 @@ with 'gzip' compression and its related content type and suffix.</p>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">PurePosixPath</span><span class="p">(</span><span class="n">gcs_blob_path</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -1488,6 +1489,7 @@ with 'gzip' compression and its related content type and suffix.</p>
 
 <h4 id="prefect_gcp.cloud_storage.DataFrameSerializationFormat-functions">Functions</h4>
 
+
 <div class="doc doc-object doc-function">
 
 
@@ -1501,6 +1503,8 @@ with 'gzip' compression and its related content type and suffix.</p>
   <div class="doc doc-contents ">
   
       <p>Fix the extension of a GCS blob.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1530,6 +1534,8 @@ with 'gzip' compression and its related content type and suffix.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -1552,9 +1558,9 @@ with 'gzip' compression and its related content type and suffix.</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">529</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">529</span>
 <span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
@@ -1580,7 +1586,7 @@ with 'gzip' compression and its related content type and suffix.</p>
     <span class="n">filename</span> <span class="o">=</span> <span class="n">PurePosixPath</span><span class="p">(</span><span class="n">gcs_blob_path</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -1598,15 +1604,15 @@ with 'gzip' compression and its related content type and suffix.</p>
 
 
 <h3 id="prefect_gcp.cloud_storage.GcsBucket" class="doc doc-heading">
-        <code>GcsBucket</code>
+          <code>GcsBucket</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.filesystems.WritableDeploymentStorage">WritableDeploymentStorage</span></code>, <code><span title="prefect.filesystems.WritableFileSystem">WritableFileSystem</span></code>, <code><span title="prefect.blocks.abstract.ObjectStorageBlock">ObjectStorageBlock</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.filesystems.WritableDeploymentStorage">WritableDeploymentStorage</span></code>, <code><span title="prefect.filesystems.WritableFileSystem">WritableFileSystem</span></code>, <code><span title="prefect.blocks.abstract.ObjectStorageBlock">ObjectStorageBlock</span></code></p>
 
   
       <p>Block used to store data using GCP Cloud Storage Buckets.</p>
@@ -1614,6 +1620,8 @@ with 'gzip' compression and its related content type and suffix.</p>
 in core Prefect. <code>GcsBucket</code> does not use <code>gcsfs</code> under the hood,
 instead using the <code>google-cloud-storage</code> package, and offers more configuration
 and functionality.</p>
+
+
 
   <p><strong>Attributes:</strong></p>
   <table>
@@ -1669,10 +1677,9 @@ for reading and writing objects.</p>
 <span class="n">gcp_cloud_storage_bucket_block</span> <span class="o">=</span> <span class="n">GcsBucket</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;BLOCK_NAME&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 </details>
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 544</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 544</span>
 <span class="normal"> 545</span>
 <span class="normal"> 546</span>
 <span class="normal"> 547</span>
@@ -3202,7 +3209,7 @@ for reading and writing objects.</p>
                 <span class="o">**</span><span class="p">{</span><span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="n">serialization_format</span><span class="o">.</span><span class="n">content_type</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span><span class="p">},</span>
             <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -3238,6 +3245,7 @@ for reading and writing objects.</p>
 
 <h4 id="prefect_gcp.cloud_storage.GcsBucket-functions">Functions</h4>
 
+
 <div class="doc doc-object doc-function">
 
 
@@ -3255,6 +3263,8 @@ for reading and writing objects.</p>
   <div class="doc doc-contents ">
   
       <p>Creates a bucket.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -3298,6 +3308,8 @@ for reading and writing objects.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -3320,6 +3332,8 @@ for reading and writing objects.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Create a bucket.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
@@ -3328,9 +3342,9 @@ for reading and writing objects.</p>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">create_bucket</span><span class="p">()</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">796</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">796</span>
 <span class="normal">797</span>
 <span class="normal">798</span>
 <span class="normal">799</span>
@@ -3390,10 +3404,11 @@ for reading and writing objects.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">bucket</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3413,6 +3428,8 @@ for reading and writing objects.</p>
   
       <p>Downloads objects <em>within</em> a folder (excluding the folder itself)
 from the object storage service to a folder.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -3473,6 +3490,8 @@ to the current directory.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -3495,6 +3514,8 @@ to the current directory.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Download my_folder to a local folder named my_folder.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
@@ -3503,9 +3524,9 @@ to the current directory.</p>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_folder_to_path</span><span class="p">(</span><span class="s2">&quot;my_folder&quot;</span><span class="p">,</span> <span class="s2">&quot;my_folder&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1024</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1024</span>
 <span class="normal">1025</span>
 <span class="normal">1026</span>
 <span class="normal">1027</span>
@@ -3639,10 +3660,11 @@ to the current directory.</p>
 
     <span class="k">return</span> <span class="n">to_folder</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3662,6 +3684,8 @@ to the current directory.</p>
   
       <p>Downloads an object from the object storage service to a file-like object,
 which can be a BytesIO object or a BufferedWriter.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -3721,6 +3745,8 @@ with the bucket_folder.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -3743,6 +3769,8 @@ with the bucket_folder.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Download my_folder/notes.txt object to a BytesIO object.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
@@ -3760,9 +3788,9 @@ with the bucket_folder.</p>
         <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_file_object</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 969</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 969</span>
 <span class="normal"> 970</span>
 <span class="normal"> 971</span>
 <span class="normal"> 972</span>
@@ -3870,10 +3898,11 @@ with the bucket_folder.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">to_file_object</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3892,6 +3921,8 @@ with the bucket_folder.</p>
   <div class="doc doc-contents ">
   
       <p>Downloads an object from the object storage service to a path.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -3952,6 +3983,8 @@ blob's name will be used.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -3974,6 +4007,8 @@ blob's name will be used.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Download my_folder/notes.txt object to notes.txt.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
@@ -3982,9 +4017,9 @@ blob's name will be used.</p>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">download_object_to_path</span><span class="p">(</span><span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;notes.txt&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">919</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">919</span>
 <span class="normal">920</span>
 <span class="normal">921</span>
 <span class="normal">922</span>
@@ -4082,10 +4117,11 @@ blob's name will be used.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">to_path</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -4104,6 +4140,8 @@ blob's name will be used.</p>
   <div class="doc doc-contents ">
   
       <p>Returns the bucket object.</p>
+
+
 
   <p><strong>Returns:</strong></p>
   <table>
@@ -4127,6 +4165,8 @@ blob's name will be used.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Get the bucket object.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
@@ -4135,9 +4175,9 @@ blob's name will be used.</p>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">()</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">827</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">827</span>
 <span class="normal">828</span>
 <span class="normal">829</span>
 <span class="normal">830</span>
@@ -4179,10 +4219,11 @@ blob's name will be used.</p>
     <span class="n">bucket</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">bucket</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -4203,6 +4244,8 @@ blob's name will be used.</p>
       <p>Copies a folder from the configured GCS bucket to a local directory.
 Defaults to copying the entire contents of the block's bucket_folder
 to the current working directory.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -4248,6 +4291,8 @@ Defaults to the current working directory.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -4270,9 +4315,9 @@ Defaults to the current working directory.</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">624</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">624</span>
 <span class="normal">625</span>
 <span class="normal">626</span>
 <span class="normal">627</span>
@@ -4376,10 +4421,11 @@ Defaults to the current working directory.</p>
             <span class="n">file_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">file_paths</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -4399,6 +4445,8 @@ Defaults to the current working directory.</p>
   
       <p>Lists all blobs in the bucket that are in a folder.
 Folders are not included in the output.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -4428,6 +4476,8 @@ Folders are not included in the output.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -4450,6 +4500,8 @@ Folders are not included in the output.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Get all blobs from a folder named "prefect".
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
@@ -4458,9 +4510,9 @@ Folders are not included in the output.</p>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">list_blobs</span><span class="p">(</span><span class="s2">&quot;prefect&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">849</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">849</span>
 <span class="normal">850</span>
 <span class="normal">851</span>
 <span class="normal">852</span>
@@ -4522,10 +4574,11 @@ Folders are not included in the output.</p>
     <span class="c1"># Ignore folders</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">blob</span> <span class="k">for</span> <span class="n">blob</span> <span class="ow">in</span> <span class="n">blobs</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">blob</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)]</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -4544,6 +4597,8 @@ Folders are not included in the output.</p>
   <div class="doc doc-contents ">
   
       <p>Lists all folders and subfolders in the bucket.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -4573,6 +4628,8 @@ Folders are not included in the output.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -4595,6 +4652,8 @@ Folders are not included in the output.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Get all folders from a bucket named "my-bucket".
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
@@ -4609,9 +4668,9 @@ Folders are not included in the output.</p>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">list_folders</span><span class="p">(</span><span class="s1">&#39;years)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">881</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">881</span>
 <span class="normal">882</span>
 <span class="normal">883</span>
 <span class="normal">884</span>
@@ -4685,10 +4744,11 @@ Folders are not included in the output.</p>
 
     <span class="k">return</span> <span class="p">[</span><span class="n">folder</span> <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">folders</span> <span class="k">if</span> <span class="n">folder</span> <span class="o">!=</span> <span class="s2">&quot;.&quot;</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -4710,6 +4770,8 @@ Folders are not included in the output.</p>
 given folder.</p>
 <p>Defaults to uploading the entire contents the current working directory to the
 block's bucket_folder.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -4769,6 +4831,8 @@ filepaths to ignore.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -4791,9 +4855,9 @@ filepaths to ignore.</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">677</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">677</span>
 <span class="normal">678</span>
 <span class="normal">679</span>
 <span class="normal">680</span>
@@ -4899,10 +4963,11 @@ filepaths to ignore.</p>
 
     <span class="k">return</span> <span class="n">uploaded_file_count</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -4922,6 +4987,8 @@ filepaths to ignore.</p>
   
       <p>Read specified path from GCS and return contents. Provide the entire
 path to the key in GCS.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -4951,6 +5018,8 @@ path to the key in GCS.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -4973,9 +5042,9 @@ path to the key in GCS.</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">731</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">731</span>
 <span class="normal">732</span>
 <span class="normal">733</span>
 <span class="normal">734</span>
@@ -5011,10 +5080,11 @@ path to the key in GCS.</p>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">contents</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -5036,6 +5106,8 @@ path to the key in GCS.</p>
 <p>This function uploads the data in a Pandas DataFrame to Google Cloud Storage
 in a specified format, such as .csv, .csv.gz, .parquet,
 .parquet.snappy, and .parquet.gz.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -5090,7 +5162,7 @@ Defaults to <code>DataFrameSerializationFormat.CSV_GZIP</code>.</p>
             </div>
           </td>
           <td>
-                <code>DataFrameSerializationFormat.CSV_GZIP</code>
+                <code><a class="autorefs autorefs-internal" title="prefect_gcp.cloud_storage.DataFrameSerializationFormat" href="#prefect_gcp.cloud_storage.DataFrameSerializationFormat">DataFrameSerializationFormat</a>.<span title="prefect_gcp.cloud_storage.DataFrameSerializationFormat.CSV_GZIP">CSV_GZIP</span></code>
           </td>
         </tr>
         <tr>
@@ -5109,6 +5181,8 @@ Defaults to <code>DataFrameSerializationFormat.CSV_GZIP</code>.</p>
         </tr>
     </tbody>
   </table>
+
+
 
   <p><strong>Returns:</strong></p>
   <table>
@@ -5132,9 +5206,9 @@ Defaults to <code>DataFrameSerializationFormat.CSV_GZIP</code>.</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1253</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1253</span>
 <span class="normal">1254</span>
 <span class="normal">1255</span>
 <span class="normal">1256</span>
@@ -5246,10 +5320,11 @@ Defaults to <code>DataFrameSerializationFormat.CSV_GZIP</code>.</p>
             <span class="o">**</span><span class="p">{</span><span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="n">serialization_format</span><span class="o">.</span><span class="n">content_type</span><span class="p">,</span> <span class="o">**</span><span class="n">upload_kwargs</span><span class="p">},</span>
         <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -5269,6 +5344,8 @@ Defaults to <code>DataFrameSerializationFormat.CSV_GZIP</code>.</p>
   
       <p>Uploads an object to the object storage service from a file-like object,
 which can be a BytesIO object or a BufferedReader.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -5327,6 +5404,8 @@ with the bucket_folder.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -5349,6 +5428,8 @@ with the bucket_folder.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Upload my_folder/notes.txt object to a BytesIO object.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
@@ -5369,9 +5450,9 @@ with the bucket_folder.</p>
     <span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1138</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1138</span>
 <span class="normal">1139</span>
 <span class="normal">1140</span>
 <span class="normal">1141</span>
@@ -5479,10 +5560,11 @@ with the bucket_folder.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">bucket_path</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -5502,6 +5584,8 @@ with the bucket_folder.</p>
   
       <p>Uploads files <em>within</em> a folder (excluding the folder itself)
 to the object storage service folder.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -5561,6 +5645,8 @@ to bucket_folder or the base directory of the bucket.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -5583,6 +5669,8 @@ to bucket_folder or the base directory of the bucket.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Upload local folder my_folder to the bucket's folder my_folder.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
@@ -5591,9 +5679,9 @@ to bucket_folder or the base directory of the bucket.</p>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_folder</span><span class="p">(</span><span class="s2">&quot;my_folder&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1193</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1193</span>
 <span class="normal">1194</span>
 <span class="normal">1195</span>
 <span class="normal">1196</span>
@@ -5711,10 +5799,11 @@ to bucket_folder or the base directory of the bucket.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No files were uploaded from </span><span class="si">{</span><span class="n">from_folder</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">bucket_folder</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -5733,6 +5822,8 @@ to bucket_folder or the base directory of the bucket.</p>
   <div class="doc doc-contents ">
   
       <p>Uploads an object from a path to the object storage service.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -5793,6 +5884,8 @@ with the bucket_folder.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -5815,6 +5908,8 @@ with the bucket_folder.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Upload notes.txt to my_folder/notes.txt.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.cloud_storage</span> <span class="kn">import</span> <span class="n">GcsBucket</span>
@@ -5823,9 +5918,9 @@ with the bucket_folder.</p>
 <span class="n">gcs_bucket</span><span class="o">.</span><span class="n">upload_from_path</span><span class="p">(</span><span class="s2">&quot;notes.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;my_folder/notes.txt&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1092</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1092</span>
 <span class="normal">1093</span>
 <span class="normal">1094</span>
 <span class="normal">1095</span>
@@ -5915,10 +6010,11 @@ with the bucket_folder.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">bucket_path</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -5937,6 +6033,8 @@ with the bucket_folder.</p>
   <div class="doc doc-contents ">
   
       <p>Writes to an GCS bucket.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -5981,6 +6079,8 @@ key (or key name).</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -6003,9 +6103,9 @@ key (or key name).</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">750</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">750</span>
 <span class="normal">751</span>
 <span class="normal">752</span>
 <span class="normal">753</span>
@@ -6049,7 +6149,7 @@ key (or key name).</p>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">path</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -6062,6 +6162,7 @@ key (or key name).</p>
 
 </div>
 <h2 id="prefect_gcp.cloud_storage-functions">Functions</h2>
+
 
 <div class="doc doc-object doc-function">
 
@@ -6081,6 +6182,8 @@ key (or key name).</p>
   
       <p>Copies data from one Google Cloud Storage bucket to another,
 without downloading it locally.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -6212,6 +6315,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -6256,9 +6361,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_copy_blob_flow</span><span class="p">()</span>
 </code></pre></div></p>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">393</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">393</span>
 <span class="normal">394</span>
 <span class="normal">395</span>
 <span class="normal">396</span>
@@ -6420,10 +6525,11 @@ gcp_credentials project if provided.</p>
 
     <span class="k">return</span> <span class="n">dest_blob</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -6442,6 +6548,8 @@ gcp_credentials project if provided.</p>
   <div class="doc doc-contents ">
   
       <p>Creates a bucket.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -6528,6 +6636,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -6566,9 +6676,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_create_bucket_flow</span><span class="p">()</span>
 </code></pre></div></p>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">34</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">34</span>
 <span class="normal">35</span>
 <span class="normal">36</span>
 <span class="normal">37</span>
@@ -6660,10 +6770,11 @@ gcp_credentials project if provided.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">bucket</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -6682,6 +6793,8 @@ gcp_credentials project if provided.</p>
   <div class="doc doc-contents ">
   
       <p>Downloads a blob as bytes.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -6815,6 +6928,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -6855,9 +6970,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_download_blob_flow</span><span class="p">()</span>
 </code></pre></div></p>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
 <span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
@@ -6983,10 +7098,11 @@ gcp_credentials project if provided.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">contents</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -7005,6 +7121,8 @@ gcp_credentials project if provided.</p>
   <div class="doc doc-contents ">
   
       <p>Downloads a blob to a file path.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -7153,6 +7271,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -7193,9 +7313,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_download_blob_flow</span><span class="p">()</span>
 </code></pre></div></p>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
 <span class="normal">163</span>
@@ -7343,10 +7463,11 @@ gcp_credentials project if provided.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">path</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -7367,6 +7488,8 @@ gcp_credentials project if provided.</p>
       <p>Uploads a blob from file path or file-like object. Usage for passing in
 file-like object is if the data was downloaded from the web;
 can bypass writing to disk and directly upload to Cloud Storage.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -7528,6 +7651,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -7568,9 +7693,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_upload_blob_from_file_flow</span><span class="p">()</span>
 </code></pre></div></p>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">309</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">309</span>
 <span class="normal">310</span>
 <span class="normal">311</span>
 <span class="normal">312</span>
@@ -7734,10 +7859,11 @@ gcp_credentials project if provided.</p>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">blob</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -7756,6 +7882,8 @@ gcp_credentials project if provided.</p>
   <div class="doc doc-contents ">
   
       <p>Uploads a blob from a string or bytes representation of data.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -7917,6 +8045,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -7957,9 +8087,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_upload_blob_from_string_flow</span><span class="p">()</span>
 </code></pre></div></p>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_storage.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
 <span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
@@ -8101,7 +8231,7 @@ gcp_credentials project if provided.</p>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">blob</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -8255,10 +8385,10 @@ gcp_credentials project if provided.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.b425cdc4.min.js"></script>
+      <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
       
     
   </body>

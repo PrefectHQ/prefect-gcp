@@ -17,7 +17,7 @@
         <link rel="next" href="../../worker/">
       
       <link rel="icon" href="../../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.26e3688c.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.eebd395e.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ecc896b0.min.css">
@@ -726,7 +726,7 @@
 
 
 <h1 id="prefect_gcp.deployments.steps" class="doc doc-heading">
-          <code>prefect_gcp.deployments.steps</code>
+            <code>prefect_gcp.deployments.steps</code>
 
 
 </h1>
@@ -751,23 +751,22 @@
 
 
 <h3 id="prefect_gcp.deployments.steps.PullFromGcsOutput" class="doc doc-heading">
-        <code>PullFromGcsOutput</code>
+          <code>PullFromGcsOutput</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="typing_extensions.TypedDict">TypedDict</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="typing_extensions.TypedDict">TypedDict</span></code></p>
 
   
       <p>The output of the <code>pull_from_gcs</code> step.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
@@ -783,7 +782,7 @@
     <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -810,29 +809,28 @@
 
 
 <h3 id="prefect_gcp.deployments.steps.PullProjectFromGcsOutput" class="doc doc-heading">
-        <code>PullProjectFromGcsOutput</code>
+          <code>PullProjectFromGcsOutput</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><a class="autorefs autorefs-internal" title="prefect_gcp.deployments.steps.PullFromGcsOutput" href="#prefect_gcp.deployments.steps.PullFromGcsOutput">PullFromGcsOutput</a></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><a class="autorefs autorefs-internal" title="prefect_gcp.deployments.steps.PullFromGcsOutput" href="#prefect_gcp.deployments.steps.PullFromGcsOutput">PullFromGcsOutput</a></code></p>
 
   
       <p>Deprecated. Use <code>PullFromGcsOutput</code> instead.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@deprecated_callable</span><span class="p">(</span><span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;Jun 2023&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use `PullFromGcsOutput` instead.&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">PullProjectFromGcsOutput</span><span class="p">(</span><span class="n">PullFromGcsOutput</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Deprecated. Use `PullFromGcsOutput` instead.&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   </div>
 
@@ -843,29 +841,28 @@
 
 
 <h3 id="prefect_gcp.deployments.steps.PushProjectToGcsOutput" class="doc doc-heading">
-        <code>PushProjectToGcsOutput</code>
+          <code>PushProjectToGcsOutput</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><a class="autorefs autorefs-internal" title="prefect_gcp.deployments.steps.PushToGcsOutput" href="#prefect_gcp.deployments.steps.PushToGcsOutput">PushToGcsOutput</a></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><a class="autorefs autorefs-internal" title="prefect_gcp.deployments.steps.PushToGcsOutput" href="#prefect_gcp.deployments.steps.PushToGcsOutput">PushToGcsOutput</a></code></p>
 
   
       <p>Deprecated. Use <code>PushToGcsOutput</code> instead.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">24</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">24</span>
 <span class="normal">25</span>
 <span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@deprecated_callable</span><span class="p">(</span><span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;Jun 2023&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use `PushToGcsOutput` instead.&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">PushProjectToGcsOutput</span><span class="p">(</span><span class="n">PushToGcsOutput</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Deprecated. Use `PushToGcsOutput` instead.&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   </div>
 
@@ -876,23 +873,22 @@
 
 
 <h3 id="prefect_gcp.deployments.steps.PushToGcsOutput" class="doc doc-heading">
-        <code>PushToGcsOutput</code>
+          <code>PushToGcsOutput</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="typing_extensions.TypedDict">TypedDict</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="typing_extensions.TypedDict">TypedDict</span></code></p>
 
   
       <p>The output of the <code>push_to_gcs</code> step.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">15</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
@@ -906,7 +902,7 @@
     <span class="n">bucket</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -929,6 +925,7 @@
 </div>
 <h2 id="prefect_gcp.deployments.steps-functions">Functions</h2>
 
+
 <div class="doc doc-object doc-function">
 
 
@@ -942,6 +939,8 @@
   <div class="doc doc-contents ">
   
       <p>Pulls the contents of a project from an GCS bucket to the current working directory.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1016,6 +1015,8 @@ credentials will be used.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -1037,6 +1038,8 @@ credentials will be used.</p>
         </tr>
     </tbody>
   </table>
+
+
 
 <p><strong>Examples:</strong></p>
     <p>Pull from GCS using the default environment credentials:
@@ -1065,9 +1068,9 @@ credentials will be used.</p>
 <span class="w">            </span><span class="nt">service_account_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/service_account.json</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">157</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
@@ -1253,10 +1256,11 @@ credentials will be used.</p>
         <span class="s2">&quot;directory&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">local_path</span><span class="p">),</span>
     <span class="p">}</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1272,9 +1276,9 @@ credentials will be used.</p>
   
       <p>Deprecated. Use <code>pull_from_gcs</code> instead.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">252</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">252</span>
 <span class="normal">253</span>
 <span class="normal">254</span>
 <span class="normal">255</span>
@@ -1286,10 +1290,11 @@ credentials will be used.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">pull_from_gcs</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1305,9 +1310,9 @@ credentials will be used.</p>
   
       <p>Deprecated. Use <code>push_to_gcs</code> instead.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">149</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
 <span class="normal">152</span>
@@ -1319,10 +1324,11 @@ credentials will be used.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">push_to_gcs</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1338,6 +1344,8 @@ credentials will be used.</p>
   
       <p>Pushes the contents of the current working directory to a GCS bucket,
 excluding files and folders specified in the ignore_file.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1425,6 +1433,8 @@ credentials will be used.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -1446,6 +1456,8 @@ credentials will be used.</p>
         </tr>
     </tbody>
   </table>
+
+
 
 <p><strong>Examples:</strong></p>
     <p>Push to a GCS bucket:
@@ -1475,9 +1487,9 @@ file:
 <span class="w">            </span><span class="nt">service_account_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/service_account.json</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/deployments/steps.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
 <span class="normal"> 45</span>
 <span class="normal"> 46</span>
 <span class="normal"> 47</span>
@@ -1683,7 +1695,7 @@ file:
         <span class="s2">&quot;folder&quot;</span><span class="p">:</span> <span class="n">folder</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -1837,10 +1849,10 @@ file:
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.b425cdc4.min.js"></script>
+      <script src="../../assets/javascripts/bundle.220ee61c.min.js"></script>
       
     
   </body>

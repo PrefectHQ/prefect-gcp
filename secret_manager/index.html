@@ -17,7 +17,7 @@
         <link rel="next" href="../cloud_run/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
@@ -778,7 +778,7 @@
 
 
 <h1 id="prefect_gcp.secret_manager" class="doc doc-heading">
-          <code>prefect_gcp.secret_manager</code>
+            <code>prefect_gcp.secret_manager</code>
 
 
 </h1>
@@ -801,18 +801,20 @@
 
 
 <h3 id="prefect_gcp.secret_manager.GcpSecret" class="doc doc-heading">
-        <code>GcpSecret</code>
+          <code>GcpSecret</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.blocks.abstract.SecretBlock">SecretBlock</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.blocks.abstract.SecretBlock">SecretBlock</span></code></p>
 
   
       <p>Manages a secret in Google Cloud Platform's Secret Manager.</p>
+
+
 
   <p><strong>Attributes:</strong></p>
   <table>
@@ -860,10 +862,9 @@
     </tbody>
   </table>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">293</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">293</span>
 <span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
@@ -1069,7 +1070,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The secret </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> was successfully deleted.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">name</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -1082,6 +1083,7 @@
 
 
 <h4 id="prefect_gcp.secret_manager.GcpSecret-functions">Functions</h4>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1100,6 +1102,8 @@
   <div class="doc doc-contents ">
   
       <p>Deletes the secret from the secret storage service.</p>
+
+
 
   <p><strong>Returns:</strong></p>
   <table>
@@ -1123,9 +1127,9 @@
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
@@ -1161,10 +1165,11 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The secret </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> was successfully deleted.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">name</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1183,6 +1188,8 @@
   <div class="doc doc-contents ">
   
       <p>Reads the secret data from the secret storage service.</p>
+
+
 
   <p><strong>Returns:</strong></p>
   <table>
@@ -1206,9 +1213,9 @@
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
@@ -1248,10 +1255,11 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The secret </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> data was successfully read.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">secret</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1271,6 +1279,8 @@
   
       <p>Writes the secret data to the secret storage service; if it doesn't exist
 it will be created.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1300,6 +1310,8 @@ it will be created.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -1322,9 +1334,9 @@ it will be created.</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">333</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">333</span>
 <span class="normal">334</span>
 <span class="normal">335</span>
 <span class="normal">336</span>
@@ -1412,7 +1424,7 @@ it will be created.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The secret data was written successfully to </span><span class="si">{</span><span class="n">parent</span><span class="si">!r}</span><span class="s2">.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">name</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -1425,6 +1437,7 @@ it will be created.</p>
 
 </div>
 <h2 id="prefect_gcp.secret_manager-functions">Functions</h2>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1443,6 +1456,8 @@ it will be created.</p>
   <div class="doc doc-contents ">
   
       <p>Creates a secret in Google Cloud Platform's Secret Manager.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1516,6 +1531,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -1553,9 +1570,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_create_secret_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
@@ -1663,10 +1680,11 @@ gcp_credentials project if provided.</p>
     <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_create</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">name</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1685,6 +1703,8 @@ gcp_credentials project if provided.</p>
   <div class="doc doc-contents ">
   
       <p>Deletes the specified secret from Google Cloud Platform's Secret Manager.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1758,6 +1778,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -1795,9 +1817,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_delete_secret_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">192</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
 <span class="normal">195</span>
@@ -1889,10 +1911,11 @@ gcp_credentials project if provided.</p>
     <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_delete</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">name</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1911,6 +1934,8 @@ gcp_credentials project if provided.</p>
   <div class="doc doc-contents ">
   
       <p>Deletes a version of a given secret from Google Cloud Platform's Secret Manager.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1998,6 +2023,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -2035,9 +2062,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_delete_secret_version_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
 <span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
@@ -2139,10 +2166,11 @@ gcp_credentials project if provided.</p>
     <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_destroy</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">name</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2161,6 +2189,8 @@ gcp_credentials project if provided.</p>
   <div class="doc doc-contents ">
   
       <p>Reads the value of a given secret from Google Cloud Platform's Secret Manager.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2234,6 +2264,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -2271,9 +2303,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_read_secret_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
@@ -2369,10 +2401,11 @@ gcp_credentials project if provided.</p>
     <span class="n">secret</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">secret</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2391,6 +2424,8 @@ gcp_credentials project if provided.</p>
   <div class="doc doc-contents ">
   
       <p>Updates a secret in Google Cloud Platform's Secret Manager.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2478,6 +2513,8 @@ gcp_credentials project if provided.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -2515,9 +2552,9 @@ gcp_credentials project if provided.</p>
 <span class="n">example_cloud_storage_update_secret_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 85</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/secret_manager.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 85</span>
 <span class="normal"> 86</span>
 <span class="normal"> 87</span>
 <span class="normal"> 88</span>
@@ -2627,7 +2664,7 @@ gcp_credentials project if provided.</p>
     <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">partial_add</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">name</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2781,10 +2818,10 @@ gcp_credentials project if provided.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.b425cdc4.min.js"></script>
+      <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
       
     
   </body>

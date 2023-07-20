@@ -17,7 +17,7 @@
         <link rel="next" href="../secret_manager/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
@@ -848,7 +848,7 @@
 
 
 <h1 id="prefect_gcp.bigquery" class="doc doc-heading">
-          <code>prefect_gcp.bigquery</code>
+            <code>prefect_gcp.bigquery</code>
 
 
 </h1>
@@ -873,15 +873,15 @@
 
 
 <h3 id="prefect_gcp.bigquery.BigQueryWarehouse" class="doc doc-heading">
-        <code>BigQueryWarehouse</code>
+          <code>BigQueryWarehouse</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.blocks.abstract.DatabaseBlock">DatabaseBlock</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.blocks.abstract.DatabaseBlock">DatabaseBlock</span></code></p>
 
   
       <p>A block for querying a database with BigQuery.</p>
@@ -892,6 +892,8 @@ close the connection and its cursors when the context is exited.</p>
 <p>It is also recommended that this block is loaded and consumed within a single task
 or flow because if the block is passed across separate tasks and flows,
 the state of the block's connection and cursor could be lost.</p>
+
+
 
   <p><strong>Attributes:</strong></p>
   <table>
@@ -931,10 +933,9 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
     </tbody>
   </table>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">532</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">532</span>
 <span class="normal">533</span>
 <span class="normal">534</span>
 <span class="normal">535</span>
@@ -1752,7 +1753,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
         <span class="bp">self</span><span class="o">.</span><span class="n">_unique_cursors</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_start_connection</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -1765,6 +1766,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
 
 
 <h4 id="prefect_gcp.bigquery.BigQueryWarehouse-functions">Functions</h4>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1780,9 +1782,9 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
   
       <p>Closes connection and its cursors.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">907</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">907</span>
 <span class="normal">908</span>
 <span class="normal">909</span>
 <span class="normal">910</span>
@@ -1802,10 +1804,11 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
             <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1827,6 +1830,8 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
 for operations that do not return data, such as INSERT, UPDATE, or DELETE.</p>
 <p>Unlike the fetch methods, this method will always execute the operation
 upon calling.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1884,6 +1889,8 @@ upon calling.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Execute operation with parameters:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.bigquery</span> <span class="kn">import</span> <span class="n">BigQueryWarehouse</span>
@@ -1903,9 +1910,9 @@ upon calling.</p>
     <span class="n">warehouse</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">809</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">809</span>
 <span class="normal">810</span>
 <span class="normal">811</span>
 <span class="normal">812</span>
@@ -1997,10 +2004,11 @@ upon calling.</p>
     <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cursor</span><span class="p">(</span><span class="n">inputs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2022,6 +2030,8 @@ upon calling.</p>
 for operations that do not return data, such as INSERT, UPDATE, or DELETE.</p>
 <p>Unlike the fetch methods, this method will always execute the operations
 upon calling.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2065,6 +2075,8 @@ upon calling.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Create mytable in mydataset and insert two rows into it:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.bigquery</span> <span class="kn">import</span> <span class="n">BigQueryWarehouse</span>
@@ -2091,9 +2103,9 @@ upon calling.</p>
     <span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">856</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">856</span>
 <span class="normal">857</span>
 <span class="normal">858</span>
 <span class="normal">859</span>
@@ -2193,10 +2205,11 @@ upon calling.</p>
     <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cursor</span><span class="p">(</span><span class="n">inputs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2219,6 +2232,8 @@ upon calling.</p>
 block will skip executing the operation again, and instead,
 return the next set of results from the previous execution,
 until the reset_cursors method is called.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2276,6 +2291,8 @@ until the reset_cursors method is called.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -2299,6 +2316,8 @@ where each row is a tuple and each column is a value in the tuple.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Execute operation with parameters, fetching all rows:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.bigquery</span> <span class="kn">import</span> <span class="n">BigQueryWarehouse</span>
@@ -2319,9 +2338,9 @@ where each row is a tuple and each column is a value in the tuple.</p>
     <span class="n">result</span> <span class="o">=</span> <span class="n">warehouse</span><span class="o">.</span><span class="n">fetch_all</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">752</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">752</span>
 <span class="normal">753</span>
 <span class="normal">754</span>
 <span class="normal">755</span>
@@ -2433,10 +2452,11 @@ where each row is a tuple and each column is a value in the tuple.</p>
     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2459,6 +2479,8 @@ where each row is a tuple and each column is a value in the tuple.</p>
 block will skip executing the operation again, and instead,
 return the next set of results from the previous execution,
 until the reset_cursors method is called.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2531,6 +2553,8 @@ until the reset_cursors method is called.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -2553,6 +2577,8 @@ where each row is a tuple and each column is a value in the tuple.</p>
         </tr>
     </tbody>
   </table>
+
+
 
 <p><strong>Examples:</strong></p>
     <p>Execute operation with parameters, fetching two new rows at a time:
@@ -2580,9 +2606,9 @@ where each row is a tuple and each column is a value in the tuple.</p>
         <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">685</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">685</span>
 <span class="normal">686</span>
 <span class="normal">687</span>
 <span class="normal">688</span>
@@ -2714,10 +2740,11 @@ where each row is a tuple and each column is a value in the tuple.</p>
     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetchmany</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2740,6 +2767,8 @@ where each row is a tuple and each column is a value in the tuple.</p>
 block will skip executing the operation again, and instead,
 return the next set of results from the previous execution,
 until the reset_cursors method is called.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2797,6 +2826,8 @@ until the reset_cursors method is called.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -2820,6 +2851,8 @@ where each row is a tuple and each column is a value in the tuple.</p>
     </tbody>
   </table>
 
+
+
 <p><strong>Examples:</strong></p>
     <p>Execute operation with parameters, fetching one new row at a time:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect_gcp.bigquery</span> <span class="kn">import</span> <span class="n">BigQueryWarehouse</span>
@@ -2842,9 +2875,9 @@ where each row is a tuple and each column is a value in the tuple.</p>
         <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </code></pre></div></p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">626</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">626</span>
 <span class="normal">627</span>
 <span class="normal">628</span>
 <span class="normal">629</span>
@@ -2960,10 +2993,11 @@ where each row is a tuple and each column is a value in the tuple.</p>
     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2979,9 +3013,9 @@ where each row is a tuple and each column is a value in the tuple.</p>
   
       <p>Get the opened connection to BigQuery.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">581</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">581</span>
 <span class="normal">582</span>
 <span class="normal">583</span>
 <span class="normal">584</span>
@@ -2991,10 +3025,11 @@ where each row is a tuple and each column is a value in the tuple.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3010,9 +3045,9 @@ where each row is a tuple and each column is a value in the tuple.</p>
   
       <p>Tries to close all opened cursors.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">612</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">612</span>
 <span class="normal">613</span>
 <span class="normal">614</span>
 <span class="normal">615</span>
@@ -3038,7 +3073,7 @@ where each row is a tuple and each column is a value in the tuple.</p>
                 <span class="sa">f</span><span class="s2">&quot;Failed to close cursor for input hash </span><span class="si">{</span><span class="n">input_hash</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -3051,6 +3086,7 @@ where each row is a tuple and each column is a value in the tuple.</p>
 
 </div>
 <h2 id="prefect_gcp.bigquery-functions">Functions</h2>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3069,6 +3105,8 @@ where each row is a tuple and each column is a value in the tuple.</p>
   <div class="doc doc-contents ">
   
       <p>Creates table in BigQuery.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -3212,6 +3250,8 @@ not provided, will default to the one inferred from your credentials.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -3258,9 +3298,9 @@ not provided, will default to the one inferred from your credentials.</p>
 <span class="n">example_bigquery_create_table_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
@@ -3444,10 +3484,11 @@ not provided, will default to the one inferred from your credentials.</p>
 
     <span class="k">return</span> <span class="n">table</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3467,6 +3508,8 @@ not provided, will default to the one inferred from your credentials.</p>
   
       <p>Insert records in a Google BigQuery table via the <a href="https://cloud.google.com/bigquery/streaming-data-into-bigquery">streaming
 API</a>.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -3569,6 +3612,8 @@ not provided, will default to the one inferred from your credentials.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -3616,9 +3661,9 @@ not provided, will default to the one inferred from your credentials.</p>
 <span class="n">example_bigquery_insert_stream_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">265</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">265</span>
 <span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
@@ -3764,10 +3809,11 @@ not provided, will default to the one inferred from your credentials.</p>
 
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3787,6 +3833,8 @@ not provided, will default to the one inferred from your credentials.</p>
   
       <p>Run method for this Task.  Invoked by <em>calling</em> this
 Task within a Flow context, after initialization.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -3917,6 +3965,8 @@ not provided, will default to the one inferred from your credentials.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -3959,9 +4009,9 @@ not provided, will default to the one inferred from your credentials.</p>
 <span class="n">example_bigquery_load_cloud_storage_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">340</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">340</span>
 <span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
@@ -4133,10 +4183,11 @@ not provided, will default to the one inferred from your credentials.</p>
 
     <span class="k">return</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -4155,6 +4206,8 @@ not provided, will default to the one inferred from your credentials.</p>
   <div class="doc doc-contents ">
   
       <p>Loads file into BigQuery.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -4317,6 +4370,8 @@ not provided, will default to the one inferred from your credentials.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -4360,9 +4415,9 @@ not provided, will default to the one inferred from your credentials.</p>
 <span class="n">example_bigquery_load_file_flow</span><span class="p">()</span>
 </code></pre></div>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">428</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">428</span>
 <span class="normal">429</span>
 <span class="normal">430</span>
 <span class="normal">431</span>
@@ -4566,10 +4621,11 @@ not provided, will default to the one inferred from your credentials.</p>
 
     <span class="k">return</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -4588,6 +4644,8 @@ not provided, will default to the one inferred from your credentials.</p>
   <div class="doc doc-contents ">
   
       <p>Runs a BigQuery query.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -4768,6 +4826,8 @@ provided, will default to the one inferred from your credentials.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -4832,9 +4892,9 @@ provided, will default to the one inferred from your credentials.</p>
 <span class="n">example_bigquery_query_flow</span><span class="p">()</span>
 </code></pre></div></p>
 </details>
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
 <span class="normal"> 45</span>
 <span class="normal"> 46</span>
 <span class="normal"> 47</span>
@@ -5084,7 +5144,7 @@ provided, will default to the one inferred from your credentials.</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -5238,10 +5298,10 @@ provided, will default to the one inferred from your credentials.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.b425cdc4.min.js"></script>
+      <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
       
     
   </body>

@@ -15,7 +15,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
     
     
       
@@ -23,7 +23,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
@@ -868,7 +868,7 @@
 
 
 <h1 id="prefect_gcp.worker" class="doc doc-heading">
-          <code>prefect_gcp.worker</code>
+            <code>prefect_gcp.worker</code>
 
 
 </h1>
@@ -876,9 +876,8 @@
   <div class="doc doc-contents first">
   
       <!-- # noqa -->
-<p><span class="badge-api beta"/></p>
+
 <p>Module containing the Cloud Run worker used for executing flow runs as Cloud Run jobs.</p>
-<p>Note this module is in <strong>beta</strong>. The interfaces within may change without notice.</p>
 <p>Get started by creating a Cloud Run work pool:</p>
 <div class="highlight"><pre><span></span><code>prefect<span class="w"> </span>work-pool<span class="w"> </span>create<span class="w"> </span><span class="s1">&#39;my-cloud-run-pool&#39;</span><span class="w"> </span>--type<span class="w"> </span>cloud-run
 </code></pre></div>
@@ -1020,23 +1019,25 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
 
 <h3 id="prefect_gcp.worker.CloudRunWorker" class="doc doc-heading">
-        <code>CloudRunWorker</code>
+          <code>CloudRunWorker</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.workers.base.BaseWorker">BaseWorker</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.workers.base.BaseWorker">BaseWorker</span></code></p>
 
   
       <p>Prefect worker that executes flow runs within Cloud Run Jobs.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">514</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
 <span class="normal">515</span>
 <span class="normal">516</span>
 <span class="normal">517</span>
@@ -1368,11 +1369,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 <span class="normal">843</span>
 <span class="normal">844</span>
 <span class="normal">845</span>
-<span class="normal">846</span>
-<span class="normal">847</span>
-<span class="normal">848</span>
-<span class="normal">849</span>
-<span class="normal">850</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorker</span><span class="p">(</span><span class="n">BaseWorker</span><span class="p">):</span>
+<span class="normal">846</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorker</span><span class="p">(</span><span class="n">BaseWorker</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prefect worker that executes flow runs within Cloud Run Jobs.&quot;&quot;&quot;</span>
 
     <span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;cloud-run&quot;</span>
@@ -1384,7 +1381,6 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
     <span class="p">)</span>
     <span class="n">_display_name</span> <span class="o">=</span> <span class="s2">&quot;Google Cloud Run&quot;</span>
     <span class="n">_documentation_url</span> <span class="o">=</span> <span class="s2">&quot;https://prefecthq.github.io/prefect-gcp/worker/&quot;</span>
-    <span class="n">_is_beta</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">_logo_url</span> <span class="o">=</span> <span class="s2">&quot;https://images.ctfassets.net/gm98wzqotmnx/4SpnOBvMYkHp6z939MDKP6/549a91bc1ce9afd4fb12c68db7b68106/social-icon-google-cloud-1200-630.png?h=250&quot;</span>  <span class="c1"># noqa</span>
 
     <span class="k">def</span> <span class="nf">_create_job_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">configuration</span><span class="p">):</span>
@@ -1710,7 +1706,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
                 <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
             <span class="k">raise</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -1723,6 +1719,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
 
 <h4 id="prefect_gcp.worker.CloudRunWorker-functions">Functions</h4>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1743,9 +1740,13 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
       <p>Stops a job for a cancelled flow run based on the provided infrastructure PID
 and run configuration.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">816</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
 <span class="normal">817</span>
 <span class="normal">818</span>
 <span class="normal">819</span>
@@ -1764,11 +1765,7 @@ and run configuration.</p>
 <span class="normal">832</span>
 <span class="normal">833</span>
 <span class="normal">834</span>
-<span class="normal">835</span>
-<span class="normal">836</span>
-<span class="normal">837</span>
-<span class="normal">838</span>
-<span class="normal">839</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">kill_infrastructure</span><span class="p">(</span>
+<span class="normal">835</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">kill_infrastructure</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">infrastructure_pid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
@@ -1793,10 +1790,11 @@ and run configuration.</p>
             <span class="n">job_name</span><span class="o">=</span><span class="n">infrastructure_pid</span><span class="p">,</span>
         <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1816,6 +1814,8 @@ and run configuration.</p>
   
       <p>Executes a flow run within a Cloud Run Job and waits for the flow run
 to complete.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -1874,6 +1874,8 @@ the task will be marked as started.</p>
     </tbody>
   </table>
 
+
+
   <p><strong>Returns:</strong></p>
   <table>
     <thead>
@@ -1897,9 +1899,13 @@ final state of the flow run</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">566</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
 <span class="normal">567</span>
 <span class="normal">568</span>
 <span class="normal">569</span>
@@ -1939,11 +1945,7 @@ final state of the flow run</p>
 <span class="normal">603</span>
 <span class="normal">604</span>
 <span class="normal">605</span>
-<span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+<span class="normal">606</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
     <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
@@ -1989,7 +1991,7 @@ final state of the flow run</p>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2007,21 +2009,23 @@ final state of the flow run</p>
 
 
 <h3 id="prefect_gcp.worker.CloudRunWorkerJobConfiguration" class="doc doc-heading">
-        <code>CloudRunWorkerJobConfiguration</code>
+          <code>CloudRunWorkerJobConfiguration</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.workers.base.BaseJobConfiguration">BaseJobConfiguration</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.workers.base.BaseJobConfiguration">BaseJobConfiguration</span></code></p>
 
   
       <p>Configuration class used by the Cloud Run Worker to create a Cloud Run Job.</p>
 <p>An instance of this class is passed to the Cloud Run worker's <code>run</code> method
 for each flow run. It contains all information necessary to execute
 the flow run as a Cloud Run Job.</p>
+
+
 
   <p><strong>Attributes:</strong></p>
   <table>
@@ -2091,10 +2095,12 @@ the flow run as a Cloud Run Job.</p>
     </tbody>
   </table>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">247</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
@@ -2270,10 +2276,7 @@ the flow run as a Cloud Run Job.</p>
 <span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerJobConfiguration</span><span class="p">(</span><span class="n">BaseJobConfiguration</span><span class="p">):</span>
+<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerJobConfiguration</span><span class="p">(</span><span class="n">BaseJobConfiguration</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Configuration class used by the Cloud Run Worker to create a Cloud Run Job.</span>
 
@@ -2454,7 +2457,7 @@ the flow run as a Cloud Run Job.</p>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">value</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -2510,6 +2513,7 @@ the flow run as a Cloud Run Job.</p>
 
 <h4 id="prefect_gcp.worker.CloudRunWorkerJobConfiguration-functions">Functions</h4>
 
+
 <div class="doc doc-object doc-function">
 
 
@@ -2525,6 +2529,8 @@ the flow run as a Cloud Run Job.</p>
       <p>Prepares the job configuration for a flow run.</p>
 <p>Ensures that necessary values are present in the job body and that the
 job body is valid.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2583,9 +2589,12 @@ preparation.</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span>
@@ -2606,10 +2615,7 @@ preparation.</p>
 <span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">prepare_for_flow_run</span><span class="p">(</span>
+<span class="normal">321</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">prepare_for_flow_run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
     <span class="n">deployment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;DeploymentResponse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2635,7 +2641,7 @@ preparation.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">_populate_image_if_not_present</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_populate_name_if_not_present</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2653,27 +2659,26 @@ preparation.</p>
 
 
 <h3 id="prefect_gcp.worker.CloudRunWorkerResult" class="doc doc-heading">
-        <code>CloudRunWorkerResult</code>
+          <code>CloudRunWorkerResult</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.workers.base.BaseWorkerResult">BaseWorkerResult</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.workers.base.BaseWorkerResult">BaseWorkerResult</span></code></p>
 
   
       <p>Contains information about the final state of a completed process</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">510</span>
-<span class="normal">511</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerResult</span><span class="p">(</span><span class="n">BaseWorkerResult</span><span class="p">):</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">507</span>
+<span class="normal">508</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerResult</span><span class="p">(</span><span class="n">BaseWorkerResult</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains information about the final state of a completed process&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   </div>
 
@@ -2684,25 +2689,27 @@ preparation.</p>
 
 
 <h3 id="prefect_gcp.worker.CloudRunWorkerVariables" class="doc doc-heading">
-        <code>CloudRunWorkerVariables</code>
+          <code>CloudRunWorkerVariables</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.workers.base.BaseVariables">BaseVariables</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.workers.base.BaseVariables">BaseVariables</span></code></p>
 
   
       <p>Default variables for the Cloud Run worker.</p>
 <p>The schema for this class is used to populate the <code>variables</code> section of the default
 base job template.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">429</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
@@ -2777,10 +2784,7 @@ base job template.</p>
 <span class="normal">501</span>
 <span class="normal">502</span>
 <span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerVariables</span><span class="p">(</span><span class="n">BaseVariables</span><span class="p">):</span>
+<span class="normal">504</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerVariables</span><span class="p">(</span><span class="n">BaseVariables</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default variables for the Cloud Run worker.</span>
 
@@ -2860,7 +2864,7 @@ base job template.</p>
         <span class="p">),</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -3032,10 +3036,10 @@ base job template.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.b425cdc4.min.js"></script>
+      <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
       
     
   </body>

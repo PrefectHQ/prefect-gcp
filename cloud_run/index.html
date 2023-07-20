@@ -17,7 +17,7 @@
         <link rel="next" href="../aiplatform/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
@@ -994,7 +994,7 @@
 
 
 <h1 id="prefect_gcp.cloud_run" class="doc doc-heading">
-          <code>prefect_gcp.cloud_run</code>
+            <code>prefect_gcp.cloud_run</code>
 
 
 </h1>
@@ -1004,6 +1004,8 @@
       <p><span class="badge-api experimental"/></p>
 <p>Integrations with Google Cloud Run Job.</p>
 <p>Note this module is experimental. The intefaces within may change without notice.</p>
+
+
 
 <p><strong>Examples:</strong></p>
     <p>Run a job using Google Cloud Run Jobs:
@@ -1038,15 +1040,15 @@
 
 
 <h3 id="prefect_gcp.cloud_run.CloudRunJob" class="doc doc-heading">
-        <code>CloudRunJob</code>
+          <code>CloudRunJob</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.infrastructure.base.Infrastructure">Infrastructure</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.infrastructure.base.Infrastructure">Infrastructure</span></code></p>
 
   
       <p><span class="badge-api experimental"/></p>
@@ -1055,10 +1057,9 @@
 be correct as long as the Credentials object is for the correct project.</p>
 <p>Note this block is experimental. The interface may change without notice.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
@@ -2140,7 +2141,7 @@ be correct as long as the Credentials object is for the correct project.</p>
         <span class="n">cloud_run_env</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">v</span><span class="p">}</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="n">cloud_run_env</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -2196,6 +2197,7 @@ be correct as long as the Credentials object is for the correct project.</p>
 
 <h4 id="prefect_gcp.cloud_run.CloudRunJob-functions">Functions</h4>
 
+
 <div class="doc doc-object doc-function">
 
 
@@ -2213,6 +2215,8 @@ be correct as long as the Credentials object is for the correct project.</p>
   <div class="doc doc-contents ">
   
       <p>Kill a task running Cloud Run.</p>
+
+
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -2243,9 +2247,9 @@ value yielded by CloudRunJob.run.</p>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">405</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">405</span>
 <span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span>
@@ -2291,10 +2295,11 @@ value yielded by CloudRunJob.run.</p>
             <span class="n">job_name</span><span class="o">=</span><span class="n">identifier</span><span class="p">,</span>
         <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2310,9 +2315,9 @@ value yielded by CloudRunJob.run.</p>
   
       <p>Generate a preview of the job definition that will be sent to GCP.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">603</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">603</span>
 <span class="normal">604</span>
 <span class="normal">605</span>
 <span class="normal">606</span>
@@ -2336,10 +2341,11 @@ value yielded by CloudRunJob.run.</p>
     <span class="p">]</span>
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2359,9 +2365,9 @@ value yielded by CloudRunJob.run.</p>
   
       <p>Run the configured job on a Google Cloud Run Job.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
@@ -2403,7 +2409,7 @@ value yielded by CloudRunJob.run.</p>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2421,27 +2427,26 @@ value yielded by CloudRunJob.run.</p>
 
 
 <h3 id="prefect_gcp.cloud_run.CloudRunJobResult" class="doc doc-heading">
-        <code>CloudRunJobResult</code>
+          <code>CloudRunJobResult</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="prefect.infrastructure.base.InfrastructureResult">InfrastructureResult</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.infrastructure.base.InfrastructureResult">InfrastructureResult</span></code></p>
 
   
       <p>Result from a Cloud Run Job.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
 <span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunJobResult</span><span class="p">(</span><span class="n">InfrastructureResult</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result from a Cloud Run Job.&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   </div>
 
@@ -2452,24 +2457,23 @@ value yielded by CloudRunJob.run.</p>
 
 
 <h3 id="prefect_gcp.cloud_run.Execution" class="doc doc-heading">
-        <code>Execution</code>
+          <code>Execution</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
   
       <p>Utility class to call GCP <code>executions</code> API and
 interact with the returned objects.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">145</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
 <span class="normal">148</span>
@@ -2569,7 +2573,7 @@ interact with the returned objects.</p>
             <span class="n">log_uri</span><span class="o">=</span><span class="n">response</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">][</span><span class="s2">&quot;logUri&quot;</span><span class="p">],</span>
         <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -2582,6 +2586,7 @@ interact with the returned objects.</p>
 
 
 <h4 id="prefect_gcp.cloud_run.Execution-functions">Functions</h4>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2597,9 +2602,9 @@ interact with the returned objects.</p>
   
       <p>Returns Execution condition if Execution has completed.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
 <span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
@@ -2609,10 +2614,11 @@ interact with the returned objects.</p>
         <span class="k">if</span> <span class="n">condition</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Completed&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">condition</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2633,9 +2639,9 @@ interact with the returned objects.</p>
       <p>Make a get request to the GCP executions API
 and return an Execution instance.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
@@ -2673,10 +2679,11 @@ and return an Execution instance.</p>
         <span class="n">log_uri</span><span class="o">=</span><span class="n">response</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">][</span><span class="s2">&quot;logUri&quot;</span><span class="p">],</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2692,18 +2699,19 @@ and return an Execution instance.</p>
   
       <p>Returns True if Execution is not completed.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns True if Execution is not completed.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;completionTime&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2719,9 +2727,9 @@ and return an Execution instance.</p>
   
       <p>Whether or not the Execution completed is a successful state.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">168</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">168</span>
 <span class="normal">169</span>
 <span class="normal">170</span>
 <span class="normal">171</span>
@@ -2735,7 +2743,7 @@ and return an Execution instance.</p>
 
     <span class="k">return</span> <span class="kc">False</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2753,24 +2761,23 @@ and return an Execution instance.</p>
 
 
 <h3 id="prefect_gcp.cloud_run.Job" class="doc doc-heading">
-        <code>Job</code>
+          <code>Job</code>
 
 
 </h3>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
   
       <p>Utility class to call GCP <code>jobs</code> API and
 interact with the returned objects.</p>
 
-
-        <details class="quote">
-          <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 52</span>
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 52</span>
 <span class="normal"> 53</span>
 <span class="normal"> 54</span>
 <span class="normal"> 55</span>
@@ -2952,7 +2959,7 @@ interact with the returned objects.</p>
         <span class="n">response</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">response</span>
 </code></pre></div></td></tr></table></div>
-        </details>
+            </details>
 
   
 
@@ -2965,6 +2972,7 @@ interact with the returned objects.</p>
 
 
 <h4 id="prefect_gcp.cloud_run.Job-functions">Functions</h4>
+
 
 <div class="doc doc-object doc-function">
 
@@ -2984,9 +2992,9 @@ interact with the returned objects.</p>
   
       <p>Make a create request to the GCP jobs API.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">123</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">123</span>
 <span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
@@ -2998,10 +3006,11 @@ interact with the returned objects.</p>
     <span class="n">response</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">response</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3021,9 +3030,9 @@ interact with the returned objects.</p>
   
       <p>Make a delete request to the GCP jobs API.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
@@ -3035,10 +3044,11 @@ interact with the returned objects.</p>
     <span class="n">response</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">response</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3058,9 +3068,9 @@ interact with the returned objects.</p>
   
       <p>Make a get request to the GCP jobs API and return a Job instance.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
@@ -3088,10 +3098,11 @@ interact with the returned objects.</p>
         <span class="n">execution_status</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_get_execution_status</span><span class="p">(</span><span class="n">response</span><span class="p">),</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3107,9 +3118,9 @@ interact with the returned objects.</p>
   
       <p>See if job has a run in progress.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">83</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">83</span>
 <span class="normal">84</span>
 <span class="normal">85</span>
 <span class="normal">86</span>
@@ -3121,10 +3132,11 @@ interact with the returned objects.</p>
         <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_status</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;completionTimestamp&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3140,9 +3152,9 @@ interact with the returned objects.</p>
   
       <p>Whether a job is finished registering and ready to be executed</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">77</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">77</span>
 <span class="normal">78</span>
 <span class="normal">79</span>
 <span class="normal">80</span>
@@ -3152,10 +3164,11 @@ interact with the returned objects.</p>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ready_condition</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ready_condition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -3175,9 +3188,9 @@ interact with the returned objects.</p>
   
       <p>Make a run request to the GCP jobs API.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/cloud_run.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
@@ -3189,7 +3202,7 @@ interact with the returned objects.</p>
     <span class="n">response</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">response</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -3352,10 +3365,10 @@ interact with the returned objects.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.b425cdc4.min.js"></script>
+      <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
       
     
   </body>
