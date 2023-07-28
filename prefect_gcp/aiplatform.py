@@ -273,7 +273,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         Builds a custom job and begins running it.
         """
         # create custom job
-        custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
+        custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec, labels=self.labels)
 
         # run job
         self.logger.info(
