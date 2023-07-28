@@ -47,35 +47,48 @@ class JobV2(BaseModel):
     reconciling: Optional[bool]
     satisfies_pzs: Optional[bool]
     etag: str
-    ready_condition: dict
-    execution_status: dict
 
     def is_ready(self) -> bool:
         """
         Whether a job is finished registering and ready to be executed
         """
+        ready_condition = self.get_ready_condition()
+
         if self._is_missing_container():
-            raise Exception(f"{self.ready_condition['message']}")
-        return self.ready_condition.get("state") == "CONDITION_SUCCEEDED"
+            raise Exception(f"{ready_condition['message']}")
+        return ready_condition.get("state") == "CONDITION_SUCCEEDED"
 
     def _is_missing_container(self):
         """
         Check if Job status is not ready because
         the specified container cannot be found.
         """
+        ready_condition = self.get_ready_condition()
+
         if (
-            self.ready_condition.get("state") == "CONTAINER_FAILED"
-            and self.ready_condition.get("reason") == "CONTAINER_MISSING"
+            ready_condition.get("state") == "CONTAINER_FAILED"
+            and ready_condition.get("reason") == "CONTAINER_MISSING"
         ):
             return True
         return False
 
-    @staticmethod
-    def _get_ready_condition(job: dict) -> dict:
+    def has_execution_in_progress(self) -> bool:
+        """
+        See if job has a execution in progress.
+        """
+        execution_status = self._get_execution_status()
+
+        return (
+            execution_status == {}
+            or execution_status.get("completionTime") is None
+            or execution_status.get("completionTime") == "1970-01-01T00:00:00Z"
+        )
+
+    def get_ready_condition(self) -> dict:
         """
         Utility to access JSON field containing ready condition.
         """
-        terminal_condition = job.get("terminalCondition")
+        terminal_condition = self.terminal_condition
 
         if terminal_condition:
             if terminal_condition.get("type") == "Ready":
@@ -83,13 +96,14 @@ class JobV2(BaseModel):
 
         return {}
 
-    @staticmethod
-    def _get_execution_status(job: dict):
+    def _get_execution_status(self) -> dict:
         """
         Utility to access JSON field containing execution status.
         """
-        if job.get("latestCreatedExecution"):
-            return job["latestCreatedExecution"]
+        latest_created_execution = self.latest_created_execution
+
+        if latest_created_execution:
+            return latest_created_execution
 
         return {}
 
@@ -135,8 +149,6 @@ class JobV2(BaseModel):
             reconciling=response.get("reconciling"),
             satisfies_pzs=response.get("satisfiesPzs"),
             etag=response.get("etag"),
-            ready_condition=cls._get_ready_condition(response),
-            execution_status=cls._get_execution_status(response),
         )
 
     @staticmethod
@@ -239,7 +251,10 @@ class ExecutionV2(BaseModel):
         """
         if isinstance(self.conditions, list) and len(self.conditions):
             for condition in self.conditions:
-                if condition["state"] == "CONDITION_SUCCEEDED":
+                if (
+                    condition["state"] == "CONDITION_SUCCEEDED"
+                    and condition["type"] == "Completed"
+                ):
                     return condition
 
         return {}
@@ -249,6 +264,7 @@ class ExecutionV2(BaseModel):
         Whether or not the Execution completed is a successful state.
         """
         completed_condition = self.condition_after_completion()
+
         if completed_condition:
             return True
 
@@ -332,7 +348,7 @@ class CloudRunJobV2(Infrastructure):
         "https://prefecthq.github.io/prefect-gcp/cloud_run/"
         "#prefect_gcp.cloud_run.CloudRunJob"
     )  # noqa: E501
-    # ToDo: add this
+    # ToDo: add this ^
 
     type: Literal["cloud-run-job-v2"] = Field(
         "cloud-run-job-v2",
@@ -417,13 +433,11 @@ class CloudRunJobV2(Infrastructure):
     )
     vpc_connector: Optional[dict] = Field(
         default={},
-        title="VPC Access",
+        title="VPC Connector",
         description=(
-            "VPC Access settings. For more information on creating a VPC Connector, "
-            "visit https://cloud.google.com/vpc/docs/configure-serverless-vpc-access "
-            "For information on how to configure Cloud Run with an existing VPC "
-            "Connector, visit "
-            "https://cloud.google.com/run/docs/configuring/connecting-vpc"
+            "VPC Access connector name. Format: projects/{project}/locations/"
+            "{location}/connectors/{connector}, where {project} can be project id "
+            "or number."
         ),
     )
     args: Optional[list[str]] = Field(
@@ -488,7 +502,7 @@ class CloudRunJobV2(Infrastructure):
         return None
 
     @validator("image")
-    def _remove_image_spaces(cls, value) -> str | None:
+    def _remove_image_spaces(cls, value, values, config, field) -> str | None:
         """
         Deal with spaces in image names.
         """
@@ -786,6 +800,11 @@ class CloudRunJobV2(Infrastructure):
             },
         }
 
+        if self.vpc_connector:
+            body["template"]["template"]["vpcAccess"] = {
+                "connector": self.vpc_connector,
+            }
+
         return body
 
     def preview(self) -> str:
@@ -818,8 +837,8 @@ class CloudRunJobV2(Infrastructure):
         t0 = time.time()
         while not job.is_ready():
             ready_condition = (
-                job.ready_condition
-                if job.ready_condition
+                job.get_ready_condition()
+                if job.get_ready_condition()
                 else "waiting for condition update"
             )
             self.logger.info(
@@ -902,7 +921,7 @@ class CloudRunJobV2(Infrastructure):
         if self.memory_string is not None:
             resources["limits"]["memory"] = self.memory_string
 
-        return {"resources": resources}
+        return {"resources": resources} if resources["limits"] else {}
 
     def _add_env(self) -> dict:
         """

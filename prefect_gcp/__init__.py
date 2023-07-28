@@ -4,6 +4,7 @@ from .bigquery import BigQueryWarehouse  # noqa
 from .aiplatform import VertexAICustomTrainingJob  # noqa
 from .cloud_storage import GcsBucket  # noqa
 from .cloud_run import CloudRunJob  # noqa
+from .cloud_run_v2 import CloudRunJobV2  # noqa
 from .secret_manager import GcpSecret  # noqa
 from .credentials import GcpCredentials  # noqa
 from .worker import CloudRunWorker  # noqa
