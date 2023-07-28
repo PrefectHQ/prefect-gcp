@@ -217,7 +217,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         For example, the Prefect provided key of prefect.io/flow-name -> prefect-io_flow-name
         """
         compatible_labels = {}
-        for key, val in self.labels:
+        for key, val in self.labels.items():
             new_key = slugify(key, lowercase=True, replacements=[('/', '-'), ('.', '_')], max_length=63)
             compatible_labels[new_key] = slugify(val, lowercase=True, replacements=[('/', '-'), ('.', '_')], max_length=63)
         return compatible_labels
