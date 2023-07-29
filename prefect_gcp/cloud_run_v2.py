@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 import googleapiclient
@@ -10,60 +10,62 @@ from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.exceptions import InfrastructureNotFound
-from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import Field, root_validator, validator
 from typing_extensions import Literal
 
+from prefect_gcp.base_cloud_run import (
+    BaseCloudRunJob,
+    BaseCloudRunJobResult,
+    BaseExecution,
+    BaseJob,
+)
 from prefect_gcp.credentials import GcpCredentials
 
 
-class JobV2(BaseModel):
-    """
-    Utility clas to call GCP `jobs` API (v2) and interact with the returned objects
+class JobV2(BaseJob):
+    """Utility clas to call GCP `jobs` API (v2) and interact with the returned
+    objects
     """
 
     name: str
     uid: str
     generation: str
-    labels: Optional[dict]
-    annotations: Optional[dict]
     create_time: str
     update_time: str
+    launch_stage: str
+    template: Dict
+    terminal_condition: Dict
+    etag: str
+    annotations: Optional[Dict]
+    labels: Optional[Dict]
     delete_time: Optional[str]
     expire_time: Optional[str]
     creator: Optional[str]
     last_modifier: Optional[str]
     client: Optional[str]
     client_version: Optional[str]
-    launch_stage: str
-    binary_authorization: Optional[dict]
-    template: dict
+    binary_authorization: Optional[Dict]
     observed_generation: Optional[str]
-    terminal_condition: dict
-    conditions: Optional[list]
+    conditions: Optional[List]
     execution_count: Optional[int]
-    latest_created_execution: dict
+    latest_created_execution: Dict
     reconciling: Optional[bool]
     satisfies_pzs: Optional[bool]
-    etag: str
 
     def is_ready(self) -> bool:
-        """
-        Whether a job is finished registering and ready to be executed
-        """
-        ready_condition = self.get_ready_condition()
+        """Whether a job is finished registering and ready to be executed"""
+        ready_condition = self._get_ready_condition()
 
         if self._is_missing_container():
             raise Exception(f"{ready_condition['message']}")
         return ready_condition.get("state") == "CONDITION_SUCCEEDED"
 
-    def _is_missing_container(self):
+    def _is_missing_container(self) -> bool:
+        """Check if Job status is not ready because the specified container cannot
+        be found.
         """
-        Check if Job status is not ready because
-        the specified container cannot be found.
-        """
-        ready_condition = self.get_ready_condition()
+        ready_condition = self._get_ready_condition()
 
         if (
             ready_condition.get("state") == "CONTAINER_FAILED"
@@ -73,9 +75,7 @@ class JobV2(BaseModel):
         return False
 
     def has_execution_in_progress(self) -> bool:
-        """
-        See if job has a execution in progress.
-        """
+        """See if job has a execution in progress."""
         execution_status = self._get_execution_status()
 
         return (
@@ -84,10 +84,8 @@ class JobV2(BaseModel):
             or execution_status.get("completionTime") == "1970-01-01T00:00:00Z"
         )
 
-    def get_ready_condition(self) -> dict:
-        """
-        Utility to access JSON field containing ready condition.
-        """
+    def _get_ready_condition(self) -> Dict:
+        """Utility to access JSON field containing ready condition."""
         terminal_condition = self.terminal_condition
 
         if terminal_condition:
@@ -96,10 +94,8 @@ class JobV2(BaseModel):
 
         return {}
 
-    def _get_execution_status(self) -> dict:
-        """
-        Utility to access JSON field containing execution status.
-        """
+    def _get_execution_status(self) -> Dict:
+        """Utility to access JSON field containing execution status."""
         latest_created_execution = self.latest_created_execution
 
         if latest_created_execution:
@@ -111,13 +107,14 @@ class JobV2(BaseModel):
     def get(
         cls,
         client: Resource,
-        project: str,
-        location: str,
         job_name: str,
+        project: str | None = None,
+        location: str | None = None,
     ):
-        """
-        Makes a GET request to the GCP jobs API (v2) and returns a Job Instance)
-        """
+        """Makes a GET request to the GCP jobs API (v2) and returns a Job Instance)"""
+        if project is None or location is None:
+            raise ValueError("Project or Location are `None`")
+
         request = client.jobs().get(
             name=f"projects/{project}/locations/{location}/jobs/{job_name}",
         )
@@ -159,9 +156,7 @@ class JobV2(BaseModel):
         job_id: str,
         body: dict,
     ):
-        """
-        Make a create request to the GCP jobs API (v2).
-        """
+        """Make a create request to the GCP jobs API (v2)."""
         request = client.jobs().create(
             parent=f"projects/{project}/locations/{location}",
             jobId=job_id,
@@ -178,9 +173,7 @@ class JobV2(BaseModel):
         location: str,
         job_name: str,
     ):
-        """
-        Make a delete request to the GCP jobs API (v2).
-        """
+        """Make a delete request to the GCP jobs API (v2)."""
         request = client.jobs().delete(
             name=f"projects/{project}/locations/{location}/jobs/{job_name}",
         )
@@ -195,9 +188,7 @@ class JobV2(BaseModel):
         location: str,
         job_name: str,
     ):
-        """
-        Make a run request to the GCP jobs API.
-        """
+        """Make a run request to the GCP jobs API."""
         request = client.jobs().run(
             name=f"projects/{project}/locations/{location}/jobs/{job_name}"
         )
@@ -206,10 +197,9 @@ class JobV2(BaseModel):
         return response
 
 
-class ExecutionV2(BaseModel):
-    """
-    Utility class to call GCP `executions` API (v2) and interact with the returned
-    objects.
+class ExecutionV2(BaseExecution):
+    """Utility class to call GCP `executions` API (v2) and interact with the
+    returned objects.
     """
 
     name: str
@@ -316,13 +306,13 @@ class ExecutionV2(BaseModel):
         )
 
 
-class CloudRunJobResultV2(InfrastructureResult):
+class CloudRunJobResultV2(BaseCloudRunJobResult):
     """
     Result from a Cloud Run Job.
     """
 
 
-class CloudRunJobV2(Infrastructure):
+class CloudRunJobV2(BaseCloudRunJob):
     """
     <span class="badge-api experimental"/>
 

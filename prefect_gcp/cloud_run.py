@@ -41,28 +41,39 @@ from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.exceptions import InfrastructureNotFound
-from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import Field, root_validator, validator
 from typing_extensions import Literal
 
+from prefect_gcp.base_cloud_run import (
+    BaseCloudRunJob,
+    BaseCloudRunJobResult,
+    BaseExecution,
+    BaseJob,
+)
 from prefect_gcp.credentials import GcpCredentials
 
 
-class Job(BaseModel):
+class Job(BaseJob):
     """
     Utility class to call GCP `jobs` API and
     interact with the returned objects.
     """
 
-    metadata: dict
-    spec: dict
-    status: dict
+    metadata: Dict
+    spec: Dict
+    status: Dict
     name: str
-    ready_condition: dict
-    execution_status: dict
+    ready_condition: Dict
+    execution_status: Dict
 
-    def _is_missing_container(self):
+    def is_ready(self) -> bool:
+        """Whether a job is finished registering and ready to be executed"""
+        if self._is_missing_container():
+            raise Exception(f"{self.ready_condition['message']}")
+        return self.ready_condition.get("status") == "True"
+
+    def _is_missing_container(self) -> bool:
         """
         Check if Job status is not ready because
         the specified container cannot be found.
@@ -74,12 +85,6 @@ class Job(BaseModel):
             return True
         return False
 
-    def is_ready(self) -> bool:
-        """Whether a job is finished registering and ready to be executed"""
-        if self._is_missing_container():
-            raise Exception(f"{self.ready_condition['message']}")
-        return self.ready_condition.get("status") == "True"
-
     def has_execution_in_progress(self) -> bool:
         """See if job has a run in progress."""
         return (
@@ -88,7 +93,7 @@ class Job(BaseModel):
         )
 
     @staticmethod
-    def _get_ready_condition(job: dict) -> dict:
+    def _get_ready_condition(job: Dict) -> Dict:
         """Utility to access JSON field containing ready condition."""
         if job["status"].get("conditions"):
             for condition in job["status"]["conditions"]:
@@ -98,7 +103,7 @@ class Job(BaseModel):
         return {}
 
     @staticmethod
-    def _get_execution_status(job: dict):
+    def _get_execution_status(job: Dict):
         """Utility to access JSON field containing execution status."""
         if job["status"].get("latestCreatedExecution"):
             return job["status"]["latestCreatedExecution"]
@@ -121,7 +126,7 @@ class Job(BaseModel):
         )
 
     @staticmethod
-    def create(client: Resource, namespace: str, body: dict):
+    def create(client: Resource, namespace: str, body: Dict):
         """Make a create request to the GCP jobs API."""
         request = client.jobs().create(parent=f"namespaces/{namespace}", body=body)
         response = request.execute()
@@ -142,7 +147,7 @@ class Job(BaseModel):
         return response
 
 
-class Execution(BaseModel):
+class Execution(BaseExecution):
     """
     Utility class to call GCP `executions` API and
     interact with the returned objects.
@@ -194,11 +199,11 @@ class Execution(BaseModel):
         )
 
 
-class CloudRunJobResult(InfrastructureResult):
+class CloudRunJobResult(BaseCloudRunJobResult):
     """Result from a Cloud Run Job."""
 
 
-class CloudRunJob(Infrastructure):
+class CloudRunJob(BaseCloudRunJob):
     """
     <span class="badge-api experimental"/>
 
