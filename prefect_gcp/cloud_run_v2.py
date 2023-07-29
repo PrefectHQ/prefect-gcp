@@ -1,17 +1,13 @@
 import json
-import re
 import time
-from typing import Any, Dict, List, Optional
-from uuid import uuid4
+from typing import Dict, List, Optional
 
 import googleapiclient
-from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.exceptions import InfrastructureNotFound
-from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import Field, root_validator, validator
+from pydantic import Field
 from typing_extensions import Literal
 
 from prefect_gcp.base_cloud_run import (
@@ -24,37 +20,41 @@ from prefect_gcp.credentials import GcpCredentials
 
 
 class JobV2(BaseJob):
-    """Utility clas to call GCP `jobs` API (v2) and interact with the returned
-    objects
+    """
+    Jobs for Cloud Run API v2:
+    https://cloud.google.com/run/docs/reference/rpc/google.cloud.run.v2#google.cloud.run.v2.Job
     """
 
-    name: str
-    uid: str
-    generation: str
-    create_time: str
-    update_time: str
-    launch_stage: str
-    template: Dict
-    terminal_condition: Dict
-    etag: str
-    annotations: Optional[Dict]
+    name: Optional[str]
+    uid: Optional[str]  # output only
+    generation: Optional[int]  # output only
     labels: Optional[Dict]
-    delete_time: Optional[str]
-    expire_time: Optional[str]
-    creator: Optional[str]
-    last_modifier: Optional[str]
+    annotations: Optional[Dict]
+    create_time: Optional[str]  # output only
+    update_time: Optional[str]  # output only
+    creator: Optional[str]  # output only
+    last_modifier: Optional[str]  # output only
     client: Optional[str]
     client_version: Optional[str]
+    launch_stage: Optional[str]
     binary_authorization: Optional[Dict]
-    observed_generation: Optional[str]
-    conditions: Optional[List]
-    execution_count: Optional[int]
-    latest_created_execution: Dict
-    reconciling: Optional[bool]
-    satisfies_pzs: Optional[bool]
+    template: Dict
+    observed_generation: Optional[int]  # output only
+    terminal_condition: Optional[Dict]  # output only
+    conditions: Optional[List]  # output only
+    execution_count: Optional[int]  # output only
+    latest_created_execution: Optional[Dict]  # output only
+    reconciling: Optional[bool]  # output only
+    satisfies_pzs: Optional[bool]  # output only
+    etag: Optional[str]  # output only
 
     def is_ready(self) -> bool:
-        """Whether a job is finished registering and ready to be executed"""
+        """
+        Reports whether a job is finished registering and ready to be executed.
+
+        Returns:
+            A boolean indicating when the Job is `ready` or not.
+        """
         ready_condition = self._get_ready_condition()
 
         if self._is_missing_container():
@@ -62,8 +62,12 @@ class JobV2(BaseJob):
         return ready_condition.get("state") == "CONDITION_SUCCEEDED"
 
     def _is_missing_container(self) -> bool:
-        """Check if Job status is not ready because the specified container cannot
+        """
+        Check if Job status is not ready because the specified container cannot
         be found.
+
+        Returns:
+            A boolean indicating if the container can't be found/is missing.
         """
         ready_condition = self._get_ready_condition()
 
@@ -75,7 +79,12 @@ class JobV2(BaseJob):
         return False
 
     def has_execution_in_progress(self) -> bool:
-        """See if job has a execution in progress."""
+        """
+        See if job has an execution in progress.
+
+        Returns:
+            A boolean indicating if a job has an execution in progress.
+        """
         execution_status = self._get_execution_status()
 
         return (
@@ -85,7 +94,13 @@ class JobV2(BaseJob):
         )
 
     def _get_ready_condition(self) -> Dict:
-        """Utility to access JSON field containing ready condition."""
+        """
+        A utility to access JSON field containing ready condition.
+
+        Returns:
+            An empty dictionary if the ready condition is not available, otherwise
+            it returns the ready condition.
+        """
         terminal_condition = self.terminal_condition
 
         if terminal_condition:
@@ -95,7 +110,13 @@ class JobV2(BaseJob):
         return {}
 
     def _get_execution_status(self) -> Dict:
-        """Utility to access JSON field containing execution status."""
+        """
+        A utility to access JSON field containing execution status.
+
+        Returns:
+            An empty dictionary if the `latest_created_execution is None/unavailable,
+            otherwise it returns the `latest_created_execution` dictionary.
+        """
         latest_created_execution = self.latest_created_execution
 
         if latest_created_execution:
@@ -108,13 +129,21 @@ class JobV2(BaseJob):
         cls,
         client: Resource,
         job_name: str,
-        project: str | None = None,
-        location: str | None = None,
+        project: str,
+        location: str,
     ):
-        """Makes a GET request to the GCP jobs API (v2) and returns a Job Instance)"""
-        if project is None or location is None:
-            raise ValueError("Project or Location are `None`")
+        """
+        Makes a GET request to the GCP jobs API to fetch a instance of a specified Job.
 
+        Args:
+            client: The GCP Cloud Run API client.
+            job_name: The Job's name, used in looking up the job.
+            project: The GCP project ID.
+            location: The GCP Cloud Run location that you are working in.
+
+        Returns:
+            The specified job's instance, if it exists.
+        """
         request = client.jobs().get(
             name=f"projects/{project}/locations/{location}/jobs/{job_name}",
         )
@@ -156,7 +185,16 @@ class JobV2(BaseJob):
         job_id: str,
         body: dict,
     ):
-        """Make a create request to the GCP jobs API (v2)."""
+        """
+        Make a create request to the GCP jobs API.
+
+        Args:
+            client: The GCP Cloud Run API client.
+            project: The GCP project ID.
+            location: The GCP Cloud Run location that you are working in.
+            job_id: The ID used in creating the Job.
+            body: The dictionary of arguments used in creating the Job.
+        """
         request = client.jobs().create(
             parent=f"projects/{project}/locations/{location}",
             jobId=job_id,
@@ -173,7 +211,15 @@ class JobV2(BaseJob):
         location: str,
         job_name: str,
     ):
-        """Make a delete request to the GCP jobs API (v2)."""
+        """
+        Make a delete request to the GCP jobs API.
+
+        Args:
+            client: The GCP Cloud Run API client.
+            project: The GCP project ID.
+            location: The GCP Cloud Run location that you are working in.
+            job_name: The Job's name.
+        """
         request = client.jobs().delete(
             name=f"projects/{project}/locations/{location}/jobs/{job_name}",
         )
@@ -188,7 +234,15 @@ class JobV2(BaseJob):
         location: str,
         job_name: str,
     ):
-        """Make a run request to the GCP jobs API."""
+        """
+        Makes a run request to the GCP jobs API.
+
+        Args:
+            client: The GCP Cloud Run API client.
+            project: The GCP project ID.
+            location: The GCP Cloud Run location that you are working in.
+            job_name: The Job's name.
+        """
         request = client.jobs().run(
             name=f"projects/{project}/locations/{location}/jobs/{job_name}"
         )
@@ -198,46 +252,54 @@ class JobV2(BaseJob):
 
 
 class ExecutionV2(BaseExecution):
-    """Utility class to call GCP `executions` API (v2) and interact with the
-    returned objects.
+    """
+    Executions for Cloud Run API v2:
+    https://cloud.google.com/run/docs/reference/rpc/google.cloud.run.v2#execution
     """
 
-    name: str
-    uid: str
-    generation: str
-    labels: Optional[dict]
-    annotations: Optional[dict]
-    create_time: str
-    start_time: Optional[str]
-    completion_time: Optional[str]
-    update_time: Optional[str]
-    delete_time: Optional[str]
-    expire_time: Optional[str]
-    launch_stage: str
-    job: str
-    parallelism: int
-    task_count: int
-    template: dict
-    reconciling: Optional[bool]
-    conditions: Optional[list]
-    observed_generation: Optional[str]
-    running_count: Optional[int]
-    succeeded_count: Optional[int]
-    failed_count: Optional[int]
-    retried_count: Optional[int]
-    log_uri: str
-    satisfies_pzs: Optional[bool]
-    etag: str
+    name: Optional[str]  # output only
+    uid: Optional[str]  # output only
+    generation: Optional[int]  # output only
+    label: Optional[Dict]  # output only
+    annotations: Optional[Dict]  # output only
+    create_time: Optional[str]  # output only
+    start_time: Optional[str]  # output only
+    completion_time: Optional[str]  # output only
+    update_time: Optional[str]  # output only
+    delete_time: Optional[str]  # output only
+    expire_time: Optional[str]  # output only
+    launch_stage: Optional[str]
+    job: Optional[str]  # output only
+    parallelism: Optional[int]  # output only
+    task_count: Optional[int]  # output only
+    template: Optional[Dict]  # output only
+    reconciling: Optional[bool]  # output only
+    conditions: Optional[List]  # output only
+    observed_generation: Optional[int]  # output only
+    running_count: Optional[int]  # output only
+    failed_count: Optional[int]  # output only
+    cancelled_count: Optional[int]  # output only
+    retried_count: Optional[int]  # output only
+    log_uri: Optional[str]  # output only
+    satisfies_pzs: Optional[bool]  # output only
+    etag: Optional[str]  # output only
 
     def is_running(self) -> bool:
         """
-        Returns True if Execution is not completed.
+        Indicates whether an Execution is still running or not.
+
+        Returns:
+            A boolean indicating if Execution is still running or not.
         """
         return self.completion_time is None
 
     def condition_after_completion(self) -> dict:
         """
-        Returns Execution condition if Execution has completed.
+        Looks for the Execution condition that indicates if an execution is finished.
+
+        Returns:
+            An empty dictionary if the Execution is not completed successfully,
+            otherwise it returns the condition that indicates a successful Execution.
         """
         if isinstance(self.conditions, list) and len(self.conditions):
             for condition in self.conditions:
@@ -251,7 +313,10 @@ class ExecutionV2(BaseExecution):
 
     def succeeded(self) -> bool:
         """
-        Whether or not the Execution completed is a successful state.
+        Checks whether or not the Execution completed is a successful state.
+
+        Returns:
+            A boolean indicating if an Execution has successfully finished or not.
         """
         completed_condition = self.condition_after_completion()
 
@@ -267,11 +332,12 @@ class ExecutionV2(BaseExecution):
         execution_name: str,
     ):
         """
-        Make a get request to the GCP executions API
-        and return an Execution instance.
+        Makes a get request to the GCP executions API and return an Execution instance.
 
-        Execution Name format:
-            ToDo: Fill In
+        Args:
+            client: The GCP Cloud Run API client.
+            execution_name: The Execution name, which is in the following format:
+            `projects/{project}/locations/{location}/jobs/{job}/executions/{execution}`.
         """
         request = client.jobs().executions().get(name=execution_name)
         response = request.execute()
@@ -377,7 +443,7 @@ class CloudRunJobV2(BaseCloudRunJob):
             "https://cloud.google.com/run/docs/reference/rest/v2/LaunchStage"
         ),
     )
-    binary_authorization: Optional[dict] = Field(
+    binary_authorization: Optional[Dict] = Field(
         default={},
         title="Binary Authorization",
         description=(
@@ -421,7 +487,7 @@ class CloudRunJobV2(BaseCloudRunJob):
             "for additional details."
         ),
     )
-    vpc_connector: Optional[dict] = Field(
+    vpc_connector: Optional[str] = Field(
         default={},
         title="VPC Connector",
         description=(
@@ -458,164 +524,18 @@ class CloudRunJobV2(BaseCloudRunJob):
         ),
     )
 
-    # for private use
     _job_name: str = None
     _execution: Optional[ExecutionV2] = None
 
-    @property
-    def job_name(self) -> str:
-        """
-        Create a unique and valid job name.
-        """
-
-        if self._job_name is None:
-            # get `repo` from `gcr.io/<project_name>/repo/other`
-            components = self.image.split("/")
-            image_name = components[2]
-            # only alphanumeric and '-' allowed for a job name
-            modified_image_name = image_name.replace(":", "-").replace(".", "-")
-            # make 50 char limit for final job name, which will be '<name>-<uuid>'
-            if len(modified_image_name) > 17:
-                modified_image_name = modified_image_name[:17]
-            name = f"{modified_image_name}-{uuid4().hex}"
-            self._job_name = name
-
-        return self._job_name
-
-    @property
-    def memory_string(self) -> str | None:
-        """
-        Returns the string expected for memory resources argument.
-        """
-        if self.memory and self.memory_unit:
-            return str(self.memory) + self.memory_unit
-        return None
-
-    @validator("image")
-    def _remove_image_spaces(cls, value, values, config, field) -> str | None:
-        """
-        Deal with spaces in image names.
-        """
-        if value is not None:
-            return value.strip()
-
-    @root_validator
-    def _check_valid_memory(cls, values) -> dict:
-        """
-        Make sure memory conforms to expected values for API.
-        See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
-        """
-        if (values.get("memory") is not None and values.get("memory_unit") is None) or (
-            values.get("memory_unit") is not None and values.get("memory") is None
-        ):
-            raise ValueError(
-                "A memory value and unit must both be supplied to specify a memory"
-                " value other than the default memory value."
-            )
-        return values
-
-    def _create_job_error(self, exc):
-        """
-        Provides a nicer error for 404s when trying to create a Cloud Run Job.
-        """
-        # TODO consider lookup table instead of the if/else,
-        # also check for documented errors
-        if exc.status_code == 404:
-            raise RuntimeError(
-                f"Failed to find resources at {exc.uri}. Confirm that region"
-                f" '{self.region}' is the correct region for your Cloud Run Job and"
-                f" that {self.credentials.project} is the correct GCP project. If"
-                f" your project ID is not correct, you are using a Credentials block"
-                f" with permissions for the wrong project."
-            ) from exc
-        raise exc
-
-    def _job_run_submission_error(self, exc):
-        """
-        Provides a nicer error for 404s when submitting job runs.
-        """
-        if exc.status_code == 404:
-            pat1 = r"The requested URL [^ ]+ was not found on this server"
-            # pat2 = (
-            #     r"Resource '[^ ]+' of kind 'JOB' in region '[\w\-0-9]+' "
-            #     r"in project '[\w\-0-9]+' does not exist"
-            # )
-            if re.findall(pat1, str(exc)):
-                raise RuntimeError(
-                    f"Failed to find resources at {exc.uri}. "
-                    f"Confirm that region '{self.region}' is "
-                    f"the correct region for your Cloud Run Job "
-                    f"and that '{self.credentials.project}' is the "
-                    f"correct GCP project. If your project ID is not "
-                    f"correct, you are using a Credentials "
-                    f"block with permissions for the wrong project."
-                ) from exc
-            else:
-                raise exc
-
-        raise exc
-
-    def _cpu_as_k8s_quantity(self) -> str:
-        """
-        Return the CPU integer in the format expected by GCP Cloud Run Jobs API.
-        See:
-         https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        See also: https://cloud.google.com/run/docs/configuring/cpu#setting-jobs
-        """
-        return str(self.cpu * 1000) + "m"
-
-    @sync_compatible
-    async def run(self, task_status: Optional[TaskStatus] = None) -> Any:  # ToDo: Any?
-        """
-        Run the configured job on a Google Cloud Run Job.
-        """
-        with self._get_client() as client:
-            await run_sync_in_worker_thread(
-                self._create_job_and_wait_for_registration, client
-            )
-            job_execution = await run_sync_in_worker_thread(
-                self._begin_job_execution, client
-            )
-
-            if task_status:
-                task_status.started(self.job_name)
-
-            result = await run_sync_in_worker_thread(
-                self._watch_job_execution_and_get_result,
-                client,
-                job_execution,
-                5,
-            )
-            return result
-
-    @sync_compatible
-    async def kill(self, identifier: str, grace_seconds: int = 30) -> None:
-        """
-        Kill a task running Cloud Run.
-
-        Args:
-            identifier: The Cloud Run Job name. This should match a
-                value yielded by CloudRunJob.run.
-            grace_seconds: grace seconds
-        """
-        if grace_seconds != 30:
-            self.logger.warning(
-                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
-                "support dynamic grace period configuration/"  # noqa
-            )
-
-        with self._get_client() as client:
-            await run_sync_in_worker_thread(
-                self._kill_job,
-                client=client,
-                job_name=identifier,
-            )
-
-    def _kill_job(self, client: Resource, job_name: str) -> None:
+    def _kill_job(self, client: Resource, job_name: str):
         """
         Thin wrapper around Job.delete, wrapping a try/except since
         Job is an independent class that doesn't have knowledge of
         CloudRunJob and its associated logic.
+
+        Args:
+            client: The GCP Cloud Run API client.
+            job_name: The Job's name.
         """
         try:
             JobV2.delete(
@@ -632,9 +552,12 @@ class CloudRunJobV2(BaseCloudRunJob):
                 ) from exc
             raise
 
-    def _create_job_and_wait_for_registration(self, client: Resource) -> None:
+    def _create_job_and_wait_for_registration(self, client: Resource):
         """
-        Create a new job wait for it to finish registering.
+        Creates a new job wait for it to finish registering.
+
+        Args:
+            client: The GCP Cloud Run API client.
         """
         try:
             self.logger.info(f"Creating Cloud Run Job {self.job_name}")
@@ -674,7 +597,10 @@ class CloudRunJobV2(BaseCloudRunJob):
 
     def _begin_job_execution(self, client: Resource) -> ExecutionV2:
         """
-        Submit a job run for execution and return the execution object.
+        Submits a job run for execution and return the execution object.
+
+        Args:
+            client: The GCP Cloud Run API client.
         """
         try:
             self.logger.info(
@@ -710,7 +636,17 @@ class CloudRunJobV2(BaseCloudRunJob):
         execution: ExecutionV2,
         poll_interval: int,
     ) -> CloudRunJobResultV2:
-        """Wait for execution to complete and then return result."""
+        """
+        Waits for execution to complete and then return result.
+
+        Args:
+            client: The GCP Cloud Run API client.
+            execution: The Execution object from the Cloud Run API v2.
+            poll_interval: The interval in which polling happens (seconds)
+
+        Returns:
+            A CloudRunJobResultV2 instance indicating Job Result status.
+        """
         try:
             job_execution = self._watch_job_execution(
                 client=client,
@@ -759,11 +695,14 @@ class CloudRunJobV2(BaseCloudRunJob):
 
         return CloudRunJobResultV2(identifier=self.job_name, status_code=status_code)
 
-    def _jobs_body(self) -> dict:
+    def _jobs_body(self) -> Dict:
         """
-        Create properly formatted body used for a Job CREATE request.
+        Creates properly formatted body used for a Job create request.
         See: https://cloud.google.com/run/docs/reference/rest/v2/
             projects.locations.jobs/create
+
+        Returns:
+            A properly formatted dictionary used in Job create request in the body.
         """
         annotations = {}
 
@@ -799,7 +738,10 @@ class CloudRunJobV2(BaseCloudRunJob):
 
     def preview(self) -> str:
         """
-        Generate a preview of the job definition that will be sent to GCP.
+        Generates a preview of the job definition that will be sent to GCP.
+
+        Returns:
+            A stringed (json.dumps) JSON of the previewed dictionary.
         """
         body = self._jobs_body()
         container_settings = body["template"]["template"]["containers"][0]["env"]
@@ -816,7 +758,14 @@ class CloudRunJobV2(BaseCloudRunJob):
         timeout: int,
         poll_interval: int = 5,
     ):
-        """Give created job time to register."""
+        """
+        Gives created job time to register.
+
+        Args:
+            client: The GCP Cloud Run API client.
+            timeout: The maximum runtime for the Job until it times out.
+            poll_interval: The number of second between each status poll request.
+        """
         job = JobV2.get(
             client=client,
             project=self.credentials.project,
@@ -853,6 +802,9 @@ class CloudRunJobV2(BaseCloudRunJob):
     def _get_client(self) -> Resource:
         """
         Get the base client needed for interacting with GCP APIs.
+
+        Returns:
+            A client for interacting with GCP Cloud Run v2 API.
         """
         api_endpoint = f"https://{self.region}-run.googleapis.com"
         gcp_creds = self.credentials.get_credentials_from_service_account()
@@ -869,61 +821,6 @@ class CloudRunJobV2(BaseCloudRunJob):
             .locations()
         )
 
-    # CONTAINER SETTINGS
-    def _add_container_settings(
-        self,
-        base_settings: dict[str, Any],
-    ) -> dict[str, Any]:
-        """
-        Add settings related to containers for Cloud Run Jobs to a dictionary.
-        Includes environment variables, entrypoint command, entrypoint arguments,
-        and cpu and memory limits.
-        """
-        container_settings = base_settings.copy()
-        container_settings.update(self._add_env())
-        container_settings.update(self._add_resources())
-        container_settings.update(self._add_command())
-        container_settings.update(self._add_args())
-
-        return container_settings
-
-    def _add_args(self) -> dict:
-        """
-        Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
-        """
-        return {"args": self.args} if self.args else {}
-
-    def _add_command(self) -> dict:
-        """
-        Set the command that a container will run for a Cloud Run Job.
-        """
-        return {"command": self.command}
-
-    def _add_resources(self) -> dict:
-        """
-        Set specified resources limits for a Cloud Run Job.
-        """
-        resources = {"limits": {}}
-
-        if self.cpu is not None:
-            cpu = self._cpu_as_k8s_quantity()
-            resources["limits"]["cpu"] = cpu
-        if self.memory_string is not None:
-            resources["limits"]["memory"] = self.memory_string
-
-        return {"resources": resources} if resources["limits"] else {}
-
-    def _add_env(self) -> dict:
-        """
-        Add environment variables for a Cloud Run Job.
-
-        Method `self._base_environment()` gets necessary Prefect environment variables
-        from the config.
-        """
-        env = {**self._base_environment(), **self.env}
-        cloud_run_env = [{"name": k, "value": v} for k, v in env.items()]
-        return {"env": cloud_run_env}
-
     @staticmethod
     def _watch_job_execution(
         client,
@@ -932,7 +829,8 @@ class CloudRunJobV2(BaseCloudRunJob):
         poll_interval: int = 5,
     ):
         """
-        Update job_execution status until it is no longer running or timeout is reached.
+        Updates job_execution status until it is no longer running or timeout is
+        reached.
         """
         t0 = time.time()
         while job_execution.is_running():

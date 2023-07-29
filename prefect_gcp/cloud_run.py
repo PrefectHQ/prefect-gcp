@@ -30,19 +30,15 @@ Examples:
 from __future__ import annotations
 
 import json
-import re
 import time
-from typing import Any, Dict, List, Optional
-from uuid import uuid4
+from typing import Dict, List, Optional
 
 import googleapiclient
-from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.exceptions import InfrastructureNotFound
-from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import Field, root_validator, validator
+from pydantic import Field
 from typing_extensions import Literal
 
 from prefect_gcp.base_cloud_run import (
@@ -296,141 +292,6 @@ class CloudRunJob(BaseCloudRunJob):
     _job_name: str = None
     _execution: Optional[Execution] = None
 
-    @property
-    def job_name(self):
-        """Create a unique and valid job name."""
-
-        if self._job_name is None:
-            # get `repo` from `gcr.io/<project_name>/repo/other`
-            components = self.image.split("/")
-            image_name = components[2]
-            # only alphanumeric and '-' allowed for a job name
-            modified_image_name = image_name.replace(":", "-").replace(".", "-")
-            # make 50 char limit for final job name, which will be '<name>-<uuid>'
-            if len(modified_image_name) > 17:
-                modified_image_name = modified_image_name[:17]
-            name = f"{modified_image_name}-{uuid4().hex}"
-            self._job_name = name
-
-        return self._job_name
-
-    @property
-    def memory_string(self):
-        """Returns the string expected for memory resources argument."""
-        if self.memory and self.memory_unit:
-            return str(self.memory) + self.memory_unit
-        return None
-
-    @validator("image")
-    def _remove_image_spaces(cls, value):
-        """Deal with spaces in image names."""
-        if value is not None:
-            return value.strip()
-
-    @root_validator
-    def _check_valid_memory(cls, values):
-        """Make sure memory conforms to expected values for API.
-        See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
-        """  # noqa
-        if (values.get("memory") is not None and values.get("memory_unit") is None) or (
-            values.get("memory_unit") is not None and values.get("memory") is None
-        ):
-            raise ValueError(
-                "A memory value and unit must both be supplied to specify a memory"
-                " value other than the default memory value."
-            )
-        return values
-
-    def _create_job_error(self, exc):
-        """Provides a nicer error for 404s when trying to create a Cloud Run Job."""
-        # TODO consider lookup table instead of the if/else,
-        # also check for documented errors
-        if exc.status_code == 404:
-            raise RuntimeError(
-                f"Failed to find resources at {exc.uri}. Confirm that region"
-                f" '{self.region}' is the correct region for your Cloud Run Job and"
-                f" that {self.credentials.project} is the correct GCP project. If"
-                f" your project ID is not correct, you are using a Credentials block"
-                f" with permissions for the wrong project."
-            ) from exc
-        raise exc
-
-    def _job_run_submission_error(self, exc):
-        """Provides a nicer error for 404s when submitting job runs."""
-        if exc.status_code == 404:
-            pat1 = r"The requested URL [^ ]+ was not found on this server"
-            # pat2 = (
-            #     r"Resource '[^ ]+' of kind 'JOB' in region '[\w\-0-9]+' "
-            #     r"in project '[\w\-0-9]+' does not exist"
-            # )
-            if re.findall(pat1, str(exc)):
-                raise RuntimeError(
-                    f"Failed to find resources at {exc.uri}. "
-                    f"Confirm that region '{self.region}' is "
-                    f"the correct region for your Cloud Run Job "
-                    f"and that '{self.credentials.project}' is the "
-                    f"correct GCP project. If your project ID is not "
-                    f"correct, you are using a Credentials "
-                    f"block with permissions for the wrong project."
-                ) from exc
-            else:
-                raise exc
-
-        raise exc
-
-    def _cpu_as_k8s_quantity(self) -> str:
-        """Return the CPU integer in the format expected by GCP Cloud Run Jobs API.
-        See: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        See also: https://cloud.google.com/run/docs/configuring/cpu#setting-jobs
-        """  # noqa
-        return str(self.cpu * 1000) + "m"
-
-    @sync_compatible
-    async def run(self, task_status: Optional[TaskStatus] = None):
-        """Run the configured job on a Google Cloud Run Job."""
-        with self._get_client() as client:
-            await run_sync_in_worker_thread(
-                self._create_job_and_wait_for_registration, client
-            )
-            job_execution = await run_sync_in_worker_thread(
-                self._begin_job_execution, client
-            )
-
-            if task_status:
-                task_status.started(self.job_name)
-
-            result = await run_sync_in_worker_thread(
-                self._watch_job_execution_and_get_result,
-                client,
-                job_execution,
-                5,
-            )
-            return result
-
-    @sync_compatible
-    async def kill(self, identifier: str, grace_seconds: int = 30) -> None:
-        """
-        Kill a task running Cloud Run.
-
-        Args:
-            identifier: The Cloud Run Job name. This should match a
-                value yielded by CloudRunJob.run.
-        """
-        if grace_seconds != 30:
-            self.logger.warning(
-                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
-                "support dynamic grace period configuration. See here for more info: "
-                "https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs/delete"  # noqa
-            )
-
-        with self._get_client() as client:
-            await run_sync_in_worker_thread(
-                self._kill_job,
-                client=client,
-                namespace=self.credentials.project,
-                job_name=identifier,
-            )
-
     def _kill_job(self, client: Resource, namespace: str, job_name: str) -> None:
         """
         Thin wrapper around Job.delete, wrapping a try/except since
@@ -563,7 +424,7 @@ class CloudRunJob(BaseCloudRunJob):
 
         return CloudRunJobResult(identifier=self.job_name, status_code=status_code)
 
-    def _jobs_body(self) -> dict:
+    def _jobs_body(self) -> Dict:
         """Create properly formatted body used for a Job CREATE request.
         See: https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs
         """
@@ -686,61 +547,3 @@ class CloudRunJob(BaseCloudRunJob):
         return discovery.build(
             "run", "v1", client_options=options, credentials=gcp_creds
         ).namespaces()
-
-    # CONTAINER SETTINGS
-    def _add_container_settings(self, base_settings: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Add settings related to containers for Cloud Run Jobs to a dictionary.
-        Includes environment variables, entrypoint command, entrypoint arguments,
-        and cpu and memory limits.
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        and https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
-        """  # noqa
-        container_settings = base_settings.copy()
-        container_settings.update(self._add_env())
-        container_settings.update(self._add_resources())
-        container_settings.update(self._add_command())
-        container_settings.update(self._add_args())
-        return container_settings
-
-    def _add_args(self) -> dict:
-        """Set the arguments that will be passed to the entrypoint for a Cloud Run Job.
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        """  # noqa
-        return {"args": self.args} if self.args else {}
-
-    def _add_command(self) -> dict:
-        """Set the command that a container will run for a Cloud Run Job.
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container
-        """  # noqa
-        return {"command": self.command}
-
-    def _add_resources(self) -> dict:
-        """Set specified resources limits for a Cloud Run Job.
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
-        See also: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        """  # noqa
-        resources = {"limits": {}, "requests": {}}
-
-        if self.cpu is not None:
-            cpu = self._cpu_as_k8s_quantity()
-            resources["limits"]["cpu"] = cpu
-            resources["requests"]["cpu"] = cpu
-        if self.memory_string is not None:
-            resources["limits"]["memory"] = self.memory_string
-            resources["requests"]["memory"] = self.memory_string
-
-        return {"resources": resources} if resources["requests"] else {}
-
-    def _add_env(self) -> dict:
-        """Add environment variables for a Cloud Run Job.
-
-        Method `self._base_environment()` gets necessary Prefect environment variables
-        from the config.
-
-        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#envvar for
-        how environment variables are specified for Cloud Run Jobs.
-        """  # noqa
-        env = {**self._base_environment(), **self.env}
-        cloud_run_env = [{"name": k, "value": v} for k, v in env.items()]
-        return {"env": cloud_run_env}
