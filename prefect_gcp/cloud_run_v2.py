@@ -28,7 +28,7 @@ class JobV2(BaseJob):
     name: Optional[str]
     uid: Optional[str]  # output only
     generation: Optional[int]  # output only
-    labels: Optional[Dict]
+    # labels: Optional[Dict]
     annotations: Optional[Dict]
     create_time: Optional[str]  # output only
     update_time: Optional[str]  # output only
@@ -55,7 +55,7 @@ class JobV2(BaseJob):
         Returns:
             A boolean indicating when the Job is `ready` or not.
         """
-        ready_condition = self._get_ready_condition()
+        ready_condition = self.get_ready_condition()
 
         if self._is_missing_container():
             raise Exception(f"{ready_condition['message']}")
@@ -69,7 +69,7 @@ class JobV2(BaseJob):
         Returns:
             A boolean indicating if the container can't be found/is missing.
         """
-        ready_condition = self._get_ready_condition()
+        ready_condition = self.get_ready_condition()
 
         if (
             ready_condition.get("state") == "CONTAINER_FAILED"
@@ -93,7 +93,7 @@ class JobV2(BaseJob):
             or execution_status.get("completionTime") == "1970-01-01T00:00:00Z"
         )
 
-    def _get_ready_condition(self) -> Dict:
+    def get_ready_condition(self) -> Dict:
         """
         A utility to access JSON field containing ready condition.
 
@@ -154,7 +154,7 @@ class JobV2(BaseJob):
             name=response.get("name"),
             uid=response.get("uid"),
             generation=response.get("generation"),
-            labels=response.get("labels"),
+            # labels=response.get("labels"),
             annotations=response.get("annotations"),
             create_time=response.get("createTime"),
             update_time=response.get("updateTime"),
@@ -711,12 +711,12 @@ class CloudRunJobV2(BaseCloudRunJob):
         timeout_seconds = f"{self.timeout}s"
 
         body = {
-            "labels": self.labels,
+            # "labels": self.labels,
             "annotations": annotations,
             "launchStage": self.launch_stage,
             "binaryAuthorization": self.binary_authorization,
             "template": {
-                "labels": self.labels,
+                # "labels": self.labels,
                 "annotations": annotations,
                 "parallelism": self.parallelism,
                 "task_count": self.task_count,
