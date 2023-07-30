@@ -142,8 +142,8 @@ class BaseCloudRunJob(Infrastructure):
             return str(self.memory) + self.memory_unit
         return None
 
-    @validator("image")
-    def _remove_image_spaces(self, value: Optional[str]) -> str or None:
+    @validator("image", check_fields=False)
+    def _remove_image_spaces(cls, value: Optional[str]) -> str or None:
         """
         Handles spaces in image names.
 
@@ -157,7 +157,7 @@ class BaseCloudRunJob(Infrastructure):
             return value.strip()
 
     @root_validator
-    def _check_valid_memory(self, values: Dict) -> Dict:
+    def _check_valid_memory(cls, values: Dict) -> Dict:
         """
         Makes sure memory conforms to expected values for API.
         See: https://cloud.google.com/run/docs/configuring/memory-limits#setting
@@ -246,7 +246,8 @@ class BaseCloudRunJob(Infrastructure):
                 self._create_job_and_wait_for_registration, client
             )
             job_execution = await run_sync_in_worker_thread(
-                self._begin_job_execution, client
+                self._begin_job_execution,
+                client,
             )
 
             if task_status:
