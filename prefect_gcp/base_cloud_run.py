@@ -262,27 +262,11 @@ class BaseCloudRunJob(Infrastructure):
             return result
 
     @sync_compatible
+    @abstractmethod
     async def kill(self, identifier: str, grace_seconds: int = 30):
         """
         Kill a task running Cloud Run.
-
-        Args:
-            identifier: The Cloud Run Job name. This should match a value yielded
-            by CloudRunJob.run.
-            grace_seconds: grace seconds
         """
-        if grace_seconds != 30:
-            self.logger.warning(
-                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
-                "support dynamic grace period configuration/"  # noqa
-            )
-
-        with self._get_client() as client:
-            await run_sync_in_worker_thread(
-                self._kill_job,
-                client=client,
-                job_name=identifier,
-            )
 
     @abstractmethod
     def _kill_job(self, *args, **kwargs):
@@ -391,22 +375,11 @@ class BaseCloudRunJob(Infrastructure):
         """
         return {"command": self.command}
 
-    def _add_resources(self) -> Dict:
+    @abstractmethod
+    def _add_resources(self):
         """
         Sets specified resources limits for a Cloud Run Job.
-
-        Returns:
-            The added resources dictionary.
         """
-        resources = {"limits": {}}
-
-        if self.cpu is not None:
-            cpu = self._cpu_as_k8s_quantity()
-            resources["limits"]["cpu"] = cpu
-        if self.memory_string is not None:
-            resources["limits"]["memory"] = self.memory_string
-
-        return {"resources": resources} if resources["limits"] else {}
 
     def _add_env(self) -> Dict:
         """

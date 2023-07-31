@@ -7,6 +7,7 @@ from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.exceptions import InfrastructureNotFound
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import Field
 from typing_extensions import Literal
 
@@ -27,8 +28,7 @@ class JobV2(BaseJob):
 
     name: Optional[str]
     uid: Optional[str]  # output only
-    generation: Optional[int]  # output only
-    # labels: Optional[Dict]
+    generation: Optional[str]  # output only
     annotations: Optional[Dict]
     create_time: Optional[str]  # output only
     update_time: Optional[str]  # output only
@@ -39,7 +39,7 @@ class JobV2(BaseJob):
     launch_stage: Optional[str]
     binary_authorization: Optional[Dict]
     template: Dict
-    observed_generation: Optional[int]  # output only
+    observed_generation: Optional[str]  # output only
     terminal_condition: Optional[Dict]  # output only
     conditions: Optional[List]  # output only
     execution_count: Optional[int]  # output only
@@ -154,7 +154,6 @@ class JobV2(BaseJob):
             name=response.get("name"),
             uid=response.get("uid"),
             generation=response.get("generation"),
-            # labels=response.get("labels"),
             annotations=response.get("annotations"),
             create_time=response.get("createTime"),
             update_time=response.get("updateTime"),
@@ -257,7 +256,7 @@ class ExecutionV2(BaseExecution):
 
     name: Optional[str]  # output only
     uid: Optional[str]  # output only
-    generation: Optional[int]  # output only
+    generation: Optional[str]  # output only
     label: Optional[Dict]  # output only
     annotations: Optional[Dict]  # output only
     create_time: Optional[str]  # output only
@@ -273,7 +272,7 @@ class ExecutionV2(BaseExecution):
     template: Optional[Dict]  # output only
     reconciling: Optional[bool]  # output only
     conditions: Optional[List]  # output only
-    observed_generation: Optional[int]  # output only
+    observed_generation: Optional[str]  # output only
     running_count: Optional[int]  # output only
     failed_count: Optional[int]  # output only
     cancelled_count: Optional[int]  # output only
@@ -525,6 +524,46 @@ class CloudRunJobV2(BaseCloudRunJob):
     _job_name: str = None
     _execution: Optional[ExecutionV2] = None
 
+    def _add_resources(self) -> Dict:
+        """
+        Sets specified resources limits for a Cloud Run Job.
+
+        Returns:
+            The added resources dictionary.
+        """
+        resources = {"limits": {}}
+
+        if self.cpu is not None:
+            cpu = self._cpu_as_k8s_quantity()
+            resources["limits"]["cpu"] = cpu
+        if self.memory_string is not None:
+            resources["limits"]["memory"] = self.memory_string
+
+        return {"resources": resources} if resources["limits"] else {}
+
+    @sync_compatible
+    async def kill(self, identifier: str, grace_seconds: int = 30):
+        """
+        Kill a task running Cloud Run.
+
+        Args:
+            identifier: The Cloud Run Job name. This should match a value yielded
+            by CloudRunJob.run.
+            grace_seconds: grace seconds
+        """
+        if grace_seconds != 30:
+            self.logger.warning(
+                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
+                "support dynamic grace period configuration/"  # noqa
+            )
+
+        with self._get_client() as client:
+            await run_sync_in_worker_thread(
+                self._kill_job,
+                client=client,
+                job_name=identifier,
+            )
+
     def _kill_job(self, client: Resource, job_name: str):
         """
         Thin wrapper around Job.delete, wrapping a try/except since
@@ -711,12 +750,10 @@ class CloudRunJobV2(BaseCloudRunJob):
         timeout_seconds = f"{self.timeout}s"
 
         body = {
-            # "labels": self.labels,
             "annotations": annotations,
             "launchStage": self.launch_stage,
             "binaryAuthorization": self.binary_authorization,
             "template": {
-                # "labels": self.labels,
                 "annotations": annotations,
                 "parallelism": self.parallelism,
                 "task_count": self.task_count,

@@ -38,6 +38,7 @@ from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
 from prefect.exceptions import InfrastructureNotFound
+from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import Field
 from typing_extensions import Literal
 
@@ -291,6 +292,47 @@ class CloudRunJob(BaseCloudRunJob):
     # For private use
     _job_name: str = None
     _execution: Optional[Execution] = None
+
+    def _add_resources(self) -> dict:
+        """Set specified resources limits for a Cloud Run Job.
+        See: https://cloud.google.com/run/docs/reference/rest/v1/Container#ResourceRequirements
+        See also: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        """  # noqa
+        resources = {"limits": {}, "requests": {}}
+
+        if self.cpu is not None:
+            cpu = self._cpu_as_k8s_quantity()
+            resources["limits"]["cpu"] = cpu
+            resources["requests"]["cpu"] = cpu
+        if self.memory_string is not None:
+            resources["limits"]["memory"] = self.memory_string
+            resources["requests"]["memory"] = self.memory_string
+
+        return {"resources": resources} if resources["requests"] else {}
+
+    @sync_compatible
+    async def kill(self, identifier: str, grace_seconds: int = 30):
+        """
+        Kill a task running Cloud Run.
+
+        Args:
+            identifier: The Cloud Run Job name. This should match a value yielded
+            by CloudRunJob.run.
+            grace_seconds: grace seconds
+        """
+        if grace_seconds != 30:
+            self.logger.warning(
+                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
+                "support dynamic grace period configuration/"  # noqa
+            )
+
+        with self._get_client() as client:
+            await run_sync_in_worker_thread(
+                self._kill_job,
+                client=client,
+                namespace=self.credentials.project,
+                job_name=identifier,
+            )
 
     def _kill_job(self, client: Resource, namespace: str, job_name: str) -> None:
         """

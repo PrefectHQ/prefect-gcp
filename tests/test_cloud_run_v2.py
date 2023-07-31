@@ -28,7 +28,7 @@ jobs_return_value = {
     "launchStage": "launch-stage",
     "binaryAuthorization": {},
     "template": {},
-    "observedGeneration": "observed-generation",
+    "observedGeneration": "1",
     "terminalCondition": {},
     "conditions": [],
     "executionCount": 1,
