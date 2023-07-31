@@ -11,7 +11,10 @@ from pydantic import BaseModel, root_validator, validator
 
 
 class BaseJob(BaseModel, ABC):
-    """ToDo"""
+    """
+    Base class for the utility classes to call GCP `jobs` API and
+    interact with the returned objects.
+    """
 
     @abstractmethod
     def is_ready(self):
@@ -62,7 +65,10 @@ class BaseJob(BaseModel, ABC):
 
 
 class BaseExecution(BaseModel, ABC):
-    """ToDo"""
+    """
+    Base class for utility classes to call GCP `executions` API and
+    interact with the returned objects.
+    """
 
     @abstractmethod
     def is_running(self):
@@ -97,7 +103,10 @@ class BaseCloudRunJobResult(InfrastructureResult, ABC):
 
 
 class BaseCloudRunJob(Infrastructure):
-    """ToDo"""
+    """
+    Base class for Cloud Run Job classes.
+    The classes that inherit this are used to run GCP Cloud Run Jobs.
+    """
 
     _blog_type_slug: str
     _block_type_name: str
@@ -231,7 +240,7 @@ class BaseCloudRunJob(Infrastructure):
         return str(self.cpu * 1000) + "m"
 
     @sync_compatible
-    async def run(self, task_status: Optional[TaskStatus] = None) -> Any:  # ToDo: Any?
+    async def run(self, task_status: Optional[TaskStatus] = None) -> Any:
         """
         Runs the configured job on a Google Cloud Run Job.
 

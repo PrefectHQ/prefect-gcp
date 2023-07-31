@@ -399,7 +399,7 @@ class CloudRunJobV2(BaseCloudRunJob):
     )
     _documentation_url = (
         "https://prefecthq.github.io/prefect-gcp/cloud_run/"
-        "#prefect_gcp.cloud_run.CloudRunJob"
+        "#prefect_gcp.cloud_run_v2.CloudRunJobV2"
     )  # noqa: E501
     # ToDo: add this ^
 

@@ -83,6 +83,7 @@ nav:
         - BigQuery: bigquery.md
         - Secret Manager: secret_manager.md
         - Cloud Run: cloud_run.md
+        - Cloud Run v2: cloud_run_v2.md
         - AI Platform: aiplatform.md
         - Deployment Steps: deployments/steps.md
         - Worker: worker.md
