@@ -470,6 +470,13 @@ class CloudRunJobV2(BaseCloudRunJob):
             "of that task signals the success of the execution. Defaults to 1."
         ),
     )
+    max_retries: Optional[int] = Field(
+        default=3,
+        title="Max Retries",
+        description=(
+            "Number of retries allowed per Task, before marking this Task failed."
+        ),
+    )
     memory: Optional[int] = Field(
         default=None,
         title="Memory",
@@ -760,6 +767,7 @@ class CloudRunJobV2(BaseCloudRunJob):
                 "template": {
                     "containers": containers,
                     "timeout": timeout_seconds,
+                    "maxRetries": self.max_retries,
                 },
             },
         }

@@ -356,6 +356,11 @@ class TestCloudRunJobV2ContainerSettings:
         result = cloud_run_job_v2._jobs_body()
         assert result["template"]["template"]["vpcAccess"]["connector"] == "vpc_name"
 
+    def test_max_retries_added_correctly(self, cloud_run_job_v2):
+        cloud_run_job_v2.max_retries = 5
+        result = cloud_run_job_v2._jobs_body()
+        assert result["template"]["template"]["maxRetries"] == 5
+
     def test_memory_validation_succeeds(self, gcp_credentials):
         """
         Make sure that memory validation doesn't fail when valid params provided.
