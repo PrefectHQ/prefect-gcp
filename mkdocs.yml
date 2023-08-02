@@ -74,6 +74,7 @@ watch:
 
 nav:
     - Home: index.md
+    - Google Cloud Run Execution Guide: gcp-worker-guide.md
     - Blocks Catalog: blocks_catalog.md
     - Examples Catalog: examples_catalog.md
     - Contributing: contributing.md
