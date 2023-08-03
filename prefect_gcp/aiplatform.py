@@ -372,6 +372,10 @@ class VertexAICustomTrainingJob(Infrastructure):
             raise RuntimeError(f"{self._log_prefix}: {error_msg}")
 
         status_code = 0 if final_job_run.state == JobState.JOB_STATE_SUCCEEDED else 1
+
+        if status_code == 1:
+            await self.kill(final_job_run.display_name)
+
         return VertexAICustomTrainingJobResult(
             identifier=final_job_run.display_name, status_code=status_code
         )
