@@ -53,8 +53,8 @@ Examples:
 """
 
 import datetime
-import time
 import re
+import time
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
@@ -88,8 +88,7 @@ except ModuleNotFoundError:
 
 from prefect_gcp.credentials import GcpCredentials
 
-
-_DISALLOWED_GCP_LABEL_CHARACTERS = re.compile(r'[^-a-zA-Z0-9_]+')
+_DISALLOWED_GCP_LABEL_CHARACTERS = re.compile(r"[^-a-zA-Z0-9_]+")
 
 
 class VertexAICustomTrainingJobResult(InfrastructureResult):
@@ -217,7 +216,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         Ensures labels are compatible with GCP label requirements.
         https://cloud.google.com/resource-manager/docs/creating-managing-labels
 
-        For example, the Prefect provided key of prefect.io/flow-name -> prefect-io_flow-name
+        Ex: the Prefect provided key of prefect.io/flow-name -> prefect-io_flow-name
         """
         compatible_labels = {}
         for key, val in self.labels.items():
@@ -226,14 +225,14 @@ class VertexAICustomTrainingJob(Infrastructure):
                 lowercase=True,
                 replacements=[("/", "_"), (".", "-")],
                 max_length=63,
-                regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS
+                regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS,
             )
             compatible_labels[new_key] = slugify(
                 val,
                 lowercase=True,
                 replacements=[("/", "_"), (".", "-")],
                 max_length=63,
-                regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS
+                regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS,
             )
         return compatible_labels
 

@@ -20,7 +20,7 @@ class TestVertexAICustomTrainingJob:
             region="us-east1",
             image="us-docker.pkg.dev/cloudrun/container/job:latest",
             gcp_credentials=gcp_credentials,
-            labels={"prefect.io/flow-name": "hungry-hippo"}
+            labels={"prefect.io/flow-name": "hungry-hippo"},
         )
 
     # TODO: Improve test resiliency to changes in str output
