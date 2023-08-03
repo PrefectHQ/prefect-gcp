@@ -1,13 +1,13 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 from uuid import uuid4
 
 from anyio.abc import TaskStatus
 from googleapiclient.discovery import Resource
 from prefect.infrastructure import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, Field, root_validator, validator
 
 
 class BaseJob(BaseModel, ABC):
@@ -108,13 +108,18 @@ class BaseCloudRunJob(Infrastructure):
     The classes that inherit this are used to run GCP Cloud Run Jobs.
     """
 
-    _blog_type_slug: str
-    _block_type_name: str
-    _description: str
-    _logo_url: str
-    _documentation_url: str
+    _block_type_slug: str = "base-cloud-run-job"
+    _block_type_name: str = "Base GCP Cloud Run Job"
+    _description: str = "Base Infrastructure block used to run GCP Cloud Run Jobs. Note this block is experimental. The interface may change without notice."  # noqa
+    _logo_url: str = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _documentation_url: str = "https://prefecthq.github.io/prefect-gcp/cloud_run/#prefect_gcp.cloud_run.BaseCloudRunJob"  # noqa: E501
 
-    _job_name: str
+    _job_name: str = ""
+
+    type: Literal["base-cloud-run-job"] = Field(
+        "base-cloud-run-job",
+        description="The slug for this task type.",
+    )
 
     @property
     def job_name(self) -> str:
