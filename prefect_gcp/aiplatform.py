@@ -142,6 +142,16 @@ class VertexAICustomTrainingJob(Infrastructure):
     accelerator_count: Optional[int] = Field(
         default=None, description="The number of accelerators to attach to the machine."
     )
+    boot_disk_type: str = Field(
+        default="pd-ssd",
+        title="Boot Disk Type",
+        description="The type of boot disk to attach to the machine.",
+    )
+    boot_disk_size_gb: int = Field(
+        default=100,
+        title="Boot Disk Size",
+        description="The size of the boot disk to attach to the machine, in gigabytes.",
+    )
     maximum_run_time: datetime.timedelta = Field(
         default=datetime.timedelta(days=7), description="The maximum job running time."
     )

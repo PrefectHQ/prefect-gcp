@@ -148,6 +148,18 @@ class TestVertexAICustomTrainingJob:
         with pytest.raises(RuntimeError, match="my error msg"):
             vertex_ai_custom_training_job.run()
 
+    def test_run_start_error(
+        self, vertex_ai_custom_training_job: VertexAICustomTrainingJob
+    ):
+        gcp_credentials = vertex_ai_custom_training_job.gcp_credentials
+        gcp_credentials.job_service_client.create_custom_job.side_effect = (
+            RuntimeError()
+        )
+
+        with pytest.raises(RetryError):
+            vertex_ai_custom_training_job.run()
+        assert gcp_credentials.job_service_client.create_custom_job.call_count == 3
+
     def test_machine_spec(
         self, vertex_ai_custom_training_job: VertexAICustomTrainingJob
     ):
