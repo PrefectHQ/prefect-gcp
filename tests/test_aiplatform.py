@@ -4,7 +4,6 @@ import pytest
 from google.cloud.aiplatform_v1.types.accelerator_type import AcceleratorType
 from google.cloud.aiplatform_v1.types.job_state import JobState
 from prefect.exceptions import InfrastructureNotFound
-from tenacity import RetryError
 
 from prefect_gcp.aiplatform import (
     VertexAICustomTrainingJob,
@@ -146,32 +145,6 @@ class TestVertexAICustomTrainingJob:
         )
         with pytest.raises(RuntimeError, match="my error msg"):
             vertex_ai_custom_training_job.run()
-
-    def test_machine_spec(
-        self, vertex_ai_custom_training_job: VertexAICustomTrainingJob
-    ):
-        vertex_ai_custom_training_job.accelerator_count = 1
-        vertex_ai_custom_training_job.accelerator_type = "NVIDIA_TESLA_T4"
-
-        job_spec = vertex_ai_custom_training_job._build_job_spec()
-
-        assert job_spec.worker_pool_specs[0].machine_spec.accelerator_count == 1
-        assert (
-            job_spec.worker_pool_specs[0].machine_spec.accelerator_type
-            == AcceleratorType.NVIDIA_TESLA_T4
-        )
-
-    def test_run_start_error(
-        self, vertex_ai_custom_training_job: VertexAICustomTrainingJob
-    ):
-        gcp_credentials = vertex_ai_custom_training_job.gcp_credentials
-        gcp_credentials.job_service_client.create_custom_job.side_effect = (
-            RuntimeError()
-        )
-
-        with pytest.raises(RetryError):
-            vertex_ai_custom_training_job.run()
-        assert gcp_credentials.job_service_client.create_custom_job.call_count == 3
 
     def test_machine_spec(
         self, vertex_ai_custom_training_job: VertexAICustomTrainingJob
