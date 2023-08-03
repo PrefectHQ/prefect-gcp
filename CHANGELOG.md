@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
-- Added optional `accelerator_count` property for `VertexAICustomTrainingJob`.
+- Fixed VertexAICustomJob failing to cancel job in Vertex
 
 ### Changed
 
