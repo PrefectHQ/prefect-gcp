@@ -102,7 +102,7 @@ class BaseCloudRunJobResult(InfrastructureResult, ABC):
     """
 
 
-class BaseCloudRunJob(Infrastructure):
+class BaseCloudRunJob(Infrastructure, ABC):
     """
     Base class for Cloud Run Job classes.
     The classes that inherit this are used to run GCP Cloud Run Jobs.
