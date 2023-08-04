@@ -490,7 +490,7 @@ class CloudRunJobV2(BaseCloudRunJob):
             "for additional details."
         ),
     )
-    vpc_connector: Optional[str] = Field(
+    vpc_connector_name: Optional[str] = Field(
         default=None,
         title="VPC Connector",
         description=(
@@ -771,9 +771,9 @@ class CloudRunJobV2(BaseCloudRunJob):
             },
         }
 
-        if self.vpc_connector:
+        if self.vpc_connector_name:
             body["template"]["template"]["vpcAccess"] = {
-                "connector": self.vpc_connector,
+                "connector": self.vpc_connector_name,
             }
 
         return body

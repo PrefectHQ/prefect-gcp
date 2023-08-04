@@ -352,7 +352,7 @@ class TestCloudRunJobV2ContainerSettings:
         assert result["template"]["template"]["timeout"] == f"{timeout}s"
 
     def test_vpc_connector_name_added_correctly(self, cloud_run_job_v2):
-        cloud_run_job_v2.vpc_connector = "vpc_name"
+        cloud_run_job_v2.vpc_connector_name = "vpc_name"
         result = cloud_run_job_v2._jobs_body()
         assert result["template"]["template"]["vpcAccess"]["connector"] == "vpc_name"
 
