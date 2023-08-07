@@ -211,7 +211,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         job_name = f"{repo_name}-{unique_suffix}"
         return job_name
 
-    def _ensure_compatible_labels(self) -> Dict[str, str]:
+    def _get_compatible_labels(self) -> Dict[str, str]:
         """
         Ensures labels are compatible with GCP label requirements.
         https://cloud.google.com/resource-manager/docs/creating-managing-labels
@@ -242,7 +242,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         custom_job = CustomJob(
             display_name=self.job_name,
             job_spec=job_spec,
-            labels=self._ensure_compatible_labels(),
+            labels=self._get_compatible_labels(),
         )
         return str(custom_job)  # outputs a json string
 
@@ -309,7 +309,7 @@ class VertexAICustomTrainingJob(Infrastructure):
         custom_job = CustomJob(
             display_name=self.job_name,
             job_spec=job_spec,
-            labels=self._ensure_compatible_labels(),
+            labels=self._get_compatible_labels(),
         )
 
         # run job
