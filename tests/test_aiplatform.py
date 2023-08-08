@@ -20,6 +20,7 @@ class TestVertexAICustomTrainingJob:
             region="us-east1",
             image="us-docker.pkg.dev/cloudrun/container/job:latest",
             gcp_credentials=gcp_credentials,
+            labels={"prefect.io/flow-name": "hungry-hippo"},
         )
 
     # TODO: Improve test resiliency to changes in str output
@@ -55,6 +56,10 @@ class TestVertexAICustomTrainingJob:
                 scheduling {
                 }
                 service_account: "my_service_account_email"
+            }
+            labels {
+                key: "prefect-io_flow-name"
+                value: "hungry-hippo"
             }
         """.strip().splitlines()
 

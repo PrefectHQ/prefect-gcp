@@ -2,3 +2,4 @@ prefect>=2.10.17
 google-api-python-client>=2.20.0
 google-cloud-storage>=2.0.0
 tenacity>=8.0.0
+python-slugify>=8.0.0
