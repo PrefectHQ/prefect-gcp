@@ -53,6 +53,7 @@ Examples:
 """
 
 import datetime
+import re
 import time
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
@@ -62,6 +63,7 @@ from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import Field
+from slugify import slugify
 from typing_extensions import Literal
 
 # to prevent "Failed to load collection" from surfacing
@@ -85,6 +87,8 @@ except ModuleNotFoundError:
     pass
 
 from prefect_gcp.credentials import GcpCredentials
+
+_DISALLOWED_GCP_LABEL_CHARACTERS = re.compile(r"[^-a-zA-Z0-9_]+")
 
 
 class VertexAICustomTrainingJobResult(InfrastructureResult):
@@ -207,10 +211,39 @@ class VertexAICustomTrainingJob(Infrastructure):
         job_name = f"{repo_name}-{unique_suffix}"
         return job_name
 
+    def _get_compatible_labels(self) -> Dict[str, str]:
+        """
+        Ensures labels are compatible with GCP label requirements.
+        https://cloud.google.com/resource-manager/docs/creating-managing-labels
+
+        Ex: the Prefect provided key of prefect.io/flow-name -> prefect-io_flow-name
+        """
+        compatible_labels = {}
+        for key, val in self.labels.items():
+            new_key = slugify(
+                key,
+                lowercase=True,
+                replacements=[("/", "_"), (".", "-")],
+                max_length=63,
+                regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS,
+            )
+            compatible_labels[new_key] = slugify(
+                val,
+                lowercase=True,
+                replacements=[("/", "_"), (".", "-")],
+                max_length=63,
+                regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS,
+            )
+        return compatible_labels
+
     def preview(self) -> str:
         """Generate a preview of the job definition that will be sent to GCP."""
         job_spec = self._build_job_spec()
-        custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
+        custom_job = CustomJob(
+            display_name=self.job_name,
+            job_spec=job_spec,
+            labels=self._get_compatible_labels(),
+        )
         return str(custom_job)  # outputs a json string
 
     def _build_job_spec(self) -> "CustomJobSpec":
@@ -273,7 +306,11 @@ class VertexAICustomTrainingJob(Infrastructure):
         Builds a custom job and begins running it.
         """
         # create custom job
-        custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
+        custom_job = CustomJob(
+            display_name=self.job_name,
+            job_spec=job_spec,
+            labels=self._get_compatible_labels(),
+        )
 
         # run job
         self.logger.info(
