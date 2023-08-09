@@ -21,8 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.5.0
 
+Not yet released
+
 ### Added
 - New Cloud Run API v2 Block added
+
+## 0.4.6
+
+Not yet released
+
+### Changed
+
+- Vertex AI CustomJob sets labels specified by Prefect Agent when Deployment triggered on infrastructure.
 
 ## 0.4.5
 
