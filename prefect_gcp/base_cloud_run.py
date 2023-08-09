@@ -1,6 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from anyio.abc import TaskStatus
@@ -8,6 +8,7 @@ from googleapiclient.discovery import Resource
 from prefect.infrastructure import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import BaseModel, Field, root_validator, validator
+from typing_extensions import Literal
 
 
 class BaseJob(BaseModel, ABC):
@@ -350,7 +351,7 @@ class BaseCloudRunJob(Infrastructure, ABC):
 
     def _add_container_settings(
         self,
-        base_settings: dict[str, Any],
+        base_settings: Dict[str, Any],
     ) -> dict[str, Any]:
         """
         Adds settings related to containers for Cloud Run Jobs to a dictionary.
