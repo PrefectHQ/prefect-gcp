@@ -338,11 +338,11 @@ class VertexAICustomTrainingJob(Infrastructure):
         )
 
         # The full name includes a projects key, to form the url we exclude it
-        path = "/".join(custom_job_run.name.split("/")[2:]).replace("customJobs", "training")
-        # return a url to navigate to the submitted flow
-        self.logger.info(
-            f"Job URL: https://console.cloud.google.com/vertex-ai/{path}"
+        path = "/".join(custom_job_run.name.split("/")[2:]).replace(
+            "customJobs", "training"
         )
+        # return a url to navigate to the submitted flow
+        self.logger.info(f"Job URL: https://console.cloud.google.com/vertex-ai/{path}")
 
         return custom_job_run
 
