@@ -352,7 +352,7 @@ class BaseCloudRunJob(Infrastructure, ABC):
     def _add_container_settings(
         self,
         base_settings: Dict[str, Any],
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """
         Adds settings related to containers for Cloud Run Jobs to a dictionary.
         Includes environment variables, entrypoint command, entrypoint arguments,
