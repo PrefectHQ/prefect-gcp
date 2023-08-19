@@ -526,6 +526,15 @@ class CloudRunJobV2(BaseCloudRunJob):
             "before raising an exception."
         ),
     )
+    service_account: Optional[str] = Field(
+        default=None,
+        description=(
+            "Email address of the IAM service account associated with the Task of a "
+            "Job. The service account represents the identity of the running "
+            "task, and determines what permissions the task has. If not "
+            "provided, the task will use the project's default service account."
+        ),
+    )
 
     _job_name: str = None
     _execution: Optional[ExecutionV2] = None
@@ -775,6 +784,9 @@ class CloudRunJobV2(BaseCloudRunJob):
             body["template"]["template"]["vpcAccess"] = {
                 "connector": self.vpc_connector_name,
             }
+
+        if self.service_account:
+            body["template"]["template"]["serviceAccount"] = self.service_account
 
         return body
 
