@@ -184,13 +184,15 @@ class VertexAICustomTrainingJob(Infrastructure):
             "and required if a service account cannot be detected in gcp_credentials."
         ),
     )
-
     job_watch_poll_interval: float = Field(
         default=5.0,
         description=(
             "The amount of time to wait between GCP API calls while monitoring the "
             "state of a Vertex AI Job."
         ),
+    )
+    vertex_job_name: Optional[str] = Field(
+        default=None, description="Name to passed to Vertex job"
     )
 
     @property
@@ -199,6 +201,8 @@ class VertexAICustomTrainingJob(Infrastructure):
         The name can be up to 128 characters long and can be consist of any UTF-8 characters. Reference:
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
+        if self.vertex_job_name:
+            return self.vertex_job_name
         try:
             repo_name = self.image.split("/")[2]  # `gcr.io/<project_name>/<repo>/`"
         except IndexError:
