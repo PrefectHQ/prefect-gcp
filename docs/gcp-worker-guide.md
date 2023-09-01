@@ -105,7 +105,7 @@ prefect work-pool create --type cloud-run my-cloud-run-pool
 
 Once the workpool is created, go to the Configuration tab in the UI to configure the work pool's base job template.
 
-There are many ways to customize the base job template for the work pool. Modifying the template influences the behavior of the worker responsible for executing flow runs from the work pool. For this guide we are going to modify just a few of the available fields.
+There are many ways to customize the base job template for the work pool. Modifying the template influences the infrastructure configuration that worker provisions for flow runs from the work pool. For this guide we are going to modify just a few of the available fields.
 
 Specify the region for the cloud run job.
 ![region](img/cloud-run-work-pool-region.png)
