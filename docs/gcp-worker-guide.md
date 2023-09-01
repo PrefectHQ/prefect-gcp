@@ -135,10 +135,10 @@ Don't forget to replace `YOUR-SERVICE-ACCOUNT-NAME` with the name of the service
 ```bash
 gcloud run deploy prefect-worker --image=prefecthq/prefect:2-latest \
 --set-env-vars PREFECT_API_URL=$PREFECT_API_URL,PREFECT_API_KEY=$PREFECT_API_KEY \
---service-account [YOUR-SERVICE-ACCOUNT-NAME] \
+--service-account prefect-service-account@bianca-personal.iam.gserviceaccount.com \
 --no-cpu-throttling \
 --min-instances 1 \
---args "prefect","worker","start","--install-policy","always","-p","my-cloud-run-pool","-t","cloud-run"
+--args "prefect","worker","start","--install-policy","always","--with-healthcheck","-p","gcp-pool","-t","cloud-run"
 ```
 
 After running this command, you'll be prompted to specify a region. Choose the same region that you selected when creating the Cloud Run work pool in the second step of this guide.
