@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from google.cloud.aiplatform_v1.types.accelerator_type import AcceleratorType
-from google.cloud.aiplatform_v1.types.accelerator_type import AcceleratorType
 from google.cloud.aiplatform_v1.types.job_state import JobState
 from prefect.exceptions import InfrastructureNotFound
 from tenacity import RetryError
