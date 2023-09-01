@@ -21,7 +21,7 @@ After completing this guide, you will have:
 4. Deployed a Flow
 5. Executed the Flow as a Google Cloud Run Job
 
-If you're looking for an introduction to workers, workpools, and deployments, check out the [deployment tutorial](https://docs.prefect.io/2.12.0/tutorial/).
+If you're looking for an introduction to workers, workpools, and deployments, check out the [workers and work pools tutorial](https://docs.prefect.io/latest/tutorial/workers/).
 
 ### Prerequisites
 Before starting this guide, make sure you have:
@@ -103,9 +103,9 @@ You can create a new work pool using the Prefect UI or CLI. The following comman
 prefect work-pool create --type cloud-run my-cloud-run-pool
 ```
 
-Once the workpool is created, go to the Configuration tab in the UI to configure the work pool's base job template.
+Once the workpool is created, find the work pool in the UI and edit it.
 
-There are many ways to customize the base job template for the work pool. Modifying the template influences the infrastructure configuration that worker provisions for flow runs from the work pool. For this guide we are going to modify just a few of the available fields.
+There are many ways to customize the base job template for the work pool. Modifying the template influences the infrastructure configuration that the worker provisions for flow runs submitted to the work pool. For this guide we are going to modify just a few of the available fields.
 
 Specify the region for the cloud run job.
 ![region](img/cloud-run-work-pool-region.png)
@@ -116,10 +116,11 @@ Select the GCP credentials block that has the JSON key file for the service acco
 Save the name of the service account created in first step of this guide.
 ![name](img/cloud-run-work-pool-service-account-name.png)
 
-Click `Next` to move to the `Details` tab. Give your work pool a name, a nice description, set your flow run concurrency, and click "Create". Your work pool is now ready to receive scheduled flow runs!
+Your work pool is now ready to receive scheduled flow runs!
 
 ### Step 3. Deploying a Cloud Run Worker
-Now you can launch a Cloud Run service to host the Cloud Run worker.
+Now you can launch a Cloud Run service to host the Cloud Run worker. This worker will poll the work pool that you created in the previous step.
+
 Navigate back to your terminal and run the following commands to set your Prefect API key and URL as environment variables.
 Be sure to replace `ACCOUNT-ID` and `WORKSPACE-ID` with your Prefect account and workspace IDs (both will be available in the URL of the UI when previewing the workspace dashboard).
 You'll want to replace `YOUR-API-KEY` with an active API key as well.
@@ -142,9 +143,9 @@ gcloud run deploy prefect-worker --image=prefecthq/prefect:2-latest \
 ```
 
 After running this command, you'll be prompted to specify a region. Choose the same region that you selected when creating the Cloud Run work pool in the second step of this guide.
-The next prompt will ask if you'd like to allow unauthentiate invocations to your worker. For this guide, you can select "No".
+The next prompt will ask if you'd like to allow unauthentiated invocations to your worker. For this guide, you can select "No".
 
-After a few seconds, you'll be able to see your new `prefect-worker` service by navigating to Cloud Run page of your Google Cloud console!
+After a few seconds, you'll be able to see your new `prefect-worker` service by navigating to the Cloud Run page of your Google Cloud console. Additionally, you should be able to see a record of this worker in the Prefect UI on the work pool's page by navigating to the `Worker` tab.
 Let's not leave our worker hanging, it's time to give it a job.
 
 ### Step 4. Deploying a Flow
@@ -193,22 +194,22 @@ if __name__ == "__main__":
 
 In the remainder of this guide, this script will be referred to as `weather_flow.py`, but you can name yours whatever you'd like.
 
-####Creating a Prefect.yaml
-Now we're ready to make a prefect.yaml file, which will be responsible for managing the deployment of the flow.
-Navigate back to the root of your directory, and run the following command to create a prefect.yaml using Prefect's docker deployment recipe.
+####Creating a Prefect.yaml file
+Now we're ready to make a `prefect.yaml` file, which will be responsible for managing the deployments of this repository.
+Navigate back to the root of your directory, and run the following command to create a `prefect.yaml` file using Prefect's docker deployment recipe.
 
 ```bash
 prefect init --recipe docker
 ```
 
-You'll receive a prompt to put in values for the image name and tag. Since we will be pushing the image to GCR, the name of your image should be prefixed with `gcr.io/[PROJECT_ID]/`. You'll want to replace `[PROJECT_ID]` with the ID of your project in GCP. This should match the ID of the project you used in step 1 of this guide. Here is an example of what the command will look like:
+You'll receive a prompt to put in values for the image name and tag. Since we will be pushing the image to GCR, the name of your image should be prefixed with `gcr.io/[PROJECT_ID]/`. You'll want to replace `[PROJECT_ID]` with the ID of your project in GCP. This should match the ID of the project you used in step 1 of this guide. Here is an example of what this could look like:
 
 ```bash
 image_name: gcr.io/prefect-project/gcp-weather-image
 tag: latest
 ```
 
-At this point, there will be a new prefect.yaml available. The contents will look similar to the example below, however, there are a few key changes that I've made to the file shown here. Feel free to copy the contents and paste them in your prefect.yaml:
+At this point, there will be a new `prefect.yaml` file available at the root of your project. The contents will look similar to the example below, however, I've added in a combination of [yaml templating options](https://docs.prefect.io/latest/concepts/deployments/#templating-options) and [prefect deployment actions](https://docs.prefect.io/latest/concepts/deployments/#deployment-actions) to build out a simple CICD process. Feel free to copy the contents and paste them in your prefect.yaml:
 
 ```yaml
 # Welcome to your prefect.yaml file! You can you this file for storing and managing
@@ -265,9 +266,9 @@ deployments:
 !!!Tip
     After copying the example above, don't forget to replace `[WORKING_DIRECTORY]` with the name of the directory where your flow folder and prefect.yaml live.
 
-To get a better understanding of the different components of the prefect.yaml above and what they do, feel free to read this next section. Otherwise, you can skip ahead to *Flow Deployment*.
+To get a better understanding of the different components of the `prefect.yaml` file above and what they do, feel free to read this next section. Otherwise, you can skip ahead to *Flow Deployment*.
 
-In the `build` section of the prefect.yaml, there are two steps which are executed:
+In the `build` section of the `prefect.yaml` file, there are two steps which are executed:
 
 1. `prefect.deployments.steps.run_shell_script` : runs a shell command which configures Docker to authenticate with GCR using your Google Cloud credentials.
 2. `prefect_docker.deployments.steps.build_docker_image` : builds a Docker image automatically which uses the name and tag chosen previously.
@@ -286,21 +287,21 @@ In the `build` section of the prefect.yaml, there are two steps which are execut
     ```
 
 
-The `push` section sends the Docker image to GCR, so that it can be easily accessed for flow run execution.
+The `push` section sends the Docker image to GCR, so that it can be easily accessed by the worker for flow run execution.
 
-In the `deployments` section of the prefect.yaml above, you'll see that there is a deployment declaration named `gcp-weather-deploy`. Within the declaration, the entrypoint for the flow is specified along with some default parameters which will be passed to the flow at runtime. Last but not least, the name of the workpool that we created in step 2 of this guide is specified.
+In the `deployments` section of the `prefect.yaml` file above, you'll see that there is a deployment declaration named `gcp-weather-deploy`. Within the declaration, the entrypoint for the flow is specified along with some default parameters which will be passed to the flow at runtime. Last but not least, the name of the workpool that we created in step 2 of this guide is specified.
 
 ####Flow Deployment
-Once the prefect.yaml is completed, run the following command in the terminal to initalize the deployment wizard:
+Once you're happy with the specifications in the `prefect.yaml` file, run the following command in the terminal to deploy your flow:
 
 ```bash
-prefect deploy
+prefect deploy --name gcp-weather-deploy
 ```
 
 Once the flow is deployed to Prefect Cloud or your local Prefect Server, it's time to queue up a flow run!
 
 ### Step 5. Flow Execution
-Find your deployment inn the UI, and hit the *Quick Run* button.
+Find your deployment in the UI, and hit the *Quick Run* button.
 You have now successfully submitted a flow run to your Cloud Run worker!
 If you used the flow script provided in this guide, check the artifacts tab for the flow run once it completes.
 You'll have a nice little weather report waiting for you there.
