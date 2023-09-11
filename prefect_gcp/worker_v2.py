@@ -131,24 +131,12 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             str: The job name.
         """
         if self.config_job_name is None:
-            image = self.job_body["template"]["template"]["containers"][0].get(
-                "image",
-                f"docker.io/{get_prefect_image_name()}",
-            )
-
-            modified_image_name = (
-                "_".join(image.split("/")[-2:])
-                .replace(
-                    ":",
-                    "-",
-                )
-                .replace("_", "-")
-            )
-
-            pre_trim_cr_job_name = f"{self.name}-{modified_image_name}"
+            pre_trim_cr_job_name = f"prefect-{self.name}"
 
             if len(pre_trim_cr_job_name) > 17:
                 pre_trim_cr_job_name = pre_trim_cr_job_name[:17]
+
+            pre_trim_cr_job_name = pre_trim_cr_job_name.rstrip("-")
 
             self.config_job_name = pre_trim_cr_job_name
 
