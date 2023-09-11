@@ -154,12 +154,6 @@ class JobV2(BaseModel):
             dict: The response from the Cloud Run V2 API.
         """
         # noinspection PyUnresolvedReferences
-        import json
-
-        print(json.dumps(body, indent=4))
-
-        raise NotImplementedError
-
         request = cr_client.jobs().create(
             parent=f"projects/{project}/locations/{location}",
             jobId=job_id,

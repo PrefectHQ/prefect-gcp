@@ -2,7 +2,6 @@ import re
 import shlex
 import time
 from typing import TYPE_CHECKING, Any, Literal, Optional
-from uuid import uuid4
 
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
@@ -43,7 +42,7 @@ def _get_default_job_body_template() -> dict[str, Any]:
         "template": {
             "template": {
                 "maxRetries": "{{ max_retries }}",
-                "timeout": "{{ timeout }}test",
+                "timeout": "{{ timeout }}",
                 "containers": [
                     {
                         "env": [],
@@ -95,6 +94,17 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         default="us-central1",
         description="The region in which to run the Cloud Run job",
     )
+    timeout: Optional[int] = Field(
+        default=600,
+        gt=0,
+        le=86400,
+        description=(
+            "The length of time that Prefect will wait for a Cloud Run Job to "
+            "complete before raising an exception."
+        ),
+    )
+
+    config_job_name: str = None
 
     @property
     def project(self) -> str:
@@ -114,24 +124,29 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         Returns:
             str: The job name.
         """
-        image = self.job_body["template"]["template"]["containers"][0].get(
-            "image",
-            f"docker.io/{get_prefect_image_name()}",
-        )
-
-        modified_image_name = (
-            "_".join(image.split("/")[-2:])
-            .replace(
-                ":",
-                "-",
+        if self.config_job_name is None:
+            image = self.job_body["template"]["template"]["containers"][0].get(
+                "image",
+                f"docker.io/{get_prefect_image_name()}",
             )
-            .replace("_", "-")
-        )
 
-        if len(modified_image_name) > 17:
-            modified_image_name = modified_image_name[:17]
+            modified_image_name = (
+                "_".join(image.split("/")[-2:])
+                .replace(
+                    ":",
+                    "-",
+                )
+                .replace("_", "-")
+            )
 
-        return f"{modified_image_name}-{uuid4().hex}"
+            pre_trim_cr_job_name = f"{self.name}-{modified_image_name}"
+
+            if len(pre_trim_cr_job_name) > 17:
+                pre_trim_cr_job_name = pre_trim_cr_job_name[:17]
+
+            self.config_job_name = pre_trim_cr_job_name
+
+        return self.config_job_name
 
     def prepare_for_flow_run(
         self,
@@ -161,7 +176,13 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         self._populate_or_format_command()
         self._format_args_if_present()
         self._populate_image_if_not_present()
-        self._populate_name_if_not_present()
+        self._populate_timeout()
+
+    def _populate_timeout(self):
+        """
+        Populates the job body with the timeout.
+        """
+        self.job_body["template"]["template"]["timeout"] = f"{self.timeout}s"
 
     def _populate_env(self):
         """
@@ -170,13 +191,6 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         envs = [{"name": k, "value": v} for k, v in self.env.items()]
 
         self.job_body["template"]["template"]["containers"][0]["env"] = envs
-
-    def _populate_name_if_not_present(self):
-        """
-        Populates the job body with the job name if not present.
-        """
-        if "name" not in self.job_body:
-            self.job_body["name"] = self.name
 
     def _populate_image_if_not_present(self):
         """
@@ -740,8 +754,9 @@ class CloudRunWorkerV2(BaseWorker):
 
             if elapsed_time > configuration.timeout:
                 raise RuntimeError(
-                    f"Timeout of {configuration.timeout} seconds reached while waiting for"
-                    f" Cloud Run Job V2 {configuration.job_name} to complete."
+                    f"Timeout of {configuration.timeout} seconds reached while "
+                    f"waiting for Cloud Run Job V2 {configuration.job_name} to "
+                    "complete."
                 )
 
             time.sleep(poll_interval)
