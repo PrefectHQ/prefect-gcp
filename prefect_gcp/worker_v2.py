@@ -37,6 +37,7 @@ def _get_default_job_body_template() -> dict[str, Any]:
         dict[str, Any]: The default job body template.
     """
     return {
+        "client": "prefect",
         "launchStage": "{{ launch_stage }}",
         "template": {
             "template": {
@@ -68,7 +69,13 @@ def _get_base_job_body() -> dict[str, Any]:
     Returns:
         dict[str, Any]: The base job body.
     """
-    return {"client": "prefect", "template": {"template": {"containers": []}}}
+    return {
+        "template": {
+            "template": {
+                "containers": [],
+            },
+        },
+    }
 
 
 class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
@@ -727,7 +734,6 @@ class CloudRunWorkerV2(BaseWorker):
         execution: ExecutionV2,
         poll_interval: int,
     ) -> ExecutionV2:
-
         """
         Update execution status until it is no longer running or timeout is reached.
 
