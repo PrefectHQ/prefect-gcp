@@ -37,7 +37,6 @@ def _get_default_job_body_template() -> dict[str, Any]:
         dict[str, Any]: The default job body template.
     """
     return {
-        "client": "prefect",
         "launchStage": "{{ launch_stage }}",
         "template": {
             "template": {
