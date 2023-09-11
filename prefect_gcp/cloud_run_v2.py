@@ -154,6 +154,12 @@ class JobV2(BaseModel):
             dict: The response from the Cloud Run V2 API.
         """
         # noinspection PyUnresolvedReferences
+        import json
+
+        print(json.dumps(body, indent=4))
+
+        raise NotImplementedError
+
         request = cr_client.jobs().create(
             parent=f"projects/{project}/locations/{location}",
             jobId=job_id,
@@ -790,6 +796,9 @@ class CloudRunJobV2(Infrastructure):
     def _get_client(self) -> Resource:
         """
         Get the base client needed for interacting with GCP Cloud Run V2 API.
+
+        Returns:
+            Resource: The base client needed for interacting with GCP Cloud Run V2 API.
         """
         api_endpoint = "https://run.googleapis.com"
         gcp_creds = self.credentials.get_credentials_from_service_account()
