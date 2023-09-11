@@ -420,7 +420,7 @@ class CloudRunWorkerV2(BaseWorker):
                 logger=logger,
             )
 
-            job_execution = await run_sync_in_worker_thread(
+            execution = await run_sync_in_worker_thread(
                 self._begin_job_execution,
                 configuration=configuration,
                 cr_client=cr_client,
@@ -434,7 +434,7 @@ class CloudRunWorkerV2(BaseWorker):
                 self._watch_job_execution_and_get_result,
                 configuration=configuration,
                 cr_client=cr_client,
-                job_execution=job_execution,
+                execution=execution,
                 logger=logger,
             )
 
