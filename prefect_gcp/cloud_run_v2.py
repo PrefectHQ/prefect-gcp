@@ -463,19 +463,13 @@ class CloudRunJobV2(Infrastructure):
         default=0,
         description=("The maximum number of times to retry the Cloud Run Job V2. "),
     )
-    memory: Optional[int] = Field(
+    memory: Optional[str] = Field(
         default=None,
         title="Memory",
-        description="The amount of memory allocated to the Cloud Run Job V2.",
-    )
-    memory_unit: Optional[Literal["G", "Gi", "M", "Mi"]] = Field(
-        default=None,
-        title="Memory Unit",
         description=(
-            "The unit of memory allocated to the Cloud Run Job V2. "
-            "See https://cloud.google.com/run/docs/configuring/memory-limits#setting "
-            "for additional details."
+            "The amount of memory allocated to the Cloud Run Job V2 with unit."
         ),
+        example="512Mi",
     )
     region: str = Field(
         ...,
@@ -877,19 +871,6 @@ class CloudRunJobV2(Infrastructure):
 
         raise exc
 
-    def _memory_string(self) -> str | None:
-        """
-        Creates a properly formatted memory string for the Cloud Run V2 API POST
-            CREATE request.
-
-        Returns:
-            str: The memory string or None if the memory AND memory unit are None.
-        """
-        if self.memory and self.memory_unit:
-            return str(self.memory) + self.memory_unit
-
-        return None
-
     def _job_body(self) -> dict:
         """
         Creates a properly formatted job body for the Cloud Run V2 API POST CREATE
@@ -914,7 +895,7 @@ class CloudRunJobV2(Infrastructure):
                             "resources": {
                                 "limits": {
                                     "cpu": self.cpu,
-                                    "memory": self._memory_string(),
+                                    "memory": self.memory,
                                 },
                             },
                         },

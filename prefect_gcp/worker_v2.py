@@ -43,7 +43,7 @@ def _get_default_job_body_template() -> dict[str, Any]:
         "template": {
             "template": {
                 "maxRetries": "{{ max_retries }}",
-                "timeout": "{{ timeout }}s",
+                "timeout": "{{ timeout }}test",
                 "containers": [
                     {
                         "env": [],
@@ -339,7 +339,7 @@ class CloudRunWorkerV2Variables(BaseVariables):
         description="The region in which to run the Cloud Run job",
     )
     timeout: Optional[int] = Field(
-        default=1000,
+        default=600,
         gt=0,
         le=86400,
         title="Job Timeout",
