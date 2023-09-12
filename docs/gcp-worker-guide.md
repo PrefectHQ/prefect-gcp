@@ -208,7 +208,7 @@ image_name: gcr.io/prefect-project/gcp-weather-image
 tag: latest
 ```
 
-At this point, there will be a new `prefect.yaml` file available at the root of your project. The contents will look similar to the example below, however, I've added in a combination of [yaml templating options](https://docs.prefect.io/latest/concepts/deployments/#templating-options) and [prefect deployment actions](https://docs.prefect.io/latest/concepts/deployments/#deployment-actions) to build out a simple CICD process. Feel free to copy the contents and paste them in your prefect.yaml:
+At this point, there will be a new `prefect.yaml` file available at the root of your project. The contents will look similar to the example below, however, I've added in a combination of [yaml templating options](https://docs.prefect.io/latest/concepts/deployments/#templating-options) and [prefect deployment actions](https://docs.prefect.io/latest/concepts/deployments/#deployment-actions) to build out a simple CI/CD process. Feel free to copy the contents and paste them in your prefect.yaml:
 
 ```yaml
 # Welcome to your prefect.yaml file! You can you this file for storing and managing
