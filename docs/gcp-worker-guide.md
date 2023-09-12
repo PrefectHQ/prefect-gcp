@@ -25,7 +25,7 @@ If you're looking for a general introduction to workers, work pools, and deploym
 ### Prerequisites
 Before starting this guide, make sure you have:
 
-- A [Google Cloud Platform (GCP) account](https://cloud.google.com/gcp?utm_source=google&utm_medium=cpc&utm_campaign=na-US-all-en-dr-bkws-all-all-trial-e-dr-1605212&utm_content=text-ad-none-any-DEV_c-CRE_665735450627-ADGP_Hybrid+%7C+BKWS+-+EXA+%7C+Txt_Google+Cloud-KWID_43700077223807301-kwd-26415313501&utm_term=KW_google+cloud+platform-ST_google+cloud+platform&gclid=Cj0KCQjw9MCnBhCYARIsAB1WQVWT-Le8HeBNmKVk7lvVV-SO7GGxQBQecIdKbtNc8mtFTtUKWWfy9HEaAnh4EALw_wcB&gclsrc=aw.ds&hl=en).
+- A [Google Cloud Platform (GCP) account](https://cloud.google.com/gcp).
 - A project on your GCP account where you have the necessary permissions to create Cloud Run Services and Service Accounts.
 - The `gcloud` CLI installed on your local machine. You can follow Google Cloud's [installation guide](https://cloud.google.com/sdk/docs/install). If you're using Apple (or a Linux system) you can also use [Homebrew](https://formulae.brew.sh/cask/google-cloud-sdk) for installation.
 - [Docker](https://www.docker.com/get-started/) installed on your local machine.
