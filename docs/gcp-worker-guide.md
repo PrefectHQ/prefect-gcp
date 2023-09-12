@@ -29,7 +29,7 @@ Before starting this guide, make sure you have:
 - A project on your GCP account where you have the necessary permissions to create Cloud Run Services and Service Accounts.
 - The `gcloud` CLI installed on your local machine. You can follow Google Cloud's [installation guide](https://cloud.google.com/sdk/docs/install). If you're using Apple (or a Linux system) you can also use [Homebrew](https://formulae.brew.sh/cask/google-cloud-sdk) for installation.
 - [Docker](https://www.docker.com/get-started/) installed on your local machine.
-- A Prefect server instance. You can sign up for a forever free [Prefect Cloud Account](https://app.prefect.cloud/auth/login) or, alternatively, self-host a [Prefect server](https://docs.prefect.io/2.12.0/guides/host/).
+- A Prefect server instance. You can sign up for a forever free [Prefect Cloud Account](https://app.prefect.cloud/) or, alternatively, self-host a [Prefect server](https://docs.prefect.io/latest/guides/host/).
 
 ### Step 1. Creating a Google Cloud Service Account
 First, open a terminal or command prompt on your local machine where `gcloud` is installed. If you haven't already authenticated with `gcloud`, run the following command and follow the instructions to log in to your GCP account.
