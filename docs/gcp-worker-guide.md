@@ -150,7 +150,7 @@ Let's not leave our worker hanging, it's time to give it a job.
 ### Step 4. Deploying a Flow
 Let's prepare a flow to run as a Cloud Run job. In this section of the guide, we'll "bake" our code into a Docker image, and push that image to Google Cloud Container Registry (GCR).
 
-####Writing a Flow
+### Write a flow
 First, create a new directory. This will serve as the root of your project's repository. Within the directory, create a sub-directory called `flows`.
 Navigate to the `flows` subdirectory and create a new flow. Feel free to write your own, but here's a ready-made script for your convenience.
 
