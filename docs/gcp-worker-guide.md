@@ -130,7 +130,7 @@ export PREFECT_API_KEY='[YOUR-API-KEY]'
 ```
 
 Once those variables are set, run the following shell command to deploy your worker as a service.
-Don't forget to replace `YOUR-SERVICE-ACCOUNT-NAME` with the name of the service account you created in the first step of this guide.
+Don't forget to replace `[YOUR-SERVICE-ACCOUNT-NAME]` with the name of the service account you created in the first step of this guide.
 
 ```bash
 gcloud run deploy prefect-worker --image=prefecthq/prefect:2-latest \
