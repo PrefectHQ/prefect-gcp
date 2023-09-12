@@ -2,7 +2,6 @@
 
 ## Why use Google Cloud Run for Flow Run execution?
 Google Cloud Run is a fully managed compute platform that automatically scales your containerized applications.
-Here are some reasons why you may consider running your flows as Google Cloud Run jobs:
 
 1. Serverless Architecture: Cloud Run follows a serverless architecture, which means you don't need to manage any underlying infrastructure. Google Cloud Run automatically handles the scaling and availability of your pipeline, allowing you to focus on developing and deploying your code.
 
