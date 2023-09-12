@@ -253,8 +253,9 @@ deployments:
   schedule: {}
   flow_name: null
   entrypoint: flows/weather_flow.py:fetch_weather
-  parameters: {lat: 14.5994,
-               lon: 28.6731}
+  parameters:
+    lat: 14.5994
+    lon: 28.6731
   work_pool:
     name: my-cloud-run-pool
     work_queue_name: default
