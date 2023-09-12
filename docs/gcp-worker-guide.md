@@ -135,7 +135,7 @@ Don't forget to replace `[YOUR-SERVICE-ACCOUNT-NAME]` with the name of the servi
 ```bash
 gcloud run deploy prefect-worker --image=prefecthq/prefect:2-latest \
 --set-env-vars PREFECT_API_URL=$PREFECT_API_URL,PREFECT_API_KEY=$PREFECT_API_KEY \
---service-account prefect-service-account@bianca-personal.iam.gserviceaccount.com \
+--service-account [YOUR-SERVICE-ACCOUNT-NAME] \
 --no-cpu-throttling \
 --min-instances 1 \
 --args "prefect","worker","start","--install-policy","always","--with-healthcheck","-p","gcp-pool","-t","cloud-run"
