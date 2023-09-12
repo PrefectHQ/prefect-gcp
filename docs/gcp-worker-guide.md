@@ -121,8 +121,8 @@ Your work pool is now ready to receive scheduled flow runs!
 Now you can launch a Cloud Run service to host the Cloud Run worker. This worker will poll the work pool that you created in the previous step.
 
 Navigate back to your terminal and run the following commands to set your Prefect API key and URL as environment variables.
-Be sure to replace `ACCOUNT-ID` and `WORKSPACE-ID` with your Prefect account and workspace IDs (both will be available in the URL of the UI when previewing the workspace dashboard).
-You'll want to replace `YOUR-API-KEY` with an active API key as well.
+Be sure to replace `[ACCOUNT-ID]` and `[WORKSPACE-ID]` with your Prefect account and workspace IDs (both will be available in the URL of the UI when previewing the workspace dashboard).
+You'll want to replace `[YOUR-API-KEY]` with an active API key as well.
 
 ```bash
 export PREFECT_API_URL='https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]'
