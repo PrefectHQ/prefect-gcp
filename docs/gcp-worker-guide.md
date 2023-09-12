@@ -15,8 +15,8 @@ Google Cloud Run is a fully managed compute platform that automatically scales y
 After completing this guide, you will have:
 
 1. Created a Google Cloud Service Account
-2. Created a Cloud Run Work Pool
-3. Deployed a Cloud Run Worker
+2. Created a Prefect Work Pool
+3. Deployed a Prefect Worker as a Cloud Run Service
 4. Deployed a Flow
 5. Executed the Flow as a Google Cloud Run Job
 
