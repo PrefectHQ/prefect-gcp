@@ -1,6 +1,6 @@
 # Google Cloud Run Worker Guide
 
-## Benefits of Using Google Cloud Run for Flow Run Execution
+## Why use Google Cloud Run for Flow Run execution?
 Google Cloud Run is a fully managed compute platform that automatically scales your containerized applications.
 Here are some reasons why you may consider running your flows as Google Cloud Run jobs:
 
