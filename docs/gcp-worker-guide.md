@@ -20,7 +20,7 @@ After completing this guide, you will have:
 4. Deployed a Flow
 5. Executed the Flow as a Google Cloud Run Job
 
-If you're looking for an introduction to workers, workpools, and deployments, check out the [workers and work pools tutorial](https://docs.prefect.io/latest/tutorial/workers/).
+If you're looking for a general introduction to workers, work pools, and deployments, check out the [workers and work pools tutorial](https://docs.prefect.io/latest/tutorial/workers/).
 
 ### Prerequisites
 Before starting this guide, make sure you have:
