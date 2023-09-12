@@ -274,7 +274,7 @@ In the `build` section of the `prefect.yaml` file, there are two steps which are
 2. `prefect_docker.deployments.steps.build_docker_image` : builds a Docker image automatically which uses the name and tag chosen previously.
 
 !!!Warning
-    If you are using an M1 Mac, you'll want to ensure that you add `platform: linux/amd64` to your `build_docker_image` step to ensure that your docker image uses amd64 architecture. For example:
+    If you are using an ARM-based chip (such as an M1 or M2 Mac), you'll want to ensure that you add `platform: linux/amd64` to your `build_docker_image` step to ensure that your docker image uses an AMD architecture. For example:
 
     ```yaml 
     - prefect_docker.deployments.steps.build_docker_image:
