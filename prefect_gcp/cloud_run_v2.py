@@ -269,7 +269,7 @@ class ExecutionV2(BaseModel):
     template: dict
     reconciling: bool
     conditions: list[dict]
-    observedGeneration: str
+    observedGeneration: Optional[str]
     runningCount: Optional[int]
     succeededCount: Optional[int]
     failedCount: Optional[int]
@@ -353,7 +353,7 @@ class ExecutionV2(BaseModel):
             template=response["template"],
             reconciling=response.get("reconciling", False),
             conditions=response.get("conditions", []),
-            observedGeneration=response["observedGeneration"],
+            observedGeneration=response.get("observedGeneration"),
             runningCount=response.get("runningCount"),
             succeededCount=response.get("succeededCount"),
             failedCount=response.get("failedCount"),
