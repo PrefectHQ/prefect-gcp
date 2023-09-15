@@ -1,7 +1,8 @@
+import shlex
 import datetime
 import re
 import time
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, MutableSequence
 from uuid import uuid4
 
 import anyio
@@ -299,6 +300,13 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         job_name = f"{repo_name}-{unique_suffix}"
         return job_name
 
+    def command_as_list(self) -> MutableSequence[str]:
+        if not self.command:
+            return ["python", "-m", "prefect.engine"]
+
+        return shlex.split(self.command)
+
+
 
 class VertexAIWorkerResult(BaseWorkerResult):
     """Contains information about the final state of a completed process"""
@@ -397,9 +405,10 @@ class VertexAIWorker(BaseWorker):
                 **configuration.env,
             }.items()
         ]
+
         container_spec = ContainerSpec(
             image_uri=configuration.image,
-            command=configuration.command,
+            command=configuration.command_as_list(),
             args=[],
             env=env_list,
         )
