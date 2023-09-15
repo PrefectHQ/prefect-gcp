@@ -125,7 +125,7 @@ class VertexAIWorkerVariables(BaseVariables):
     boot_disk_size_gb: int = Field(
         title="Boot Disk Size (GB)",
         description="The size of the boot disk to attach to the machine, in gigabytes.",
-        example=25,
+        example=100,
     )
     maximum_run_time_hours: int = Field(
         default=1,
@@ -245,10 +245,9 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         description="The type of boot disk to attach to the machine.",
     )
     boot_disk_size_gb: int = Field(
-        default=25,
         title="Boot Disk Size (GB)",
         description="The size of the boot disk to attach to the machine, in gigabytes.",
-        example=25,
+        example=100,
     )
     maximum_run_time_hours: int = Field(
         default=1,
