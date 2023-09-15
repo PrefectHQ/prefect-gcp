@@ -1,8 +1,8 @@
-import shlex
 import datetime
 import re
+import shlex
 import time
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, MutableSequence
+from typing import TYPE_CHECKING, Dict, List, MutableSequence, Optional, Tuple
 from uuid import uuid4
 
 import anyio
@@ -57,22 +57,22 @@ class VertexAIWorkerVariables(BaseVariables):
         description="The region where the Vertex AI Job resides.",
         example="us-central1",
     )
+    image: str = Field(
+        title="Image Name",
+        description=(
+            "The URI of a container image in the Container or Artifact Registry, "
+            "used to run your Vertex AI Job. Note that Vertex AI will need access"
+            "to the project and region where the container image is stored. See "
+            "https://cloud.google.com/vertex-ai/docs/training/create-custom-container"
+        ),
+        example="gcr.io/your-project/your-repo:latest",
+    )
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
         description="The GCP Credentials used to initiate the "
         "Vertex AI Job. If not provided credentials will be "
         "inferred from the local environment.",
-    )
-    image: Optional[str] = Field(
-        default="docker.io/prefecthq/prefect:2-latest",
-        title="Image Name",
-        description=(
-            "The image to use for a new Vertex AI Job. "
-            "If not set, the latest Prefect image will be used. "
-            "See https://cloud.google.com/run/docs/deploying#images."
-        ),
-        example="docker.io/prefecthq/prefect:2-latest",
     )
     machine_type: str = Field(
         default="n1-standard-4",
@@ -140,11 +140,11 @@ class VertexAIWorkerVariables(BaseVariables):
         title="Service Account Name",
         description=(
             "Specifies the service account to use "
-            "as the run-as account in Vertex AI. The agent submitting jobs must have "
+            "as the run-as account in Vertex AI. The worker submitting jobs must have "
             "act-as permission on this run-as account. If unspecified, the AI "
             "Platform Custom Code Service Agent for the CustomJob's project is "
-            "used. Takes precedence over the service account found in gcp_credentials, "
-            "and required if a service account cannot be detected in gcp_credentials."
+            "used. Takes precedence over the service account found in GCP credentials, "
+            "and required if a service account cannot be detected in GCP credentials."
         ),
     )
     job_watch_poll_interval: float = Field(
@@ -167,10 +167,18 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
 
     Attributes:
         region: The region where the Vertex AI Job resides.
+        image: The URI of a container image in the Container or Artifact Registry.
         credentials: The GCP Credentials used to connect to Vertex AI.
-        job_body: The job body used to create the Vertex AI Job.
-        timeout: The length of time that Prefect will wait for a Vertex AI Job.
-        keep_job: Whether to delete the Vertex AI Job after it completes.
+        machine_type: The machine type to use for the run, which controls resources.
+        accelerator_type: The type of accelerator to attach to the machine.
+        accelerator_count: The number of accelerators to attach to the machine.
+        boot_disk_type: The type of boot disk to attach to the machine.
+        boot_disk_size_gb: The size of the boot disk to attach to the machine.
+        maximum_run_time_hours: The maximum job running time, in hours.
+        network: The full name of the GCE network to which the Job should be peered.
+        reserved_ip_ranges: A list of reserved ip names, where this Job would run.
+        service_account_name: The service account to use as in the Vertex AI Job.
+        job_watch_poll_interval: The interval between GCP API calls to check Job state.
     """
 
     region: str = Field(
@@ -178,22 +186,22 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         description="The region where the Vertex AI Job resides.",
         example="us-central1",
     )
+    image: str = Field(
+        title="Image Name",
+        description=(
+            "The URI of a container image in the Container or Artifact Registry, "
+            "used to run your Vertex AI Job. Note that Vertex AI will need access"
+            "to the project and region where the container image is stored. See "
+            "https://cloud.google.com/vertex-ai/docs/training/create-custom-container"
+        ),
+        example="gcr.io/your-project/your-repo:latest",
+    )
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
         description="The GCP Credentials used to initiate the "
         "Vertex AI Job. If not provided credentials will be "
         "inferred from the local environment.",
-    )
-    image: Optional[str] = Field(
-        default="docker.io/prefecthq/prefect:2-latest",
-        title="Image Name",
-        description=(
-            "The image to use for a new Vertex AI Job. "
-            "If not set, the latest Prefect image will be used. "
-            "See https://cloud.google.com/run/docs/deploying#images."
-        ),
-        example="docker.io/prefecthq/prefect:2-latest",
     )
     machine_type: str = Field(
         default="n1-standard-4",
@@ -261,11 +269,11 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         title="Service Account Name",
         description=(
             "Specifies the service account to use "
-            "as the run-as account in Vertex AI. The agent submitting jobs must have "
+            "as the run-as account in Vertex AI. The worker submitting jobs must have "
             "act-as permission on this run-as account. If unspecified, the AI "
             "Platform Custom Code Service Agent for the CustomJob's project is "
-            "used. Takes precedence over the service account found in gcp_credentials, "
-            "and required if a service account cannot be detected in gcp_credentials."
+            "used. Takes precedence over the service account found in GCP credentials, "
+            "and required if a service account cannot be detected in GCP credentials."
         ),
     )
     job_watch_poll_interval: float = Field(
@@ -301,11 +309,11 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         return job_name
 
     def command_as_list(self) -> MutableSequence[str]:
+        """worker command strings are converted to a list of strings"""
         if not self.command:
             return ["python", "-m", "prefect.engine"]
 
         return shlex.split(self.command)
-
 
 
 class VertexAIWorkerResult(BaseWorkerResult):
