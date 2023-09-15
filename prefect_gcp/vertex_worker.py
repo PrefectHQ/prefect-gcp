@@ -1,3 +1,23 @@
+""" <!-- # noqa -->
+
+Module containing the custom worker used for executing flow runs as Vertex AI Custom Jobs.
+
+Get started by creating a Cloud Run work pool:
+
+```bash
+prefect work-pool create 'my-vertex-pool' --type vertex-ai
+```
+
+Then start a Cloud Run worker with the following command:
+
+```bash
+prefect worker start --pool 'my-vertex-pool'
+```
+
+## Configuration
+Read more about configuring work pools
+[here](https://docs.prefect.io/latest/concepts/work-pools/#work-pool-overview).
+"""
 import datetime
 import re
 import shlex
