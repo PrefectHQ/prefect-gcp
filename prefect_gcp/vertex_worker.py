@@ -73,7 +73,6 @@ class VertexAIWorkerVariables(BaseVariables):
     """
 
     region: str = Field(
-        default="us-central1",
         description="The region where the Vertex AI Job resides.",
         example="us-central1",
     )
@@ -95,7 +94,6 @@ class VertexAIWorkerVariables(BaseVariables):
         "inferred from the local environment.",
     )
     machine_type: str = Field(
-        default="n1-standard-4",
         title="Machine Type",
         description=(
             "The machine type to use for the run, which controls "
@@ -105,15 +103,14 @@ class VertexAIWorkerVariables(BaseVariables):
         example="n1-standard-4",
     )
     accelerator_type: Optional[str] = Field(
-        default=None,
         title="Accelerator Type",
         description=(
             "The type of accelerator to attach to the machine. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
+        example="NVIDIA_TESLA_K80",
     )
     accelerator_count: Optional[int] = Field(
-        default=None,
         title="Accelerator Count",
         description=(
             "The number of accelerators to attach to the machine. "
@@ -121,22 +118,19 @@ class VertexAIWorkerVariables(BaseVariables):
         ),
     )
     boot_disk_type: str = Field(
-        default="pd-ssd",
         title="Boot Disk Type",
         description="The type of boot disk to attach to the machine.",
         example="pd-ssd",
     )
     boot_disk_size_gb: int = Field(
-        default=100,
         title="Boot Disk Size (GB)",
         description="The size of the boot disk to attach to the machine, in gigabytes.",
-        example=100,
+        example=25,
     )
     maximum_run_time_hours: int = Field(
-        default=24,
+        default=1,
         title="Maximum Run Time (Hours)",
         description="The maximum job running time, in hours",
-        example=24,
     )
     network: Optional[str] = Field(
         default=None,
@@ -202,7 +196,6 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
     """
 
     region: str = Field(
-        default="us-central1",
         description="The region where the Vertex AI Job resides.",
         example="us-central1",
     )
@@ -231,10 +224,8 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
             "the available CPU and memory. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
-        example="n1-standard-4",
     )
     accelerator_type: Optional[str] = Field(
-        default=None,
         title="Accelerator Type",
         description=(
             "The type of accelerator to attach to the machine. "
@@ -242,7 +233,6 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         ),
     )
     accelerator_count: Optional[int] = Field(
-        default=None,
         title="Accelerator Count",
         description=(
             "The number of accelerators to attach to the machine. "
@@ -253,19 +243,18 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         default="pd-ssd",
         title="Boot Disk Type",
         description="The type of boot disk to attach to the machine.",
-        example="pd-ssd",
     )
     boot_disk_size_gb: int = Field(
-        default=100,
+        default=25,
         title="Boot Disk Size (GB)",
         description="The size of the boot disk to attach to the machine, in gigabytes.",
-        example=100,
+        example=25,
     )
     maximum_run_time_hours: int = Field(
-        default=24,
+        default=1,
         title="Maximum Run Time (Hours)",
         description="The maximum job running time, in hours",
-        example=24,
+        example=1,
     )
     network: Optional[str] = Field(
         default=None,
