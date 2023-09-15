@@ -110,7 +110,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         ),
     )
 
-    config_job_name: str = None
+    config_job_name: Optional[None] = None
 
     @property
     def project(self) -> str:
@@ -361,6 +361,8 @@ class CloudRunWorkerV2Variables(BaseVariables):
         title="VPC Connector Name",
         description="The name of the VPC connector to use for the Cloud Run job.",
     )
+
+    config_job_name: Optional[str] = None
 
 
 class CloudRunWorkerV2Result(BaseWorkerResult):
