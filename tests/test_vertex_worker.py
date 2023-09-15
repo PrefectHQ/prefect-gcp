@@ -19,6 +19,7 @@ def job_config(service_account_info, gcp_credentials):
         image="gcr.io/your-project/your-repo:latest",
         region="ashenvale",
         credentials=gcp_credentials,
+        boot_disk_size_gb=100,
     )
 
 

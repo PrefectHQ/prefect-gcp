@@ -368,18 +368,21 @@ class VertexAIWorker(BaseWorker):
             api_endpoint=f"{configuration.region}-aiplatform.googleapis.com"
         )
 
+        job_name = configuration.job_name
+
         job_spec = self._build_job_spec(configuration)
         with configuration.credentials.get_job_service_client(
             client_options=client_options
         ) as job_service_client:
             job_run = await self._create_and_begin_job(
-                job_spec, job_service_client, configuration, logger
+                job_name, job_spec, job_service_client, configuration, logger
             )
 
             if task_status:
-                task_status.started(configuration.job_name)
+                task_status.started(job_name)
 
             final_job_run = await self._watch_job_run(
+                job_name=job_name,
                 full_job_name=job_run.name,
                 job_service_client=job_service_client,
                 current_state=job_run.state,
@@ -442,6 +445,7 @@ class VertexAIWorker(BaseWorker):
                 boot_disk_size_gb=configuration.boot_disk_size_gb,
             ),
         )
+
         # look for service account
         service_account = (
             configuration.service_account_name
@@ -471,6 +475,7 @@ class VertexAIWorker(BaseWorker):
 
     async def _create_and_begin_job(
         self,
+        job_name: str,
         job_spec: "CustomJobSpec",
         job_service_client: "JobServiceClient",
         configuration: VertexAIWorkerJobConfiguration,
@@ -481,14 +486,14 @@ class VertexAIWorker(BaseWorker):
         """
         # create custom job
         custom_job = CustomJob(
-            display_name=configuration.job_name,
+            display_name=job_name,
             job_spec=job_spec,
             labels=self._get_compatible_labels(configuration=configuration),
         )
 
         # run job
         logger.info(
-            f"Job {configuration.job_name!r} starting to run "
+            f"Job {job_name!r} starting to run "
             f"the command {configuration.command!r} in region "
             f"{configuration.region!r} using image {configuration.image!r}"
         )
@@ -507,7 +512,7 @@ class VertexAIWorker(BaseWorker):
         )
 
         logger.info(
-            f"Job {configuration.job_name!r} has successfully started; "
+            f"Job {job_name!r} has successfully started; "
             f"the full job name is {custom_job_run.name!r}"
         )
 
@@ -515,7 +520,8 @@ class VertexAIWorker(BaseWorker):
 
     async def _watch_job_run(
         self,
-        full_job_name: str,  # different from self.job_name
+        job_name: str,
+        full_job_name: str,  # different from job_name
         job_service_client: "JobServiceClient",
         current_state: "JobState",
         until_states: Tuple["JobState"],
@@ -543,12 +549,12 @@ class VertexAIWorker(BaseWorker):
                     .replace("state", "state is now:")
                 )
                 # results in "New job state is now: succeeded"
-                logger.info(f"{configuration.job_name} has new {state_label}")
+                logger.info(f"{job_name} has new {state_label}")
                 last_state = state
             else:
                 # Intermittently, the job will not be described. We want to respect the
                 # watch timeout though.
-                logger.debug(f"Job {configuration.job_name} not found.")
+                logger.debug(f"Job {job_name} not found.")
 
             elapsed_time = time.time() - t0
             if timeout is not None and elapsed_time > timeout:
