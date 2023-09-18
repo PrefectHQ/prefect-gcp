@@ -20,6 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.4.6
+
+Not yet released
+
+### Changed
+
+- Vertex AI CustomJob sets labels specified by Prefect Agent when Deployment triggered on infrastructure.
+
 ## 0.4.5
 
 Released July 20th, 2023.
