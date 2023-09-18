@@ -354,7 +354,7 @@ def mock_client(monkeypatch, mock_credentials):
         return m
 
     monkeypatch.setattr(
-        "prefect_gcp.worker.CloudRunWorker._get_client",
+        "prefect_gcp.workers.cloud_run.CloudRunWorker._get_client",
         get_mock_client,
     )
 
