@@ -1,1 +1,1 @@
-::: prefect_gcp.vertex_worker
+::: prefect_gcp.workers.vertex

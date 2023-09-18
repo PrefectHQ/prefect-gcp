@@ -5,7 +5,7 @@ import pytest
 from google.cloud.aiplatform_v1.types.job_state import JobState
 from prefect.client.schemas import FlowRun
 
-from prefect_gcp.vertex_worker import (
+from prefect_gcp.workers.vertex import (
     VertexAIWorker,
     VertexAIWorkerJobConfiguration,
     VertexAIWorkerResult,

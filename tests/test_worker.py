@@ -11,7 +11,7 @@ from prefect.exceptions import InfrastructureNotFound
 from prefect.server.schemas.actions import DeploymentCreate
 
 from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.worker import (
+from prefect_gcp.workers.cloud_run import (
     CloudRunWorker,
     CloudRunWorkerJobConfiguration,
     CloudRunWorkerResult,
