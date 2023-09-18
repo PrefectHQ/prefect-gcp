@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
-- Optional `vertex_job_name` parameter to VertexAICustomJob
 
 ### Changed
+ - `job_name` in `VertexAICustomJob` is now based on the flow run name instead of the image repository.
 
 ### Deprecated
 
