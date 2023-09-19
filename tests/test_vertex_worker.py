@@ -54,11 +54,10 @@ class TestVertexAIWorkerJobConfiguration:
         base_job_template = VertexAIWorker.get_default_base_job_template()
         base_job_template["job_configuration"]["job_spec"] = {}
         base_job_template["job_configuration"]["region"] = "us-central1"
-        base_job_template["job_configuration"]["credentials"] = gcp_credentials
 
         with pytest.raises(pydantic.ValidationError) as excinfo:
             await VertexAIWorkerJobConfiguration.from_template_and_values(
-                base_job_template, {}
+                base_job_template, {"credentials": gcp_credentials}
             )
 
         assert excinfo.value.errors() == [
@@ -87,11 +86,10 @@ class TestVertexAIWorkerJobConfiguration:
             ],
         }
         base_job_template["job_configuration"]["region"] = "us-central1"
-        base_job_template["job_configuration"]["credentials"] = gcp_credentials
 
         with pytest.raises(pydantic.ValidationError) as excinfo:
             await VertexAIWorkerJobConfiguration.from_template_and_values(
-                base_job_template, {}
+                base_job_template, {"credentials": gcp_credentials}
             )
 
         assert excinfo.value.errors() == [
