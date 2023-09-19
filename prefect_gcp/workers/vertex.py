@@ -22,19 +22,20 @@ import datetime
 import re
 import shlex
 import time
-from typing import TYPE_CHECKING, Dict, List, MutableSequence, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import anyio
 from prefect.logging.loggers import PrefectLogAdapter
 from prefect.utilities.asyncutils import run_sync_in_worker_thread
+from prefect.utilities.pydantic import JsonPatch
 from prefect.workers.base import (
     BaseJobConfiguration,
     BaseVariables,
     BaseWorker,
     BaseWorkerResult,
 )
-from pydantic import Field
+from pydantic import Field, validator
 from slugify import slugify
 
 from prefect_gcp.credentials import GcpCredentials
@@ -62,6 +63,8 @@ _DISALLOWED_GCP_LABEL_CHARACTERS = re.compile(r"[^-a-zA-Z0-9_]+")
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
+    from prefect.server.schemas.core import Flow
+    from prefect.server.schemas.responses import DeploymentResponse
 
 
 class VertexAIWorkerVariables(BaseVariables):
@@ -171,6 +174,31 @@ class VertexAIWorkerVariables(BaseVariables):
     )
 
 
+def _get_base_job_spec() -> Dict[str, Any]:
+    """Returns a base job body to use for job spec validation.
+    Note that the values are stubbed and are not used for the actual job."""
+    return {
+        "maximum_run_time_hours": "1",
+        "worker_pool_specs": [
+            {
+                "replica_count": 1,
+                "container_spec": {
+                    "image_uri": "gcr.io/your-project/your-repo:latest",
+                },
+                "machine_spec": {
+                    "machine_type": "n1-standard-4",
+                    "accelerator_type": "NVIDIA_TESLA_K80",
+                    "accelerator_count": "1",
+                },
+                "disk_spec": {
+                    "boot_disk_type": "pd-ssd",
+                    "boot_disk_size_gb": "100",
+                },
+            }
+        ],
+    }
+
+
 class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
     """
     Configuration class used by the Vertex AI Worker to create a Job.
@@ -181,33 +209,14 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
 
     Attributes:
         region: The region where the Vertex AI Job resides.
-        image: The URI of a container image in the Container or Artifact Registry.
         credentials: The GCP Credentials used to connect to Vertex AI.
-        machine_type: The machine type to use for the run, which controls resources.
-        accelerator_type: The type of accelerator to attach to the machine.
-        accelerator_count: The number of accelerators to attach to the machine.
-        boot_disk_type: The type of boot disk to attach to the machine.
-        boot_disk_size_gb: The size of the boot disk to attach to the machine.
-        maximum_run_time_hours: The maximum job running time, in hours.
-        network: The full name of the GCE network to which the Job should be peered.
-        reserved_ip_ranges: A list of reserved ip names, where this Job would run.
-        service_account_name: The service account to use as in the Vertex AI Job.
+        job_spec: The Vertex AI Job spec used to create the Job.
         job_watch_poll_interval: The interval between GCP API calls to check Job state.
     """
 
     region: str = Field(
         description="The region where the Vertex AI Job resides.",
         example="us-central1",
-    )
-    image: str = Field(
-        title="Image Name",
-        description=(
-            "The URI of a container image in the Container or Artifact Registry, "
-            "used to run your Vertex AI Job. Note that Vertex AI will need access"
-            "to the project and region where the container image is stored. See "
-            "https://cloud.google.com/vertex-ai/docs/training/create-custom-container"
-        ),
-        example="gcr.io/your-project/your-repo:latest",
     )
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
@@ -216,73 +225,33 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         "Vertex AI Job. If not provided credentials will be "
         "inferred from the local environment.",
     )
-    machine_type: str = Field(
-        default="n1-standard-4",
-        title="Machine Type",
-        description=(
-            "The machine type to use for the run, which controls "
-            "the available CPU and memory. "
-            "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
-        ),
-    )
-    accelerator_type: Optional[str] = Field(
-        title="Accelerator Type",
-        description=(
-            "The type of accelerator to attach to the machine. "
-            "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
-        ),
-    )
-    accelerator_count: Optional[int] = Field(
-        title="Accelerator Count",
-        description=(
-            "The number of accelerators to attach to the machine. "
-            "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
-        ),
-    )
-    boot_disk_type: str = Field(
-        default="pd-ssd",
-        title="Boot Disk Type",
-        description="The type of boot disk to attach to the machine.",
-    )
-    boot_disk_size_gb: int = Field(
-        title="Boot Disk Size (GB)",
-        description="The size of the boot disk to attach to the machine, in gigabytes.",
-        example=100,
-    )
-    maximum_run_time_hours: int = Field(
-        default=1,
-        title="Maximum Run Time (Hours)",
-        description="The maximum job running time, in hours",
-        example=1,
-    )
-    network: Optional[str] = Field(
-        default=None,
-        title="Network",
-        description="The full name of the Compute Engine network"
-        "to which the Job should be peered. Private services access must "
-        "already be configured for the network. If left unspecified, the job "
-        "is not peered with any network. "
-        "For example: projects/12345/global/networks/myVPC",
-    )
-    reserved_ip_ranges: Optional[List[str]] = Field(
-        default=None,
-        title="Reserved IP Ranges",
-        description="A list of names for the reserved ip ranges under the VPC "
-        "network that can be used for this job. If set, we will deploy the job "
-        "within the provided ip ranges. Otherwise, the job will be deployed to "
-        "any ip ranges under the provided VPC network.",
-    )
-    service_account_name: Optional[str] = Field(
-        default=None,
-        title="Service Account Name",
-        description=(
-            "Specifies the service account to use "
-            "as the run-as account in Vertex AI. The worker submitting jobs must have "
-            "act-as permission on this run-as account. If unspecified, the AI "
-            "Platform Custom Code Service Agent for the CustomJob's project is "
-            "used. Takes precedence over the service account found in GCP credentials, "
-            "and required if a service account cannot be detected in GCP credentials."
-        ),
+    job_spec: Dict[str, Any] = Field(
+        template={
+            "name": "{{ name }}",
+            "service_account_name": "{{ service_account_name }}",
+            "network": "{{ network }}",
+            "reserved_ip_ranges": "{{ reserved_ip_ranges }}",
+            "maximum_run_time_hours": "{{ maximum_run_time_hours }}",
+            "worker_pool_specs": [
+                {
+                    "replica_count": 1,
+                    "container_spec": {
+                        "image_uri": "{{ image }}",
+                        "command": "{{ command }}",
+                        "args": [],
+                    },
+                    "machine_spec": {
+                        "machine_type": "{{ machine_type }}",
+                        "accelerator_type": "{{ accelerator_type }}",
+                        "accelerator_count": "{{ accelerator_count }}",
+                    },
+                    "disk_spec": {
+                        "boot_disk_type": "{{ boot_disk_type }}",
+                        "boot_disk_size_gb": "{{ boot_disk_size_gb }}",
+                    },
+                }
+            ],
+        }
     )
     job_watch_poll_interval: float = Field(
         default=5.0,
@@ -304,24 +273,126 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         The name can be up to 128 characters long and can be consist of any UTF-8 characters. Reference:
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
-        try:
-            repo_name = self.image.split("/")[2]  # `gcr.io/<project_name>/<repo>/`"
-        except IndexError:
-            raise ValueError(
-                "The provided image must be from either Google Container Registry "
-                "or Google Artifact Registry"
-            )
-
+        job_name_base = self.job_spec["name"]
         unique_suffix = uuid4().hex
-        job_name = f"{repo_name}-{unique_suffix}"
+        job_name = f"{job_name_base}-{unique_suffix}"
         return job_name
 
-    def command_as_list(self) -> MutableSequence[str]:
-        """worker command strings are converted to a list of strings"""
-        if not self.command:
-            return ["python", "-m", "prefect.engine"]
+    def prepare_for_flow_run(
+        self,
+        flow_run: "FlowRun",
+        deployment: Optional["DeploymentResponse"] = None,
+        flow: Optional["Flow"] = None,
+    ):
+        super().prepare_for_flow_run(flow_run, deployment, flow)
 
-        return shlex.split(self.command)
+        self._ensure_at_least_one_worker_pool_spec()
+        self._inject_name_if_not_present()
+        self._inject_formatted_env_vars()
+        self._inject_formatted_command()
+        self._ensure_existence_of_service_account()
+        self._ensure_existence_of_container_image()
+
+    def _ensure_at_least_one_worker_pool_spec(self):
+        """Ensures that at least one worker pool spec is defined"""
+
+        provided_worker_pool_specs = self.job_spec.get("worker_pool_specs", [])
+        if len(provided_worker_pool_specs) == 0:
+            raise ValueError(
+                "At least one worker pool spec is required for the Vertex job. "
+                "Please pass in a valid worker pool spec."
+            )
+
+    def _inject_name_if_not_present(self):
+        """Ensures that a job name prefix is defined, either
+        as a user input or from the BaseWorkerConfiguration."""
+
+        provided_job_name = self.job_spec.get("name")
+        inherited_job_name = self.name
+
+        job_name_to_use = provided_job_name or inherited_job_name
+        if job_name_to_use is None:
+            raise ValueError(
+                "A job name is required for the Vertex job. "
+                "Please pass in a valid job name."
+            )
+        self.job_spec["name"] = job_name_to_use
+
+    def _inject_formatted_env_vars(self):
+        """Inject environment variables in the Vertex job_spec configuration,
+        in the correct format, which is sourced from the BaseJobConfiguration.
+        This method is invoked by `prepare_for_flow_run()`."""
+        worker_pool_specs = self.job_spec["worker_pool_specs"]
+        formatted_env_vars = [
+            {"name": key, "value": value} for key, value in self.env.items()
+        ]
+        worker_pool_specs[0]["container_spec"]["env"] = formatted_env_vars
+
+    def _inject_formatted_command(self):
+        """Inject shell commands in the Vertex job_spec configuration,
+        in the correct format, which is sourced from the BaseJobConfiguration.
+        Here, we'll ensure that the default string format
+        is converted to a list of strings."""
+        worker_pool_specs = self.job_spec["worker_pool_specs"]
+
+        existing_command = worker_pool_specs[0]["container_spec"].get("command")
+        if existing_command is None:
+            worker_pool_specs[0]["container_spec"]["command"] = [
+                "python",
+                "-m",
+                "prefect.engine",
+            ]
+        elif isinstance(existing_command, str):
+            worker_pool_specs[0]["container_spec"]["command"] = shlex.split(
+                existing_command
+            )
+
+    def _ensure_existence_of_service_account(self):
+        """Verify that a service account was provided, either in the credentials
+        or as a standalone service account name override."""
+
+        provided_service_account_name = self.job_spec.get("service_account_name")
+        credential_service_account = self.credentials._service_account_email
+
+        service_account_to_use = (
+            provided_service_account_name or credential_service_account
+        )
+
+        if service_account_to_use is None:
+            raise ValueError(
+                "A service account is required for the Vertex job. "
+                "A service account could not be detected in the attached credentials "
+                "or in the service_account_name input. "
+                "Please pass in valid GCP credentials or a valid service_account_name"
+            )
+
+        self.job_spec["service_account_name"] = service_account_to_use
+
+    def _ensure_existence_of_container_image(self):
+        """Verify that a container image was provided, as Vertex requires custom
+        images from either Google Container Registry or Google Artifact Registry.
+        The standard Prefect image from Dockerhub is not supported here."""
+        worker_pool_specs = self.job_spec["worker_pool_specs"]
+        image_uri = worker_pool_specs[0]["container_spec"].get("image_uri")
+        if image_uri is None:
+            raise ValueError(
+                "A container image is required for the Vertex job. "
+                "Please pass in a valid container image URI."
+            )
+
+    @validator("job_spec")
+    def _ensure_job_includes_all_required_components(cls, value: Dict[str, Any]):
+        """
+        Ensures that the job spec includes all required components.
+        """
+        patch = JsonPatch.from_diff(value, _get_base_job_spec())
+        missing_paths = sorted([op["path"] for op in patch if op["op"] == "add"])
+        if missing_paths:
+            raise ValueError(
+                "Job is missing required attributes at the following paths: "
+                f"{', '.join(missing_paths)}"
+            )
+        return value
 
 
 class VertexAIWorkerResult(BaseWorkerResult):
@@ -396,7 +467,7 @@ class VertexAIWorker(BaseWorker):
                 logger=logger,
                 timeout=int(
                     datetime.timedelta(
-                        hours=configuration.maximum_run_time_hours
+                        hours=configuration.job_spec["maximum_run_time_hours"]
                     ).total_seconds()
                 ),
             )
@@ -418,58 +489,30 @@ class VertexAIWorker(BaseWorker):
         Builds a job spec by gathering details.
         """
         # gather worker pool spec
-        env_list = [
-            {"name": name, "value": value}
-            for name, value in {
-                **configuration.env,
-            }.items()
-        ]
-
-        container_spec = ContainerSpec(
-            image_uri=configuration.image,
-            command=configuration.command_as_list(),
-            args=[],
-            env=env_list,
-        )
-        machine_spec = MachineSpec(
-            machine_type=configuration.machine_type,
-            accelerator_type=configuration.accelerator_type,
-            accelerator_count=configuration.accelerator_count,
-        )
-        worker_pool_spec = WorkerPoolSpec(
-            container_spec=container_spec,
-            machine_spec=machine_spec,
-            replica_count=1,
-            disk_spec=DiskSpec(
-                boot_disk_type=configuration.boot_disk_type,
-                boot_disk_size_gb=configuration.boot_disk_size_gb,
-            ),
-        )
-
-        # look for service account
-        service_account = (
-            configuration.service_account_name
-            or configuration.credentials._service_account_email
-        )
-        if service_account is None:
-            raise ValueError(
-                "A service account is required for the Vertex job. "
-                "A service account could not be detected in the attached credentials "
-                "or in the service_account_name input. "
-                "Please pass in valid GCP credentials or a valid service_account_name"
+        worker_pool_specs = []
+        for spec in configuration.job_spec["worker_pool_specs"]:
+            worker_pool_specs.append(
+                WorkerPoolSpec(
+                    container_spec=ContainerSpec(**spec["container_spec"]),
+                    machine_spec=MachineSpec(**spec["machine_spec"]),
+                    replica_count=spec["replica_count"],
+                    disk_spec=DiskSpec(**spec["disk_spec"]),
+                )
             )
 
         # build custom job specs
         timeout = Duration().FromTimedelta(
-            td=datetime.timedelta(hours=configuration.maximum_run_time_hours)
+            td=datetime.timedelta(
+                hours=configuration.job_spec["maximum_run_time_hours"]
+            )
         )
         scheduling = Scheduling(timeout=timeout)
         job_spec = CustomJobSpec(
-            worker_pool_specs=[worker_pool_spec],
-            service_account=service_account,
+            worker_pool_specs=worker_pool_specs,
+            service_account=configuration.job_spec["service_account_name"],
             scheduling=scheduling,
-            network=configuration.network,
-            reserved_ip_ranges=configuration.reserved_ip_ranges,
+            network=configuration.job_spec.get("network"),
+            reserved_ip_ranges=configuration.job_spec.get("reserved_ip_ranges"),
         )
         return job_spec
 
@@ -492,11 +535,7 @@ class VertexAIWorker(BaseWorker):
         )
 
         # run job
-        logger.info(
-            f"Job {job_name!r} starting to run "
-            f"the command {configuration.command!r} in region "
-            f"{configuration.region!r} using image {configuration.image!r}"
-        )
+        logger.info(f"Job {job_name!r} starting to run ")
 
         project = configuration.project
         resource_name = f"projects/{project}/locations/{configuration.region}"
