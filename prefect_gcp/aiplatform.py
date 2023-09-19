@@ -200,13 +200,12 @@ class VertexAICustomTrainingJob(Infrastructure):
         """  # noqa
         try:
             repo_name = self.name or self.image.split("/")[2]
+            return f"{repo_name}-{uuid4().hex}"
         except IndexError:
             raise ValueError(
                 "The provided image must be from either Google Container Registry "
                 "or Google Artifact Registry"
             )
-
-        return f"{repo_name}-{uuid4().hex}"
 
     def _get_compatible_labels(self) -> Dict[str, str]:
         """
