@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+ - Use flow run name for name of created custom jobs - [#208](https://github.com/PrefectHQ/prefect-gcp/pull/208)
 
 ### Deprecated
 

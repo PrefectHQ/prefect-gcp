@@ -184,7 +184,6 @@ class VertexAICustomTrainingJob(Infrastructure):
             "and required if a service account cannot be detected in gcp_credentials."
         ),
     )
-
     job_watch_poll_interval: float = Field(
         default=5.0,
         description=(
@@ -200,16 +199,13 @@ class VertexAICustomTrainingJob(Infrastructure):
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
         try:
-            repo_name = self.image.split("/")[2]  # `gcr.io/<project_name>/<repo>/`"
+            base_name = self.name or self.image.split("/")[2]
+            return f"{base_name}-{uuid4().hex}"
         except IndexError:
             raise ValueError(
                 "The provided image must be from either Google Container Registry "
                 "or Google Artifact Registry"
             )
-
-        unique_suffix = uuid4().hex
-        job_name = f"{repo_name}-{unique_suffix}"
-        return job_name
 
     def _get_compatible_labels(self) -> Dict[str, str]:
         """
@@ -430,6 +426,7 @@ class VertexAICustomTrainingJob(Infrastructure):
             raise RuntimeError(f"{self._log_prefix}: {error_msg}")
 
         status_code = 0 if final_job_run.state == JobState.JOB_STATE_SUCCEEDED else 1
+
         return VertexAICustomTrainingJobResult(
             identifier=final_job_run.display_name, status_code=status_code
         )
