@@ -199,8 +199,8 @@ class VertexAICustomTrainingJob(Infrastructure):
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
         try:
-            repo_name = self.name or self.image.split("/")[2]
-            return f"{repo_name}-{uuid4().hex}"
+            base_name = self.name or self.image.split("/")[2]
+            return f"{base_name}-{uuid4().hex}"
         except IndexError:
             raise ValueError(
                 "The provided image must be from either Google Container Registry "
