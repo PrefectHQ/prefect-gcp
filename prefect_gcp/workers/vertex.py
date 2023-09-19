@@ -381,7 +381,7 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
             )
 
     @validator("job_spec")
-    def _ensure_job_includes_all_required_components(cls, value: Dict[str, Any]):
+    def _ensure_job_spec_includes_required_attributes(cls, value: Dict[str, Any]):
         """
         Ensures that the job spec includes all required components.
         """

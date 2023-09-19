@@ -50,10 +50,11 @@ def flow_run():
 
 
 class TestVertexAIWorkerJobConfiguration:
-    async def test_validate_empty_job_spec(self):
+    async def test_validate_empty_job_spec(self, gcp_credentials):
         base_job_template = VertexAIWorker.get_default_base_job_template()
         base_job_template["job_configuration"]["job_spec"] = {}
         base_job_template["job_configuration"]["region"] = "us-central1"
+        base_job_template["job_configuration"]["credentials"] = gcp_credentials
 
         with pytest.raises(pydantic.ValidationError) as excinfo:
             await VertexAIWorkerJobConfiguration.from_template_and_values(
@@ -71,7 +72,7 @@ class TestVertexAIWorkerJobConfiguration:
             }
         ]
 
-    async def test_validate_incomplete_worker_pool_spec(self):
+    async def test_validate_incomplete_worker_pool_spec(self, gcp_credentials):
         base_job_template = VertexAIWorker.get_default_base_job_template()
         base_job_template["job_configuration"]["job_spec"] = {
             "maximum_run_time_hours": 1,
@@ -86,6 +87,7 @@ class TestVertexAIWorkerJobConfiguration:
             ],
         }
         base_job_template["job_configuration"]["region"] = "us-central1"
+        base_job_template["job_configuration"]["credentials"] = gcp_credentials
 
         with pytest.raises(pydantic.ValidationError) as excinfo:
             await VertexAIWorkerJobConfiguration.from_template_and_values(
