@@ -198,7 +198,15 @@ class VertexAICustomTrainingJob(Infrastructure):
         The name can be up to 128 characters long and can be consist of any UTF-8 characters. Reference:
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
-        return f"{self.name}-{uuid4().hex}"
+        try:
+            repo_name = self.name or self.image.split("/")[2]
+        except IndexError:
+            raise ValueError(
+                "The provided image must be from either Google Container Registry "
+                "or Google Artifact Registry"
+            )
+
+        return f"{repo_name}-{uuid4().hex}"
 
     def _get_compatible_labels(self) -> Dict[str, str]:
         """
