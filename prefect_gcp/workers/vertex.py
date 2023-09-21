@@ -103,7 +103,7 @@ class VertexAIWorkerVariables(BaseVariables):
             "the available CPU and memory. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
-        example="n1-standard-4",
+        default="n1-standard-4",
     )
     accelerator_type: Optional[str] = Field(
         title="Accelerator Type",
@@ -111,24 +111,25 @@ class VertexAIWorkerVariables(BaseVariables):
             "The type of accelerator to attach to the machine. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
-        example="NVIDIA_TESLA_K80",
+        default="NVIDIA_TESLA_K80",
     )
-    accelerator_count: Optional[int] = Field(
+    accelerator_count: int = Field(
         title="Accelerator Count",
         description=(
             "The number of accelerators to attach to the machine. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
+        default=0,
     )
     boot_disk_type: str = Field(
         title="Boot Disk Type",
         description="The type of boot disk to attach to the machine.",
-        example="pd-ssd",
+        default="pd-ssd",
     )
     boot_disk_size_gb: int = Field(
         title="Boot Disk Size (GB)",
         description="The size of the boot disk to attach to the machine, in gigabytes.",
-        example=100,
+        default=100,
     )
     maximum_run_time_hours: int = Field(
         default=1,
