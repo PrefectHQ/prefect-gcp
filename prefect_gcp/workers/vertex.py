@@ -286,22 +286,10 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
     ):
         super().prepare_for_flow_run(flow_run, deployment, flow)
 
-        self._ensure_at_least_one_worker_pool_spec()
         self._inject_name_if_not_present()
         self._inject_formatted_env_vars()
         self._inject_formatted_command()
         self._ensure_existence_of_service_account()
-        self._ensure_existence_of_container_image()
-
-    def _ensure_at_least_one_worker_pool_spec(self):
-        """Ensures that at least one worker pool spec is defined"""
-
-        provided_worker_pool_specs = self.job_spec.get("worker_pool_specs", [])
-        if len(provided_worker_pool_specs) == 0:
-            raise ValueError(
-                "At least one worker pool spec is required for the Vertex job. "
-                "Please pass in a valid worker pool spec."
-            )
 
     def _inject_name_if_not_present(self):
         """Ensures that a job name prefix is defined, either
@@ -368,18 +356,6 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
 
         self.job_spec["service_account_name"] = service_account_to_use
 
-    def _ensure_existence_of_container_image(self):
-        """Verify that a container image was provided, as Vertex requires custom
-        images from either Google Container Registry or Google Artifact Registry.
-        The standard Prefect image from Dockerhub is not supported here."""
-        worker_pool_specs = self.job_spec["worker_pool_specs"]
-        image_uri = worker_pool_specs[0]["container_spec"].get("image_uri")
-        if image_uri is None:
-            raise ValueError(
-                "A container image is required for the Vertex job. "
-                "Please pass in a valid container image URI."
-            )
-
     @validator("job_spec")
     def _ensure_job_spec_includes_required_attributes(cls, value: Dict[str, Any]):
         """
@@ -411,7 +387,7 @@ class VertexAIWorker(BaseWorker):
     )
     _display_name = "Google Vertex AI"
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/worker/"
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4SpnOBvMYkHp6z939MDKP6/549a91bc1ce9afd4fb12c68db7b68106/social-icon-google-cloud-1200-630.png?h=250"  # noqa
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
 
     async def run(
         self,

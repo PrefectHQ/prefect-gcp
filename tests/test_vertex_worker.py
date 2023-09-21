@@ -109,15 +109,6 @@ class TestVertexAIWorkerJobConfiguration:
     def test_gcp_project(self, job_config: VertexAIWorkerJobConfiguration):
         assert job_config.project == "gcp_credentials_project"
 
-    def test_at_least_one_worker_pool_spec(
-        self, flow_run, job_config: VertexAIWorkerJobConfiguration
-    ):
-        job_config.job_spec["worker_pool_specs"] = []
-        with pytest.raises(
-            ValueError, match="At least one worker pool spec is required"
-        ):
-            job_config.prepare_for_flow_run(flow_run, None, None)
-
     def test_job_name(self, flow_run, job_config: VertexAIWorkerJobConfiguration):
         job_config.prepare_for_flow_run(flow_run, None, None)
         assert job_config.job_name.startswith("a-custom-name-override")
@@ -158,17 +149,6 @@ class TestVertexAIWorkerJobConfiguration:
         assert ["echo", "-n", "hello"] == job_config.job_spec["worker_pool_specs"][0][
             "container_spec"
         ]["command"]
-
-    def test_absence_of_container_image(
-        self, flow_run, job_config: VertexAIWorkerJobConfiguration
-    ):
-        job_config.job_spec["worker_pool_specs"][0]["container_spec"][
-            "image_uri"
-        ] = None
-        with pytest.raises(
-            ValueError, match="A container image is required for the Vertex job"
-        ):
-            job_config.prepare_for_flow_run(flow_run, None, None)
 
 
 class TestVertexAIWorker:
