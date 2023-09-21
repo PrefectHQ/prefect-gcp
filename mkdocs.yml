@@ -85,7 +85,9 @@ nav:
         - Cloud Run: cloud_run.md
         - AI Platform: aiplatform.md
         - Deployment Steps: deployments/steps.md
-        - Worker: worker.md
+        - Workers:
+          - Cloud Run: cloud_run_worker.md
+          - Vertex AI: vertex_worker.md
 
 extra:
     social:
