@@ -226,9 +226,9 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         "Vertex AI Job. If not provided credentials will be "
         "inferred from the local environment.",
     )
+
     job_spec: Dict[str, Any] = Field(
         template={
-            "name": "{{ name }}",
             "service_account_name": "{{ service_account_name }}",
             "network": "{{ network }}",
             "reserved_ip_ranges": "{{ reserved_ip_ranges }}",
@@ -274,9 +274,8 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
         The name can be up to 128 characters long and can be consist of any UTF-8 characters. Reference:
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
-        job_name_base = self.job_spec["name"]
         unique_suffix = uuid4().hex
-        job_name = f"{job_name_base}-{unique_suffix}"
+        job_name = f"{self.name}-{unique_suffix}"
         return job_name
 
     def prepare_for_flow_run(
@@ -287,25 +286,9 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
     ):
         super().prepare_for_flow_run(flow_run, deployment, flow)
 
-        self._inject_name_if_not_present()
         self._inject_formatted_env_vars()
         self._inject_formatted_command()
         self._ensure_existence_of_service_account()
-
-    def _inject_name_if_not_present(self):
-        """Ensures that a job name prefix is defined, either
-        as a user input or from the BaseWorkerConfiguration."""
-
-        provided_job_name = self.job_spec.get("name")
-        inherited_job_name = self.name
-
-        job_name_to_use = provided_job_name or inherited_job_name
-        if job_name_to_use is None:
-            raise ValueError(
-                "A job name is required for the Vertex job. "
-                "Please pass in a valid job name."
-            )
-        self.job_spec["name"] = job_name_to_use
 
     def _inject_formatted_env_vars(self):
         """Inject environment variables in the Vertex job_spec configuration,

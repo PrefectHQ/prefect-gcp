@@ -20,7 +20,6 @@ def job_config(service_account_info, gcp_credentials):
         region="ashenvale",
         credentials=gcp_credentials,
         job_spec={
-            "name": "a-custom-name-override",
             "maximum_run_time_hours": 1,
             "worker_pool_specs": [
                 {
@@ -111,19 +110,11 @@ class TestVertexAIWorkerJobConfiguration:
 
     def test_job_name(self, flow_run, job_config: VertexAIWorkerJobConfiguration):
         job_config.prepare_for_flow_run(flow_run, None, None)
-        assert job_config.job_name.startswith("a-custom-name-override")
-
-        job_config.job_spec["name"] = None
-        job_config.prepare_for_flow_run(flow_run, None, None)
         assert job_config.job_name.startswith("my-custom-ai-job")
 
         job_config.name = None
-        job_config.job_spec["name"] = None
-        flow_run.name = None
-        with pytest.raises(
-            ValueError, match="A job name is required for the Vertex job"
-        ):
-            job_config.prepare_for_flow_run(flow_run, None, None)
+        job_config.prepare_for_flow_run(flow_run, None, None)
+        assert job_config.job_name.startswith("my-flow-run-name")
 
     async def test_missing_service_account(self, flow_run, job_config):
         job_config.job_spec["service_account_name"] = None
