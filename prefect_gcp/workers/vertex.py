@@ -618,8 +618,8 @@ class VertexAIWorker(BaseWorker):
         ) as job_service_client:
             await run_sync_in_worker_thread(
                 self._stop_job,
-                job_service_client=job_service_client,
-                full_job_name=infrastructure_pid,
+                client=job_service_client,
+                job_name=infrastructure_pid,
             )
 
     def _stop_job(self, client: "JobServiceClient", job_name: str):
