@@ -465,31 +465,30 @@ class VertexAIWorker(BaseWorker):
         """
         Builds a job spec by gathering details.
         """
-        # gather worker pool spec
-        worker_pool_specs = []
-        for spec in configuration.job_spec["worker_pool_specs"]:
-            worker_pool_specs.append(
-                WorkerPoolSpec(
-                    container_spec=ContainerSpec(**spec["container_spec"]),
-                    machine_spec=MachineSpec(**spec["machine_spec"]),
-                    replica_count=spec["replica_count"],
-                    disk_spec=DiskSpec(**spec["disk_spec"]),
-                )
+        # here, we extract the `worker_pool_specs` out of the job_spec
+        worker_pool_specs = [
+            WorkerPoolSpec(
+                container_spec=ContainerSpec(**spec["container_spec"]),
+                machine_spec=MachineSpec(**spec["machine_spec"]),
+                replica_count=spec["replica_count"],
+                disk_spec=DiskSpec(**spec["disk_spec"]),
             )
+            for spec in configuration.job_spec.pop("worker_pool_specs", [])
+        ]
 
-        # build custom job specs
         timeout = Duration().FromTimedelta(
             td=datetime.timedelta(
                 hours=configuration.job_spec["maximum_run_time_hours"]
             )
         )
         scheduling = Scheduling(timeout=timeout)
+
+        # construct the final job spec that we will provide to Vertex AI
         job_spec = CustomJobSpec(
             worker_pool_specs=worker_pool_specs,
-            service_account=configuration.job_spec["service_account_name"],
             scheduling=scheduling,
-            network=configuration.job_spec.get("network"),
-            reserved_ip_ranges=configuration.job_spec.get("reserved_ip_ranges"),
+            ignore_unknown_fields=True,
+            **configuration.job_spec,
         )
         return job_spec
 
