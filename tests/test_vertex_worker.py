@@ -225,9 +225,7 @@ class TestVertexAIWorker:
 
             mock = job_config.credentials.job_service_client.cancel_custom_job
             assert mock.call_count == 1
-            assert mock.call_args.kwargs == {
-                "request": CancelCustomJobRequest(name="foobar")
-            }
+            mock.assert_called_with(request=CancelCustomJobRequest(name="foobar"))
 
     async def test_kill_infrastructure_no_grace_seconds(
         self, flow_run, job_config, caplog
