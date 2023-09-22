@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import anyio
+from prefect.exceptions import InfrastructureNotFound
 from prefect.logging.loggers import PrefectLogAdapter
 from prefect.utilities.asyncutils import run_sync_in_worker_thread
 from prefect.utilities.pydantic import JsonPatch
@@ -52,6 +53,7 @@ try:
         Scheduling,
         WorkerPoolSpec,
     )
+    from google.cloud.aiplatform_v1.types.job_service import CancelCustomJobRequest
     from google.cloud.aiplatform_v1.types.job_state import JobState
     from google.cloud.aiplatform_v1.types.machine_resources import DiskSpec, MachineSpec
     from google.protobuf.duration_pb2 import Duration
@@ -111,15 +113,17 @@ class VertexAIWorkerVariables(BaseVariables):
             "The type of accelerator to attach to the machine. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
-        default="NVIDIA_TESLA_K80",
+        example="NVIDIA_TESLA_K80",
+        default=None,
     )
-    accelerator_count: int = Field(
+    accelerator_count: Optional[int] = Field(
         title="Accelerator Count",
         description=(
             "The number of accelerators to attach to the machine. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
-        default=0,
+        example=1,
+        default=None,
     )
     boot_disk_type: str = Field(
         title="Boot Disk Type",
@@ -188,8 +192,6 @@ def _get_base_job_spec() -> Dict[str, Any]:
                 },
                 "machine_spec": {
                     "machine_type": "n1-standard-4",
-                    "accelerator_type": "NVIDIA_TESLA_K80",
-                    "accelerator_count": "1",
                 },
                 "disk_spec": {
                     "boot_disk_type": "pd-ssd",
@@ -410,7 +412,7 @@ class VertexAIWorker(BaseWorker):
             )
 
             if task_status:
-                task_status.started(job_name)
+                task_status.started(job_run.name)
 
             final_job_run = await self._watch_job_run(
                 job_name=job_name,
@@ -433,7 +435,10 @@ class VertexAIWorker(BaseWorker):
             )
 
         error_msg = final_job_run.error.message
-        if error_msg:
+
+        # Vertex will include an error message upon valid
+        # flow cancellations, so we'll avoid raising an error in that case
+        if error_msg and "CANCELED" not in error_msg:
             raise RuntimeError(error_msg)
 
         status_code = 0 if final_job_run.state == JobState.JOB_STATE_SUCCEEDED else 1
@@ -590,3 +595,49 @@ class VertexAIWorker(BaseWorker):
                 regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS,
             )
         return compatible_labels
+
+    async def kill_infrastructure(
+        self,
+        infrastructure_pid: str,
+        configuration: VertexAIWorkerJobConfiguration,
+        grace_seconds: int = 30,
+    ):
+        """
+        Stops a job running in Vertex AI upon flow cancellation,
+        based on the provided infrastructure PID + run configuration.
+        """
+        if grace_seconds != 30:
+            self._logger.warning(
+                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
+                "support dynamic grace period configuration. See here for more info: "
+                "https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.customJobs/cancel"  # noqa
+            )
+
+        client_options = ClientOptions(
+            api_endpoint=f"{configuration.region}-aiplatform.googleapis.com"
+        )
+        with configuration.credentials.get_job_service_client(
+            client_options=client_options
+        ) as job_service_client:
+            await run_sync_in_worker_thread(
+                self._stop_job,
+                client=job_service_client,
+                vertex_job_name=infrastructure_pid,
+            )
+
+    def _stop_job(self, client: "JobServiceClient", vertex_job_name: str):
+        """
+        Calls the `cancel_custom_job` method on the Vertex AI Job Service Client.
+        """
+        cancel_custom_job_request = CancelCustomJobRequest(name=vertex_job_name)
+        try:
+            client.cancel_custom_job(
+                request=cancel_custom_job_request,
+            )
+        except Exception as exc:
+            if "does not exist" in str(exc):
+                raise InfrastructureNotFound(
+                    f"Cannot stop Vertex AI job; the job name {vertex_job_name!r} "
+                    "could not be found."
+                ) from exc
+            raise
