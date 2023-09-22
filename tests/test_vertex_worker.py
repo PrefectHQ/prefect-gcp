@@ -1,4 +1,5 @@
 import uuid
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import anyio
@@ -101,7 +102,6 @@ class TestVertexAIWorkerJobConfiguration:
                     "Job is missing required attributes at the following paths: "
                     "/worker_pool_specs/0/container_spec/image_uri, "
                     "/worker_pool_specs/0/disk_spec, "
-                    "/worker_pool_specs/0/machine_spec/accelerator_count, "
                     "/worker_pool_specs/0/machine_spec/machine_type"
                 ),
                 "type": "value_error",
@@ -210,21 +210,32 @@ class TestVertexAIWorker:
             )
 
     async def test_kill_infrastructure(self, flow_run, job_config):
+        mock = job_config.credentials.job_service_client.create_custom_job
+        # the CancelCustomJobRequest class seems to reject a MagicMock value
+        # so here, we'll use a SimpleNamespace as the mocked return values
+        mock.return_value = SimpleNamespace(
+            name="foobar", state=JobState.JOB_STATE_PENDING
+        )
+
         async with VertexAIWorker("test-pool") as worker:
             with anyio.fail_after(10):
                 async with anyio.create_task_group() as tg:
-                    identifier = await tg.start(worker.run, flow_run, job_config)
-                await worker.kill_infrastructure(identifier, job_config)
+                    result = await tg.start(worker.run, flow_run, job_config)
+                await worker.kill_infrastructure(result, job_config)
 
             mock = job_config.credentials.job_service_client.cancel_custom_job
             assert mock.call_count == 1
             assert mock.call_args.kwargs == {
-                "request": CancelCustomJobRequest(name=identifier)
+                "request": CancelCustomJobRequest(name="foobar")
             }
 
     async def test_kill_infrastructure_no_grace_seconds(
         self, flow_run, job_config, caplog
     ):
+        mock = job_config.credentials.job_service_client.create_custom_job
+        mock.return_value = SimpleNamespace(
+            name="bazzbar", state=JobState.JOB_STATE_PENDING
+        )
         async with VertexAIWorker("test-pool") as worker:
 
             input_grace_period = 32

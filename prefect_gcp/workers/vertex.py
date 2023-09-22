@@ -113,15 +113,15 @@ class VertexAIWorkerVariables(BaseVariables):
             "The type of accelerator to attach to the machine. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
-        default="NVIDIA_TESLA_K80",
+        example="NVIDIA_TESLA_K80",
     )
-    accelerator_count: int = Field(
+    accelerator_count: Optional[int] = Field(
         title="Accelerator Count",
         description=(
             "The number of accelerators to attach to the machine. "
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
-        default=0,
+        example=1,
     )
     boot_disk_type: str = Field(
         title="Boot Disk Type",
@@ -190,8 +190,6 @@ def _get_base_job_spec() -> Dict[str, Any]:
                 },
                 "machine_spec": {
                     "machine_type": "n1-standard-4",
-                    "accelerator_type": "NVIDIA_TESLA_K80",
-                    "accelerator_count": "1",
                 },
                 "disk_spec": {
                     "boot_disk_type": "pd-ssd",
@@ -412,7 +410,7 @@ class VertexAIWorker(BaseWorker):
             )
 
             if task_status:
-                task_status.started(job_name)
+                task_status.started(job_run.name)
 
             final_job_run = await self._watch_job_run(
                 job_name=job_name,
@@ -435,7 +433,10 @@ class VertexAIWorker(BaseWorker):
             )
 
         error_msg = final_job_run.error.message
-        if error_msg:
+
+        # Vertex will include an error message upon valid
+        # flow cancellations, so we'll avoid raising an error in that case
+        if error_msg and "CANCELED" not in error_msg:
             raise RuntimeError(error_msg)
 
         status_code = 0 if final_job_run.state == JobState.JOB_STATE_SUCCEEDED else 1
@@ -619,14 +620,14 @@ class VertexAIWorker(BaseWorker):
             await run_sync_in_worker_thread(
                 self._stop_job,
                 client=job_service_client,
-                job_name=infrastructure_pid,
+                vertex_job_name=infrastructure_pid,
             )
 
-    def _stop_job(self, client: "JobServiceClient", job_name: str):
+    def _stop_job(self, client: "JobServiceClient", vertex_job_name: str):
         """
         Calls the `cancel_custom_job` method on the Vertex AI Job Service Client.
         """
-        cancel_custom_job_request = CancelCustomJobRequest(name=job_name)
+        cancel_custom_job_request = CancelCustomJobRequest(name=vertex_job_name)
         try:
             client.cancel_custom_job(
                 request=cancel_custom_job_request,
@@ -634,7 +635,7 @@ class VertexAIWorker(BaseWorker):
         except Exception as exc:
             if "does not exist" in str(exc):
                 raise InfrastructureNotFound(
-                    f"Cannot stop Vertex AI job; the job name {job_name!r} "
+                    f"Cannot stop Vertex AI job; the job name {vertex_job_name!r} "
                     "could not be found."
                 ) from exc
             raise
