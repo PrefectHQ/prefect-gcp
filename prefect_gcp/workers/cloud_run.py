@@ -519,8 +519,8 @@ class CloudRunWorker(BaseWorker):
         "a Google Cloud Platform account."
     )
     _display_name = "Google Cloud Run"
-    _documentation_url = "https://prefecthq.github.io/prefect-gcp/worker/"
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4SpnOBvMYkHp6z939MDKP6/549a91bc1ce9afd4fb12c68db7b68106/social-icon-google-cloud-1200-630.png?h=250"  # noqa
+    _documentation_url = "https://prefecthq.github.io/prefect-gcp/cloud_run_worker/"
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
 
     def _create_job_error(self, exc, configuration):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""

@@ -96,7 +96,7 @@ class GcpCredentials(CredentialsBlock):
         ```
     """  # noqa
 
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
     _block_type_name = "GCP Credentials"
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/credentials/#prefect_gcp.credentials.GcpCredentials"  # noqa: E501
 
