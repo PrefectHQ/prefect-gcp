@@ -114,6 +114,7 @@ class VertexAIWorkerVariables(BaseVariables):
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
         example="NVIDIA_TESLA_K80",
+        default=None,
     )
     accelerator_count: Optional[int] = Field(
         title="Accelerator Count",
@@ -122,6 +123,7 @@ class VertexAIWorkerVariables(BaseVariables):
             "See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec"
         ),
         example=1,
+        default=None,
     )
     boot_disk_type: str = Field(
         title="Boot Disk Type",
