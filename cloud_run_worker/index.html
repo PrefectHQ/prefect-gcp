@@ -8,26 +8,28 @@
       
       
       
-        <link rel="canonical" href="https://PrefectHQ.github.io/prefect-gcp/worker/">
+        <link rel="canonical" href="https://PrefectHQ.github.io/prefect-gcp/cloud_run_worker/">
       
       
         <link rel="prev" href="../deployments/steps/">
       
       
+        <link rel="next" href="../vertex_worker/">
+      
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.8">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.1">
     
     
       
-        <title>Worker - prefect-gcp</title>
+        <title>Cloud Run - prefect-gcp</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.046329b4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.72749a73.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.85d0ee34.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.a5377069.min.css">
       
       
 
@@ -101,7 +103,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#prefect_gcp.worker" class="md-skip">
+        <a href="#prefect_gcp.workers.cloud_run" class="md-skip">
           Skip to content
         </a>
       
@@ -136,7 +138,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Worker
+              Cloud Run
             
           </span>
         </div>
@@ -537,6 +539,42 @@
     
   
   
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_8" checked>
+        
+          <label class="md-nav__link" for="__nav_5_8" id="__nav_5_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Workers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5_8">
+            <span class="md-nav__icon md-icon"></span>
+            Workers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
     <li class="md-nav__item md-nav__item--active">
       
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
@@ -549,7 +587,7 @@
           
   
   <span class="md-ellipsis">
-    Worker
+    Cloud Run
   </span>
   
 
@@ -560,7 +598,7 @@
         
   
   <span class="md-ellipsis">
-    Worker
+    Cloud Run
   </span>
   
 
@@ -582,14 +620,14 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prefect_gcp.worker--configuration" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run--configuration" class="md-nav__link">
     Configuration
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#prefect_gcp.worker--advanced-configuration" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run--advanced-configuration" class="md-nav__link">
     Advanced Configuration
   </a>
   
@@ -597,7 +635,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker--adding-additional-placeholders" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run--adding-additional-placeholders" class="md-nav__link">
     Adding additional placeholders
   </a>
   
@@ -609,7 +647,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prefect_gcp.worker-classes" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run-classes" class="md-nav__link">
     Classes
   </a>
   
@@ -617,7 +655,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorker" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker" class="md-nav__link">
     CloudRunWorker
   </a>
   
@@ -625,7 +663,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorker-functions" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker-functions" class="md-nav__link">
     Functions
   </a>
   
@@ -633,14 +671,14 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorker.kill_infrastructure" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker.kill_infrastructure" class="md-nav__link">
     kill_infrastructure()
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorker.run" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker.run" class="md-nav__link">
     run()
   </a>
   
@@ -657,7 +695,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration" class="md-nav__link">
     CloudRunWorkerJobConfiguration
   </a>
   
@@ -665,7 +703,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration-attributes" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration-attributes" class="md-nav__link">
     Attributes
   </a>
   
@@ -673,14 +711,14 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration.job_name" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.job_name" class="md-nav__link">
     job_name
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration.project" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.project" class="md-nav__link">
     project
   </a>
   
@@ -692,7 +730,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration-functions" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration-functions" class="md-nav__link">
     Functions
   </a>
   
@@ -700,7 +738,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration.prepare_for_flow_run" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.prepare_for_flow_run" class="md-nav__link">
     prepare_for_flow_run()
   </a>
   
@@ -717,14 +755,14 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerResult" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerResult" class="md-nav__link">
     CloudRunWorkerResult
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerVariables" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerVariables" class="md-nav__link">
     CloudRunWorkerVariables
   </a>
   
@@ -738,6 +776,34 @@
     </ul>
   
 </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vertex_worker/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Vertex AI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -778,14 +844,14 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prefect_gcp.worker--configuration" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run--configuration" class="md-nav__link">
     Configuration
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#prefect_gcp.worker--advanced-configuration" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run--advanced-configuration" class="md-nav__link">
     Advanced Configuration
   </a>
   
@@ -793,7 +859,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker--adding-additional-placeholders" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run--adding-additional-placeholders" class="md-nav__link">
     Adding additional placeholders
   </a>
   
@@ -805,7 +871,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prefect_gcp.worker-classes" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run-classes" class="md-nav__link">
     Classes
   </a>
   
@@ -813,7 +879,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorker" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker" class="md-nav__link">
     CloudRunWorker
   </a>
   
@@ -821,7 +887,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorker-functions" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker-functions" class="md-nav__link">
     Functions
   </a>
   
@@ -829,14 +895,14 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorker.kill_infrastructure" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker.kill_infrastructure" class="md-nav__link">
     kill_infrastructure()
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorker.run" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker.run" class="md-nav__link">
     run()
   </a>
   
@@ -853,7 +919,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration" class="md-nav__link">
     CloudRunWorkerJobConfiguration
   </a>
   
@@ -861,7 +927,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration-attributes" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration-attributes" class="md-nav__link">
     Attributes
   </a>
   
@@ -869,14 +935,14 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration.job_name" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.job_name" class="md-nav__link">
     job_name
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration.project" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.project" class="md-nav__link">
     project
   </a>
   
@@ -888,7 +954,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration-functions" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration-functions" class="md-nav__link">
     Functions
   </a>
   
@@ -896,7 +962,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration.prepare_for_flow_run" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.prepare_for_flow_run" class="md-nav__link">
     prepare_for_flow_run()
   </a>
   
@@ -913,14 +979,14 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerResult" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerResult" class="md-nav__link">
     CloudRunWorkerResult
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#prefect_gcp.worker.CloudRunWorkerVariables" class="md-nav__link">
+  <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerVariables" class="md-nav__link">
     CloudRunWorkerVariables
   </a>
   
@@ -954,8 +1020,8 @@
 
 
 
-<h1 id="prefect_gcp.worker" class="doc doc-heading">
-          <code>prefect_gcp.worker</code>
+<h1 id="prefect_gcp.workers.cloud_run" class="doc doc-heading">
+          <code>prefect_gcp.workers.cloud_run</code>
 
 
 </h1>
@@ -971,10 +1037,10 @@
 <p>Then start a Cloud Run worker with the following command:</p>
 <div class="highlight"><pre><span></span><code>prefect<span class="w"> </span>worker<span class="w"> </span>start<span class="w"> </span>--pool<span class="w"> </span><span class="s1">&#39;my-cloud-run-pool&#39;</span>
 </code></pre></div>
-<h3 id="prefect_gcp.worker--configuration">Configuration</h3>
+<h3 id="prefect_gcp.workers.cloud_run--configuration">Configuration</h3>
 <p>Read more about configuring work pools
 <a href="https://docs.prefect.io/latest/concepts/work-pools/#work-pool-overview">here</a>.</p>
-<h3 id="prefect_gcp.worker--advanced-configuration">Advanced Configuration</h3>
+<h3 id="prefect_gcp.workers.cloud_run--advanced-configuration">Advanced Configuration</h3>
 <div class="admonition example">
 <p class="admonition-title">Using a custom Cloud Run job template</p>
 <p>Below is the default job body template used by the Cloud Run Worker:
@@ -1042,7 +1108,7 @@ by work pool basis. By editing the default job body template you can:</p>
 <li>Remove placeholders from the default job template</li>
 <li>Pass values to Cloud Run that are not defined in the <code>variables</code> schema</li>
 </ul>
-<h4 id="prefect_gcp.worker--adding-additional-placeholders">Adding additional placeholders</h4>
+<h4 id="prefect_gcp.workers.cloud_run--adding-additional-placeholders">Adding additional placeholders</h4>
 <p>For example, to allow for extra customization of a new annotation not described in
 the default job template, you can add the following:
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1099,14 +1165,14 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
 
 
-<h2 id="prefect_gcp.worker-classes">Classes</h2>
+<h2 id="prefect_gcp.workers.cloud_run-classes">Classes</h2>
 
 <div class="doc doc-object doc-class">
 
 
 
 
-<h3 id="prefect_gcp.worker.CloudRunWorker" class="doc doc-heading">
+<h3 id="prefect_gcp.workers.cloud_run.CloudRunWorker" class="doc doc-heading">
           <code>CloudRunWorker</code>
 
 
@@ -1121,7 +1187,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
       <p>Prefect worker that executes flow runs within Cloud Run Jobs.</p>
 
             <details class="quote">
-              <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+              <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">511</span>
 <span class="normal">512</span>
 <span class="normal">513</span>
@@ -1468,8 +1534,8 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
         <span class="s2">&quot;a Google Cloud Platform account.&quot;</span>
     <span class="p">)</span>
     <span class="n">_display_name</span> <span class="o">=</span> <span class="s2">&quot;Google Cloud Run&quot;</span>
-    <span class="n">_documentation_url</span> <span class="o">=</span> <span class="s2">&quot;https://prefecthq.github.io/prefect-gcp/worker/&quot;</span>
-    <span class="n">_logo_url</span> <span class="o">=</span> <span class="s2">&quot;https://images.ctfassets.net/gm98wzqotmnx/4SpnOBvMYkHp6z939MDKP6/549a91bc1ce9afd4fb12c68db7b68106/social-icon-google-cloud-1200-630.png?h=250&quot;</span>  <span class="c1"># noqa</span>
+    <span class="n">_documentation_url</span> <span class="o">=</span> <span class="s2">&quot;https://prefecthq.github.io/prefect-gcp/cloud_run_worker/&quot;</span>
+    <span class="n">_logo_url</span> <span class="o">=</span> <span class="s2">&quot;https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png&quot;</span>  <span class="c1"># noqa</span>
 
     <span class="k">def</span> <span class="nf">_create_job_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">configuration</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provides a nicer error for 404s when trying to create a Cloud Run Job.&quot;&quot;&quot;</span>
@@ -1806,7 +1872,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
 
 
-<h4 id="prefect_gcp.worker.CloudRunWorker-functions">Functions</h4>
+<h4 id="prefect_gcp.workers.cloud_run.CloudRunWorker-functions">Functions</h4>
 
 
 <div class="doc doc-object doc-function">
@@ -1814,7 +1880,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
 
 
-<h5 id="prefect_gcp.worker.CloudRunWorker.kill_infrastructure" class="doc doc-heading">
+<h5 id="prefect_gcp.workers.cloud_run.CloudRunWorker.kill_infrastructure" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">kill_infrastructure</span></code>
   
   <span class="doc doc-labels">
@@ -1830,7 +1896,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 and run configuration.</p>
 
           <details class="quote">
-            <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+            <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
             <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">812</span>
 <span class="normal">813</span>
 <span class="normal">814</span>
@@ -1890,7 +1956,7 @@ and run configuration.</p>
 
 
 
-<h5 id="prefect_gcp.worker.CloudRunWorker.run" class="doc doc-heading">
+<h5 id="prefect_gcp.workers.cloud_run.CloudRunWorker.run" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">run</span></code>
   
   <span class="doc doc-labels">
@@ -1935,7 +2001,7 @@ to complete.</p>
         <tr>
           <td><code>configuration</code></td>
           <td>
-                <code><a class="autorefs autorefs-internal" title="prefect_gcp.worker.CloudRunWorkerJobConfiguration" href="#prefect_gcp.worker.CloudRunWorkerJobConfiguration">CloudRunWorkerJobConfiguration</a></code>
+                <code><a class="autorefs autorefs-internal" title="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration" href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration">CloudRunWorkerJobConfiguration</a></code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -1977,7 +2043,7 @@ the task will be marked as started.</p>
     <tbody>
         <tr>
 <td><code>CloudRunWorkerResult</code></td>          <td>
-                <code><a class="autorefs autorefs-internal" title="prefect_gcp.worker.CloudRunWorkerResult" href="#prefect_gcp.worker.CloudRunWorkerResult">CloudRunWorkerResult</a></code>
+                <code><a class="autorefs autorefs-internal" title="prefect_gcp.workers.cloud_run.CloudRunWorkerResult" href="#prefect_gcp.workers.cloud_run.CloudRunWorkerResult">CloudRunWorkerResult</a></code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -1990,7 +2056,7 @@ final state of the flow run</p>
   </table>
 
           <details class="quote">
-            <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+            <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
             <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">562</span>
 <span class="normal">563</span>
 <span class="normal">564</span>
@@ -2099,7 +2165,7 @@ final state of the flow run</p>
 
 
 
-<h3 id="prefect_gcp.worker.CloudRunWorkerJobConfiguration" class="doc doc-heading">
+<h3 id="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration" class="doc doc-heading">
           <code>CloudRunWorkerJobConfiguration</code>
 
 
@@ -2187,7 +2253,7 @@ the flow run as a Cloud Run Job.</p>
   </table>
 
             <details class="quote">
-              <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+              <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
 <span class="normal">245</span>
 <span class="normal">246</span>
@@ -2558,14 +2624,14 @@ the flow run as a Cloud Run Job.</p>
 
 
 
-<h4 id="prefect_gcp.worker.CloudRunWorkerJobConfiguration-attributes">Attributes</h4>
+<h4 id="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration-attributes">Attributes</h4>
 
 <div class="doc doc-object doc-attribute">
 
 
 
 
-<h5 id="prefect_gcp.worker.CloudRunWorkerJobConfiguration.job_name" class="doc doc-heading">
+<h5 id="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.job_name" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">job_name</span><span class="p">:</span> <span class="nb">str</span></code>
   
   <span class="doc doc-labels">
@@ -2587,7 +2653,7 @@ the flow run as a Cloud Run Job.</p>
 
 
 
-<h5 id="prefect_gcp.worker.CloudRunWorkerJobConfiguration.project" class="doc doc-heading">
+<h5 id="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.project" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">project</span><span class="p">:</span> <span class="nb">str</span></code>
   
   <span class="doc doc-labels">
@@ -2604,7 +2670,7 @@ the flow run as a Cloud Run Job.</p>
 
 </div>
 
-<h4 id="prefect_gcp.worker.CloudRunWorkerJobConfiguration-functions">Functions</h4>
+<h4 id="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration-functions">Functions</h4>
 
 
 <div class="doc doc-object doc-function">
@@ -2612,7 +2678,7 @@ the flow run as a Cloud Run Job.</p>
 
 
 
-<h5 id="prefect_gcp.worker.CloudRunWorkerJobConfiguration.prepare_for_flow_run" class="doc doc-heading">
+<h5 id="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.prepare_for_flow_run" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">prepare_for_flow_run</span></code>
 
 </h5>
@@ -2684,7 +2750,7 @@ preparation.</p>
   </table>
 
           <details class="quote">
-            <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+            <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
             <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
@@ -2753,7 +2819,7 @@ preparation.</p>
 
 
 
-<h3 id="prefect_gcp.worker.CloudRunWorkerResult" class="doc doc-heading">
+<h3 id="prefect_gcp.workers.cloud_run.CloudRunWorkerResult" class="doc doc-heading">
           <code>CloudRunWorkerResult</code>
 
 
@@ -2768,7 +2834,7 @@ preparation.</p>
       <p>Contains information about the final state of a completed process</p>
 
             <details class="quote">
-              <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+              <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">507</span>
 <span class="normal">508</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerResult</span><span class="p">(</span><span class="n">BaseWorkerResult</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains information about the final state of a completed process&quot;&quot;&quot;</span>
@@ -2784,7 +2850,7 @@ preparation.</p>
 
 
 
-<h3 id="prefect_gcp.worker.CloudRunWorkerVariables" class="doc doc-heading">
+<h3 id="prefect_gcp.workers.cloud_run.CloudRunWorkerVariables" class="doc doc-heading">
           <code>CloudRunWorkerVariables</code>
 
 
@@ -2801,7 +2867,7 @@ preparation.</p>
 base job template.</p>
 
             <details class="quote">
-              <summary>Source code in <code>prefect_gcp/worker.py</code></summary>
+              <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
@@ -3132,10 +3198,10 @@ base job template.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a264c092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      <script src="../assets/javascripts/bundle.4e0fa4ba.min.js"></script>
       
     
   </body>

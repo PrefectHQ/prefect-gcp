@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.8">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.1">
     
     
       
@@ -26,10 +26,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.046329b4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.72749a73.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.85d0ee34.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.a5377069.min.css">
       
       
 
@@ -354,13 +354,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#bigquery-module" class="md-nav__link">
-    Bigquery Module
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#aiplatform-module" class="md-nav__link">
     Aiplatform Module
   </a>
@@ -368,8 +361,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cloud-storage-module" class="md-nav__link">
-    Cloud Storage Module
+  <a href="#bigquery-module" class="md-nav__link">
+    Bigquery Module
   </a>
   
 </li>
@@ -377,6 +370,13 @@
         <li class="md-nav__item">
   <a href="#cloud-run-module" class="md-nav__link">
     Cloud Run Module
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloud-storage-module" class="md-nav__link">
+    Cloud Storage Module
   </a>
   
 </li>
@@ -613,16 +613,78 @@
   
   
   
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_8" >
+        
+          <label class="md-nav__link" for="__nav_5_8" id="__nav_5_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Workers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_8">
+            <span class="md-nav__icon md-icon"></span>
+            Workers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../worker/" class="md-nav__link">
+      <a href="../cloud_run_worker/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Worker
+    Cloud Run
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vertex_worker/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Vertex AI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -667,13 +729,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#bigquery-module" class="md-nav__link">
-    Bigquery Module
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#aiplatform-module" class="md-nav__link">
     Aiplatform Module
   </a>
@@ -681,8 +736,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cloud-storage-module" class="md-nav__link">
-    Cloud Storage Module
+  <a href="#bigquery-module" class="md-nav__link">
+    Bigquery Module
   </a>
   
 </li>
@@ -690,6 +745,13 @@
         <li class="md-nav__item">
   <a href="#cloud-run-module" class="md-nav__link">
     Cloud Run Module
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloud-storage-module" class="md-nav__link">
+    Cloud Storage Module
   </a>
   
 </li>
@@ -747,6 +809,20 @@ for details on inference and recommended authentication patterns.</p>
 <span class="n">my_flow</span><span class="p">()</span>
 </code></pre></div>
 For additional examples, check out the <a href="../examples_catalog/#credentials-module">Credentials Module</a> under Examples Catalog.</p>
+<h2 id="aiplatform-module"><a class="autorefs autorefs-internal" href="../aiplatform/#prefect_gcp.aiplatform">Aiplatform Module</a></h2>
+<p><a class="autorefs autorefs-internal" href="../aiplatform/#prefect_gcp.aiplatform.VertexAICustomTrainingJob">VertexAICustomTrainingJob</a></p>
+<p>Infrastructure block used to run Vertex AI custom training jobs.</p>
+<p>To load the VertexAICustomTrainingJob:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.aiplatform</span> <span class="kn">import</span> <span class="n">VertexAICustomTrainingJob</span>
+
+<span class="nd">@flow</span>
+<span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
+    <span class="n">my_block</span> <span class="o">=</span> <span class="n">VertexAICustomTrainingJob</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
+
+<span class="n">my_flow</span><span class="p">()</span>
+</code></pre></div>
+For additional examples, check out the <a href="../examples_catalog/#aiplatform-module">Aiplatform Module</a> under Examples Catalog.</p>
 <h2 id="bigquery-module"><a class="autorefs autorefs-internal" href="../bigquery/#prefect_gcp.bigquery">Bigquery Module</a></h2>
 <p><a class="autorefs autorefs-internal" href="../bigquery/#prefect_gcp.bigquery.BigQueryWarehouse">BigQueryWarehouse</a></p>
 <p>A block for querying a database with BigQuery.</p>
@@ -768,20 +844,20 @@ the state of the block's connection and cursor could be lost.</p>
 <span class="n">my_flow</span><span class="p">()</span>
 </code></pre></div>
 For additional examples, check out the <a href="../examples_catalog/#bigquery-module">Bigquery Module</a> under Examples Catalog.</p>
-<h2 id="aiplatform-module"><a class="autorefs autorefs-internal" href="../aiplatform/#prefect_gcp.aiplatform">Aiplatform Module</a></h2>
-<p><a class="autorefs autorefs-internal" href="../aiplatform/#prefect_gcp.aiplatform.VertexAICustomTrainingJob">VertexAICustomTrainingJob</a></p>
-<p>Infrastructure block used to run Vertex AI custom training jobs.</p>
-<p>To load the VertexAICustomTrainingJob:
+<h2 id="cloud-run-module"><a class="autorefs autorefs-internal" href="../cloud_run/#prefect_gcp.cloud_run">Cloud Run Module</a></h2>
+<p><a class="autorefs autorefs-internal" href="../cloud_run/#prefect_gcp.cloud_run.CloudRunJob">CloudRunJob</a></p>
+<p>Infrastructure block used to run GCP Cloud Run Jobs. Note this block is experimental. The interface may change without notice.</p>
+<p>To load the CloudRunJob:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.aiplatform</span> <span class="kn">import</span> <span class="n">VertexAICustomTrainingJob</span>
+<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_run</span> <span class="kn">import</span> <span class="n">CloudRunJob</span>
 
 <span class="nd">@flow</span>
 <span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
-    <span class="n">my_block</span> <span class="o">=</span> <span class="n">VertexAICustomTrainingJob</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
+    <span class="n">my_block</span> <span class="o">=</span> <span class="n">CloudRunJob</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
 
 <span class="n">my_flow</span><span class="p">()</span>
 </code></pre></div>
-For additional examples, check out the <a href="../examples_catalog/#aiplatform-module">Aiplatform Module</a> under Examples Catalog.</p>
+For additional examples, check out the <a href="../examples_catalog/#cloud_run-module">Cloud Run Module</a> under Examples Catalog.</p>
 <h2 id="cloud-storage-module"><a class="autorefs autorefs-internal" href="../cloud_storage/#prefect_gcp.cloud_storage">Cloud Storage Module</a></h2>
 <p><a class="autorefs autorefs-internal" href="../cloud_storage/#prefect_gcp.cloud_storage.GcsBucket">GcsBucket</a></p>
 <p>Block used to store data using GCP Cloud Storage Buckets.</p>
@@ -800,20 +876,6 @@ and functionality.</p>
 <span class="n">my_flow</span><span class="p">()</span>
 </code></pre></div>
 For additional examples, check out the <a href="../examples_catalog/#cloud_storage-module">Cloud Storage Module</a> under Examples Catalog.</p>
-<h2 id="cloud-run-module"><a class="autorefs autorefs-internal" href="../cloud_run/#prefect_gcp.cloud_run">Cloud Run Module</a></h2>
-<p><a class="autorefs autorefs-internal" href="../cloud_run/#prefect_gcp.cloud_run.CloudRunJob">CloudRunJob</a></p>
-<p>Infrastructure block used to run GCP Cloud Run Jobs. Note this block is experimental. The interface may change without notice.</p>
-<p>To load the CloudRunJob:
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">prefect</span> <span class="kn">import</span> <span class="n">flow</span>
-<span class="kn">from</span> <span class="nn">prefect_gcp.cloud_run</span> <span class="kn">import</span> <span class="n">CloudRunJob</span>
-
-<span class="nd">@flow</span>
-<span class="k">def</span> <span class="nf">my_flow</span><span class="p">():</span>
-    <span class="n">my_block</span> <span class="o">=</span> <span class="n">CloudRunJob</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MY_BLOCK_NAME&quot;</span><span class="p">)</span>
-
-<span class="n">my_flow</span><span class="p">()</span>
-</code></pre></div>
-For additional examples, check out the <a href="../examples_catalog/#cloud_run-module">Cloud Run Module</a> under Examples Catalog.</p>
 <h2 id="secret-manager-module"><a class="autorefs autorefs-internal" href="../secret_manager/#prefect_gcp.secret_manager">Secret Manager Module</a></h2>
 <p><a class="autorefs autorefs-internal" href="../secret_manager/#prefect_gcp.secret_manager.GcpSecret">GcpSecret</a></p>
 <p>Manages a secret in Google Cloud Platform's Secret Manager.</p>
@@ -970,10 +1032,10 @@ For additional examples, check out the <a href="../examples_catalog/#secret_mana
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a264c092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      <script src="../assets/javascripts/bundle.4e0fa4ba.min.js"></script>
       
     
   </body>

@@ -1,0 +1,2819 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://PrefectHQ.github.io/prefect-gcp/vertex_worker/">
+      
+      
+        <link rel="prev" href="../cloud_run_worker/">
+      
+      
+      
+      <link rel="icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.1">
+    
+    
+      
+        <title>Vertex AI - prefect-gcp</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.72749a73.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.a5377069.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CSource+Code+Pro:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Source Code Pro"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8CSMBCQDKN"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-8CSMBCQDKN');
+</script>
+<!-- Segment analytics -->
+<script>
+    !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._loadOptions=e};analytics._writeKey="xDLAoTXsNYpC4Y6JucKnJ8W1MYBuyAbD";;analytics.SNIPPET_VERSION="4.15.3";
+    analytics.load("xDLAoTXsNYpC4Y6JucKnJ8W1MYBuyAbD");
+    analytics.page();
+    }}();
+</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prefect_gcp.workers.vertex" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="prefect-gcp" class="md-header__button md-logo" aria-label="prefect-gcp" data-md-component="logo">
+      
+  <img src="../img/prefect-logo-mark-solid-white-500.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            prefect-gcp
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Vertex AI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_3" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_3">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/PrefectHQ/prefect-gcp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="prefect-gcp" class="md-nav__button md-logo" aria-label="prefect-gcp" data-md-component="logo">
+      
+  <img src="../img/prefect-logo-mark-solid-white-500.png" alt="logo">
+
+    </a>
+    prefect-gcp
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/PrefectHQ/prefect-gcp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blocks_catalog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Blocks Catalog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples_catalog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples Catalog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../credentials/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Credentials
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cloud_storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cloud Storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bigquery/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BigQuery
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../secret_manager/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Secret Manager
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cloud_run/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cloud Run
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../aiplatform/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AI Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployments/steps/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Deployment Steps
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_8" checked>
+        
+          <label class="md-nav__link" for="__nav_5_8" id="__nav_5_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Workers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5_8">
+            <span class="md-nav__icon md-icon"></span>
+            Workers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cloud_run_worker/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cloud Run
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Vertex AI
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Vertex AI
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex--configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex-classes" class="md-nav__link">
+    Classes
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorker" class="md-nav__link">
+    VertexAIWorker
+  </a>
+  
+    <nav class="md-nav" aria-label="VertexAIWorker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorker-functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorker.kill_infrastructure" class="md-nav__link">
+    kill_infrastructure()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorker.run" class="md-nav__link">
+    run()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration" class="md-nav__link">
+    VertexAIWorkerJobConfiguration
+  </a>
+  
+    <nav class="md-nav" aria-label="VertexAIWorkerJobConfiguration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration-attributes" class="md-nav__link">
+    Attributes
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration.job_name" class="md-nav__link">
+    job_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration.project" class="md-nav__link">
+    project
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerResult" class="md-nav__link">
+    VertexAIWorkerResult
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerVariables" class="md-nav__link">
+    VertexAIWorkerVariables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex--configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex-classes" class="md-nav__link">
+    Classes
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorker" class="md-nav__link">
+    VertexAIWorker
+  </a>
+  
+    <nav class="md-nav" aria-label="VertexAIWorker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorker-functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorker.kill_infrastructure" class="md-nav__link">
+    kill_infrastructure()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorker.run" class="md-nav__link">
+    run()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration" class="md-nav__link">
+    VertexAIWorkerJobConfiguration
+  </a>
+  
+    <nav class="md-nav" aria-label="VertexAIWorkerJobConfiguration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration-attributes" class="md-nav__link">
+    Attributes
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration.job_name" class="md-nav__link">
+    job_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration.project" class="md-nav__link">
+    project
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerResult" class="md-nav__link">
+    VertexAIWorkerResult
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.vertex.VertexAIWorkerVariables" class="md-nav__link">
+    VertexAIWorkerVariables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<div class="doc doc-object doc-module">
+
+
+
+
+<h1 id="prefect_gcp.workers.vertex" class="doc doc-heading">
+          <code>prefect_gcp.workers.vertex</code>
+
+
+</h1>
+
+  <div class="doc doc-contents first">
+  
+      <!-- # noqa -->
+
+<p>Module containing the custom worker used for executing flow runs as Vertex AI Custom Jobs.</p>
+<p>Get started by creating a Cloud Run work pool:</p>
+<div class="highlight"><pre><span></span><code>prefect<span class="w"> </span>work-pool<span class="w"> </span>create<span class="w"> </span><span class="s1">&#39;my-vertex-pool&#39;</span><span class="w"> </span>--type<span class="w"> </span>vertex-ai
+</code></pre></div>
+<p>Then start a Cloud Run worker with the following command:</p>
+<div class="highlight"><pre><span></span><code>prefect<span class="w"> </span>worker<span class="w"> </span>start<span class="w"> </span>--pool<span class="w"> </span><span class="s1">&#39;my-vertex-pool&#39;</span>
+</code></pre></div>
+<h3 id="prefect_gcp.workers.vertex--configuration">Configuration</h3>
+<p>Read more about configuring work pools
+<a href="https://docs.prefect.io/latest/concepts/work-pools/#work-pool-overview">here</a>.</p>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+<h2 id="prefect_gcp.workers.vertex-classes">Classes</h2>
+
+<div class="doc doc-object doc-class">
+
+
+
+
+<h3 id="prefect_gcp.workers.vertex.VertexAIWorker" class="doc doc-heading">
+          <code>VertexAIWorker</code>
+
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.workers.base.BaseWorker">BaseWorker</span></code></p>
+
+  
+      <p>Prefect worker that executes flow runs within Vertex AI Jobs.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/workers/vertex.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAIWorker</span><span class="p">(</span><span class="n">BaseWorker</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prefect worker that executes flow runs within Vertex AI Jobs.&quot;&quot;&quot;</span>
+
+    <span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;vertex-ai&quot;</span>
+    <span class="n">job_configuration</span> <span class="o">=</span> <span class="n">VertexAIWorkerJobConfiguration</span>
+    <span class="n">job_configuration_variables</span> <span class="o">=</span> <span class="n">VertexAIWorkerVariables</span>
+    <span class="n">_description</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Execute flow runs within containers on Google Vertex AI. Requires &quot;</span>
+        <span class="s2">&quot;a Google Cloud Platform account.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">_display_name</span> <span class="o">=</span> <span class="s2">&quot;Google Vertex AI&quot;</span>
+    <span class="n">_documentation_url</span> <span class="o">=</span> <span class="s2">&quot;https://prefecthq.github.io/prefect-gcp/vertex_worker/&quot;</span>
+    <span class="n">_logo_url</span> <span class="o">=</span> <span class="s2">&quot;https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png&quot;</span>  <span class="c1"># noqa</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
+        <span class="n">configuration</span><span class="p">:</span> <span class="n">VertexAIWorkerJobConfiguration</span><span class="p">,</span>
+        <span class="n">task_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">anyio</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">TaskStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VertexAIWorkerResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Executes a flow run within a Vertex AI Job and waits for the flow run</span>
+<span class="sd">        to complete.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            flow_run: The flow run to execute</span>
+<span class="sd">            configuration: The configuration to use when executing the flow run.</span>
+<span class="sd">            task_status: The task status object for the current flow run. If provided,</span>
+<span class="sd">                the task will be marked as started.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            VertexAIWorkerResult: A result object containing information about the</span>
+<span class="sd">                final state of the flow run</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flow_run_logger</span><span class="p">(</span><span class="n">flow_run</span><span class="p">)</span>
+
+        <span class="n">client_options</span> <span class="o">=</span> <span class="n">ClientOptions</span><span class="p">(</span>
+            <span class="n">api_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">region</span><span class="si">}</span><span class="s2">-aiplatform.googleapis.com&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">job_name</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span>
+
+        <span class="n">job_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_job_spec</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">configuration</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">get_job_service_client</span><span class="p">(</span>
+            <span class="n">client_options</span><span class="o">=</span><span class="n">client_options</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">job_service_client</span><span class="p">:</span>
+            <span class="n">job_run</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_and_begin_job</span><span class="p">(</span>
+                <span class="n">job_name</span><span class="p">,</span> <span class="n">job_spec</span><span class="p">,</span> <span class="n">job_service_client</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">logger</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">task_status</span><span class="p">:</span>
+                <span class="n">task_status</span><span class="o">.</span><span class="n">started</span><span class="p">(</span><span class="n">job_run</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="n">final_job_run</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watch_job_run</span><span class="p">(</span>
+                <span class="n">job_name</span><span class="o">=</span><span class="n">job_name</span><span class="p">,</span>
+                <span class="n">full_job_name</span><span class="o">=</span><span class="n">job_run</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">job_service_client</span><span class="o">=</span><span class="n">job_service_client</span><span class="p">,</span>
+                <span class="n">current_state</span><span class="o">=</span><span class="n">job_run</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+                <span class="n">until_states</span><span class="o">=</span><span class="p">(</span>
+                    <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_SUCCEEDED</span><span class="p">,</span>
+                    <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_FAILED</span><span class="p">,</span>
+                    <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_CANCELLED</span><span class="p">,</span>
+                    <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_EXPIRED</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span>
+                    <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+                        <span class="n">hours</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_spec</span><span class="p">[</span><span class="s2">&quot;maximum_run_time_hours&quot;</span><span class="p">]</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="n">error_msg</span> <span class="o">=</span> <span class="n">final_job_run</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">message</span>
+
+        <span class="c1"># Vertex will include an error message upon valid</span>
+        <span class="c1"># flow cancellations, so we&#39;ll avoid raising an error in that case</span>
+        <span class="k">if</span> <span class="n">error_msg</span> <span class="ow">and</span> <span class="s2">&quot;CANCELED&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">error_msg</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+
+        <span class="n">status_code</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">final_job_run</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_SUCCEEDED</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">VertexAIWorkerResult</span><span class="p">(</span>
+            <span class="n">identifier</span><span class="o">=</span><span class="n">final_job_run</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="n">status_code</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_job_spec</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">VertexAIWorkerJobConfiguration</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CustomJobSpec&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a job spec by gathering details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># here, we extract the `worker_pool_specs` out of the job_spec</span>
+        <span class="n">worker_pool_specs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">WorkerPoolSpec</span><span class="p">(</span>
+                <span class="n">container_spec</span><span class="o">=</span><span class="n">ContainerSpec</span><span class="p">(</span><span class="o">**</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;container_spec&quot;</span><span class="p">]),</span>
+                <span class="n">machine_spec</span><span class="o">=</span><span class="n">MachineSpec</span><span class="p">(</span><span class="o">**</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;machine_spec&quot;</span><span class="p">]),</span>
+                <span class="n">replica_count</span><span class="o">=</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;replica_count&quot;</span><span class="p">],</span>
+                <span class="n">disk_spec</span><span class="o">=</span><span class="n">DiskSpec</span><span class="p">(</span><span class="o">**</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;disk_spec&quot;</span><span class="p">]),</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">job_spec</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;worker_pool_specs&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="p">]</span>
+
+        <span class="n">timeout</span> <span class="o">=</span> <span class="n">Duration</span><span class="p">()</span><span class="o">.</span><span class="n">FromTimedelta</span><span class="p">(</span>
+            <span class="n">td</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+                <span class="n">hours</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_spec</span><span class="p">[</span><span class="s2">&quot;maximum_run_time_hours&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">scheduling</span> <span class="o">=</span> <span class="n">Scheduling</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+
+        <span class="c1"># construct the final job spec that we will provide to Vertex AI</span>
+        <span class="n">job_spec</span> <span class="o">=</span> <span class="n">CustomJobSpec</span><span class="p">(</span>
+            <span class="n">worker_pool_specs</span><span class="o">=</span><span class="n">worker_pool_specs</span><span class="p">,</span>
+            <span class="n">scheduling</span><span class="o">=</span><span class="n">scheduling</span><span class="p">,</span>
+            <span class="n">ignore_unknown_fields</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_spec</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">job_spec</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_create_and_begin_job</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">job_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">job_spec</span><span class="p">:</span> <span class="s2">&quot;CustomJobSpec&quot;</span><span class="p">,</span>
+        <span class="n">job_service_client</span><span class="p">:</span> <span class="s2">&quot;JobServiceClient&quot;</span><span class="p">,</span>
+        <span class="n">configuration</span><span class="p">:</span> <span class="n">VertexAIWorkerJobConfiguration</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">PrefectLogAdapter</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CustomJob&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a custom job and begins running it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create custom job</span>
+        <span class="n">custom_job</span> <span class="o">=</span> <span class="n">CustomJob</span><span class="p">(</span>
+            <span class="n">display_name</span><span class="o">=</span><span class="n">job_name</span><span class="p">,</span>
+            <span class="n">job_spec</span><span class="o">=</span><span class="n">job_spec</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_compatible_labels</span><span class="p">(</span><span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># run job</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job_name</span><span class="si">!r}</span><span class="s2"> starting to run &quot;</span><span class="p">)</span>
+
+        <span class="n">project</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">project</span>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;projects/</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s2">/locations/</span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">region</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">retry_policy</span> <span class="o">=</span> <span class="n">retry</span><span class="p">(</span>
+            <span class="n">stop</span><span class="o">=</span><span class="n">stop_after_attempt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait_fixed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">wait_random</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">custom_job_run</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+            <span class="n">retry_policy</span><span class="p">(</span><span class="n">job_service_client</span><span class="o">.</span><span class="n">create_custom_job</span><span class="p">),</span>
+            <span class="n">parent</span><span class="o">=</span><span class="n">resource_name</span><span class="p">,</span>
+            <span class="n">custom_job</span><span class="o">=</span><span class="n">custom_job</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job_name</span><span class="si">!r}</span><span class="s2"> has successfully started; &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the full job name is </span><span class="si">{</span><span class="n">custom_job_run</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">custom_job_run</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_watch_job_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">job_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">full_job_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>  <span class="c1"># different from job_name</span>
+        <span class="n">job_service_client</span><span class="p">:</span> <span class="s2">&quot;JobServiceClient&quot;</span><span class="p">,</span>
+        <span class="n">current_state</span><span class="p">:</span> <span class="s2">&quot;JobState&quot;</span><span class="p">,</span>
+        <span class="n">until_states</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;JobState&quot;</span><span class="p">],</span>
+        <span class="n">configuration</span><span class="p">:</span> <span class="n">VertexAIWorkerJobConfiguration</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">PrefectLogAdapter</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CustomJob&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Polls job run to see if status changed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_UNSPECIFIED</span>
+        <span class="n">last_state</span> <span class="o">=</span> <span class="n">current_state</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="k">while</span> <span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">until_states</span><span class="p">:</span>
+            <span class="n">job_run</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+                <span class="n">job_service_client</span><span class="o">.</span><span class="n">get_custom_job</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">full_job_name</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">job_run</span><span class="o">.</span><span class="n">state</span>
+            <span class="k">if</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">last_state</span><span class="p">:</span>
+                <span class="n">state_label</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">state</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;state is now:&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="c1"># results in &quot;New job state is now: succeeded&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2"> has new </span><span class="si">{</span><span class="n">state_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">last_state</span> <span class="o">=</span> <span class="n">state</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Intermittently, the job will not be described. We want to respect the</span>
+                <span class="c1"># watch timeout though.</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job </span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+            <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+            <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">elapsed_time</span> <span class="o">&gt;</span> <span class="n">timeout</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Timed out after </span><span class="si">{</span><span class="n">elapsed_time</span><span class="si">}</span><span class="s2">s while watching job for states &quot;</span>
+                    <span class="s2">&quot;</span><span class="si">{until_states!r}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_watch_poll_interval</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">job_run</span>
+
+    <span class="k">def</span> <span class="nf">_get_compatible_labels</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">configuration</span><span class="p">:</span> <span class="n">VertexAIWorkerJobConfiguration</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensures labels are compatible with GCP label requirements.</span>
+<span class="sd">        https://cloud.google.com/resource-manager/docs/creating-managing-labels</span>
+
+<span class="sd">        Ex: the Prefect provided key of prefect.io/flow-name -&gt; prefect-io_flow-name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">compatible_labels</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_key</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span>
+                <span class="n">key</span><span class="p">,</span>
+                <span class="n">lowercase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">replacements</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)],</span>
+                <span class="n">max_length</span><span class="o">=</span><span class="mi">63</span><span class="p">,</span>
+                <span class="n">regex_pattern</span><span class="o">=</span><span class="n">_DISALLOWED_GCP_LABEL_CHARACTERS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">compatible_labels</span><span class="p">[</span><span class="n">new_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span>
+                <span class="n">val</span><span class="p">,</span>
+                <span class="n">lowercase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">replacements</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)],</span>
+                <span class="n">max_length</span><span class="o">=</span><span class="mi">63</span><span class="p">,</span>
+                <span class="n">regex_pattern</span><span class="o">=</span><span class="n">_DISALLOWED_GCP_LABEL_CHARACTERS</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">compatible_labels</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">kill_infrastructure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">infrastructure_pid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">configuration</span><span class="p">:</span> <span class="n">VertexAIWorkerJobConfiguration</span><span class="p">,</span>
+        <span class="n">grace_seconds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stops a job running in Vertex AI upon flow cancellation,</span>
+<span class="sd">        based on the provided infrastructure PID + run configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">grace_seconds</span> <span class="o">!=</span> <span class="mi">30</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Kill grace period of </span><span class="si">{</span><span class="n">grace_seconds</span><span class="si">}</span><span class="s2">s requested, but GCP does not &quot;</span>
+                <span class="s2">&quot;support dynamic grace period configuration. See here for more info: &quot;</span>
+                <span class="s2">&quot;https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.customJobs/cancel&quot;</span>  <span class="c1"># noqa</span>
+            <span class="p">)</span>
+
+        <span class="n">client_options</span> <span class="o">=</span> <span class="n">ClientOptions</span><span class="p">(</span>
+            <span class="n">api_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">region</span><span class="si">}</span><span class="s2">-aiplatform.googleapis.com&quot;</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="n">configuration</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">get_job_service_client</span><span class="p">(</span>
+            <span class="n">client_options</span><span class="o">=</span><span class="n">client_options</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">job_service_client</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stop_job</span><span class="p">,</span>
+                <span class="n">client</span><span class="o">=</span><span class="n">job_service_client</span><span class="p">,</span>
+                <span class="n">vertex_job_name</span><span class="o">=</span><span class="n">infrastructure_pid</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stop_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="s2">&quot;JobServiceClient&quot;</span><span class="p">,</span> <span class="n">vertex_job_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calls the `cancel_custom_job` method on the Vertex AI Job Service Client.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cancel_custom_job_request</span> <span class="o">=</span> <span class="n">CancelCustomJobRequest</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">vertex_job_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">cancel_custom_job</span><span class="p">(</span>
+                <span class="n">request</span><span class="o">=</span><span class="n">cancel_custom_job_request</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;does not exist&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">InfrastructureNotFound</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot stop Vertex AI job; the job name </span><span class="si">{</span><span class="n">vertex_job_name</span><span class="si">!r}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;could not be found.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+            <span class="k">raise</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<h4 id="prefect_gcp.workers.vertex.VertexAIWorker-functions">Functions</h4>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="prefect_gcp.workers.vertex.VertexAIWorker.kill_infrastructure" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">kill_infrastructure</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Stops a job running in Vertex AI upon flow cancellation,
+based on the provided infrastructure PID + run configuration.</p>
+
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/workers/vertex.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">kill_infrastructure</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">infrastructure_pid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">configuration</span><span class="p">:</span> <span class="n">VertexAIWorkerJobConfiguration</span><span class="p">,</span>
+    <span class="n">grace_seconds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stops a job running in Vertex AI upon flow cancellation,</span>
+<span class="sd">    based on the provided infrastructure PID + run configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">grace_seconds</span> <span class="o">!=</span> <span class="mi">30</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Kill grace period of </span><span class="si">{</span><span class="n">grace_seconds</span><span class="si">}</span><span class="s2">s requested, but GCP does not &quot;</span>
+            <span class="s2">&quot;support dynamic grace period configuration. See here for more info: &quot;</span>
+            <span class="s2">&quot;https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.customJobs/cancel&quot;</span>  <span class="c1"># noqa</span>
+        <span class="p">)</span>
+
+    <span class="n">client_options</span> <span class="o">=</span> <span class="n">ClientOptions</span><span class="p">(</span>
+        <span class="n">api_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">region</span><span class="si">}</span><span class="s2">-aiplatform.googleapis.com&quot;</span>
+    <span class="p">)</span>
+    <span class="k">with</span> <span class="n">configuration</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">get_job_service_client</span><span class="p">(</span>
+        <span class="n">client_options</span><span class="o">=</span><span class="n">client_options</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">job_service_client</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">run_sync_in_worker_thread</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop_job</span><span class="p">,</span>
+            <span class="n">client</span><span class="o">=</span><span class="n">job_service_client</span><span class="p">,</span>
+            <span class="n">vertex_job_name</span><span class="o">=</span><span class="n">infrastructure_pid</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="prefect_gcp.workers.vertex.VertexAIWorker.run" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">run</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Executes a flow run within a Vertex AI Job and waits for the flow run
+to complete.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>flow_run</code></td>
+          <td>
+                <code><span title="prefect.client.schemas.FlowRun">FlowRun</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The flow run to execute</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>configuration</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration" href="#prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration">VertexAIWorkerJobConfiguration</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The configuration to use when executing the flow run.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>task_status</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<span title="anyio.abc.TaskStatus">TaskStatus</span>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The task status object for the current flow run. If provided,
+the task will be marked as started.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>VertexAIWorkerResult</code></td>          <td>
+                <code><a class="autorefs autorefs-internal" title="prefect_gcp.workers.vertex.VertexAIWorkerResult" href="#prefect_gcp.workers.vertex.VertexAIWorkerResult">VertexAIWorkerResult</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A result object containing information about the
+final state of the flow run</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>prefect_gcp/workers/vertex.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
+    <span class="n">configuration</span><span class="p">:</span> <span class="n">VertexAIWorkerJobConfiguration</span><span class="p">,</span>
+    <span class="n">task_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">anyio</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">TaskStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VertexAIWorkerResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Executes a flow run within a Vertex AI Job and waits for the flow run</span>
+<span class="sd">    to complete.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        flow_run: The flow run to execute</span>
+<span class="sd">        configuration: The configuration to use when executing the flow run.</span>
+<span class="sd">        task_status: The task status object for the current flow run. If provided,</span>
+<span class="sd">            the task will be marked as started.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        VertexAIWorkerResult: A result object containing information about the</span>
+<span class="sd">            final state of the flow run</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flow_run_logger</span><span class="p">(</span><span class="n">flow_run</span><span class="p">)</span>
+
+    <span class="n">client_options</span> <span class="o">=</span> <span class="n">ClientOptions</span><span class="p">(</span>
+        <span class="n">api_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">region</span><span class="si">}</span><span class="s2">-aiplatform.googleapis.com&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">job_name</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">job_name</span>
+
+    <span class="n">job_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_job_spec</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">configuration</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">get_job_service_client</span><span class="p">(</span>
+        <span class="n">client_options</span><span class="o">=</span><span class="n">client_options</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">job_service_client</span><span class="p">:</span>
+        <span class="n">job_run</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_and_begin_job</span><span class="p">(</span>
+            <span class="n">job_name</span><span class="p">,</span> <span class="n">job_spec</span><span class="p">,</span> <span class="n">job_service_client</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">logger</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task_status</span><span class="p">:</span>
+            <span class="n">task_status</span><span class="o">.</span><span class="n">started</span><span class="p">(</span><span class="n">job_run</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">final_job_run</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watch_job_run</span><span class="p">(</span>
+            <span class="n">job_name</span><span class="o">=</span><span class="n">job_name</span><span class="p">,</span>
+            <span class="n">full_job_name</span><span class="o">=</span><span class="n">job_run</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">job_service_client</span><span class="o">=</span><span class="n">job_service_client</span><span class="p">,</span>
+            <span class="n">current_state</span><span class="o">=</span><span class="n">job_run</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+            <span class="n">until_states</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_SUCCEEDED</span><span class="p">,</span>
+                <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_FAILED</span><span class="p">,</span>
+                <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_CANCELLED</span><span class="p">,</span>
+                <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_EXPIRED</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">configuration</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span>
+                <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+                    <span class="n">hours</span><span class="o">=</span><span class="n">configuration</span><span class="o">.</span><span class="n">job_spec</span><span class="p">[</span><span class="s2">&quot;maximum_run_time_hours&quot;</span><span class="p">]</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="n">error_msg</span> <span class="o">=</span> <span class="n">final_job_run</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">message</span>
+
+    <span class="c1"># Vertex will include an error message upon valid</span>
+    <span class="c1"># flow cancellations, so we&#39;ll avoid raising an error in that case</span>
+    <span class="k">if</span> <span class="n">error_msg</span> <span class="ow">and</span> <span class="s2">&quot;CANCELED&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">error_msg</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+
+    <span class="n">status_code</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">final_job_run</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">JobState</span><span class="o">.</span><span class="n">JOB_STATE_SUCCEEDED</span> <span class="k">else</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">VertexAIWorkerResult</span><span class="p">(</span>
+        <span class="n">identifier</span><span class="o">=</span><span class="n">final_job_run</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="n">status_code</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+
+<h3 id="prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration" class="doc doc-heading">
+          <code>VertexAIWorkerJobConfiguration</code>
+
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.workers.base.BaseJobConfiguration">BaseJobConfiguration</span></code></p>
+
+  
+      <p>Configuration class used by the Vertex AI Worker to create a Job.</p>
+<p>An instance of this class is passed to the Vertex AI Worker's <code>run</code> method
+for each flow run. It contains all information necessary to execute
+the flow run as a Vertex AI Job.</p>
+
+
+
+  <p><strong>Attributes:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>region</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The region where the Vertex AI Job resides.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>credentials</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The GCP Credentials used to connect to Vertex AI.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>job_spec</code></td>
+          <td>
+                <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The Vertex AI Job spec used to create the Job.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>job_watch_poll_interval</code></td>
+          <td>
+                <code>float</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The interval between GCP API calls to check Job state.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/workers/vertex.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAIWorkerJobConfiguration</span><span class="p">(</span><span class="n">BaseJobConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Configuration class used by the Vertex AI Worker to create a Job.</span>
+
+<span class="sd">    An instance of this class is passed to the Vertex AI Worker&#39;s `run` method</span>
+<span class="sd">    for each flow run. It contains all information necessary to execute</span>
+<span class="sd">    the flow run as a Vertex AI Job.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        region: The region where the Vertex AI Job resides.</span>
+<span class="sd">        credentials: The GCP Credentials used to connect to Vertex AI.</span>
+<span class="sd">        job_spec: The Vertex AI Job spec used to create the Job.</span>
+<span class="sd">        job_watch_poll_interval: The interval between GCP API calls to check Job state.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">region</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The region where the Vertex AI Job resides.&quot;</span><span class="p">,</span>
+        <span class="n">example</span><span class="o">=</span><span class="s2">&quot;us-central1&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">credentials</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GcpCredentials</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;GCP Credentials&quot;</span><span class="p">,</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="n">GcpCredentials</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The GCP Credentials used to initiate the &quot;</span>
+        <span class="s2">&quot;Vertex AI Job. If not provided credentials will be &quot;</span>
+        <span class="s2">&quot;inferred from the local environment.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">job_spec</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">template</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;service_account_name&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ service_account_name }}&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ network }}&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;reserved_ip_ranges&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ reserved_ip_ranges }}&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;maximum_run_time_hours&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ maximum_run_time_hours }}&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;worker_pool_specs&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;replica_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s2">&quot;container_spec&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;image_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ image }}&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ command }}&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;machine_spec&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;machine_type&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ machine_type }}&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;accelerator_type&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ accelerator_type }}&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;accelerator_count&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ accelerator_count }}&quot;</span><span class="p">,</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;disk_spec&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;boot_disk_type&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ boot_disk_type }}&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;boot_disk_size_gb&quot;</span><span class="p">:</span> <span class="s2">&quot;{{ boot_disk_size_gb }}&quot;</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">job_watch_poll_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Poll Interval (Seconds)&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The amount of time to wait between GCP API calls while monitoring the &quot;</span>
+            <span class="s2">&quot;state of a Vertex AI Job.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;property for accessing the project from the credentials.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">project</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">job_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The name can be up to 128 characters long and can be consist of any UTF-8 characters. Reference:</span>
+<span class="sd">        https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa</span>
+        <span class="n">unique_suffix</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>
+        <span class="n">job_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">unique_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">job_name</span>
+
+    <span class="k">def</span> <span class="nf">prepare_for_flow_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
+        <span class="n">deployment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;DeploymentResponse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">flow</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Flow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">prepare_for_flow_run</span><span class="p">(</span><span class="n">flow_run</span><span class="p">,</span> <span class="n">deployment</span><span class="p">,</span> <span class="n">flow</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inject_formatted_env_vars</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inject_formatted_command</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_existence_of_service_account</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_inject_formatted_env_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inject environment variables in the Vertex job_spec configuration,</span>
+<span class="sd">        in the correct format, which is sourced from the BaseJobConfiguration.</span>
+<span class="sd">        This method is invoked by `prepare_for_flow_run()`.&quot;&quot;&quot;</span>
+        <span class="n">worker_pool_specs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_spec</span><span class="p">[</span><span class="s2">&quot;worker_pool_specs&quot;</span><span class="p">]</span>
+        <span class="n">formatted_env_vars</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="n">worker_pool_specs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;container_spec&quot;</span><span class="p">][</span><span class="s2">&quot;env&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">formatted_env_vars</span>
+
+    <span class="k">def</span> <span class="nf">_inject_formatted_command</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inject shell commands in the Vertex job_spec configuration,</span>
+<span class="sd">        in the correct format, which is sourced from the BaseJobConfiguration.</span>
+<span class="sd">        Here, we&#39;ll ensure that the default string format</span>
+<span class="sd">        is converted to a list of strings.&quot;&quot;&quot;</span>
+        <span class="n">worker_pool_specs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_spec</span><span class="p">[</span><span class="s2">&quot;worker_pool_specs&quot;</span><span class="p">]</span>
+
+        <span class="n">existing_command</span> <span class="o">=</span> <span class="n">worker_pool_specs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;container_spec&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">existing_command</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">worker_pool_specs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;container_spec&quot;</span><span class="p">][</span><span class="s2">&quot;command&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;prefect.engine&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">existing_command</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">worker_pool_specs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;container_spec&quot;</span><span class="p">][</span><span class="s2">&quot;command&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span>
+                <span class="n">existing_command</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_ensure_existence_of_service_account</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify that a service account was provided, either in the credentials</span>
+<span class="sd">        or as a standalone service account name override.&quot;&quot;&quot;</span>
+
+        <span class="n">provided_service_account_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;service_account_name&quot;</span><span class="p">)</span>
+        <span class="n">credential_service_account</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">_service_account_email</span>
+
+        <span class="n">service_account_to_use</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">provided_service_account_name</span> <span class="ow">or</span> <span class="n">credential_service_account</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">service_account_to_use</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;A service account is required for the Vertex job. &quot;</span>
+                <span class="s2">&quot;A service account could not be detected in the attached credentials &quot;</span>
+                <span class="s2">&quot;or in the service_account_name input. &quot;</span>
+                <span class="s2">&quot;Please pass in valid GCP credentials or a valid service_account_name&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_spec</span><span class="p">[</span><span class="s2">&quot;service_account_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">service_account_to_use</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s2">&quot;job_spec&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_ensure_job_spec_includes_required_attributes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensures that the job spec includes all required components.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">patch</span> <span class="o">=</span> <span class="n">JsonPatch</span><span class="o">.</span><span class="n">from_diff</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">_get_base_job_spec</span><span class="p">())</span>
+        <span class="n">missing_paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">op</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">patch</span> <span class="k">if</span> <span class="n">op</span><span class="p">[</span><span class="s2">&quot;op&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;add&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">missing_paths</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Job is missing required attributes at the following paths: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_paths</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+<h4 id="prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration-attributes">Attributes</h4>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
+<h5 id="prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration.job_name" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">job_name</span><span class="p">:</span> <span class="nb">str</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The name can be up to 128 characters long and can be consist of any UTF-8 characters. Reference:
+https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
+<h5 id="prefect_gcp.workers.vertex.VertexAIWorkerJobConfiguration.project" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">project</span><span class="p">:</span> <span class="nb">str</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>property for accessing the project from the credentials.</p>
+  </div>
+
+</div>
+
+
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+
+<h3 id="prefect_gcp.workers.vertex.VertexAIWorkerResult" class="doc doc-heading">
+          <code>VertexAIWorkerResult</code>
+
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.workers.base.BaseWorkerResult">BaseWorkerResult</span></code></p>
+
+  
+      <p>Contains information about the final state of a completed process</p>
+
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/workers/vertex.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">360</span>
+<span class="normal">361</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAIWorkerResult</span><span class="p">(</span><span class="n">BaseWorkerResult</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains information about the final state of a completed process&quot;&quot;&quot;</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+
+<h3 id="prefect_gcp.workers.vertex.VertexAIWorkerVariables" class="doc doc-heading">
+          <code>VertexAIWorkerVariables</code>
+
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="prefect.workers.base.BaseVariables">BaseVariables</span></code></p>
+
+  
+      <p>Default variables for the Vertex AI worker.</p>
+<p>The schema for this class is used to populate the <code>variables</code> section of the default
+base job template.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>prefect_gcp/workers/vertex.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAIWorkerVariables</span><span class="p">(</span><span class="n">BaseVariables</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default variables for the Vertex AI worker.</span>
+
+<span class="sd">    The schema for this class is used to populate the `variables` section of the default</span>
+<span class="sd">    base job template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">region</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The region where the Vertex AI Job resides.&quot;</span><span class="p">,</span>
+        <span class="n">example</span><span class="o">=</span><span class="s2">&quot;us-central1&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">image</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Image Name&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The URI of a container image in the Container or Artifact Registry, &quot;</span>
+            <span class="s2">&quot;used to run your Vertex AI Job. Note that Vertex AI will need access&quot;</span>
+            <span class="s2">&quot;to the project and region where the container image is stored. See &quot;</span>
+            <span class="s2">&quot;https://cloud.google.com/vertex-ai/docs/training/create-custom-container&quot;</span>
+        <span class="p">),</span>
+        <span class="n">example</span><span class="o">=</span><span class="s2">&quot;gcr.io/your-project/your-repo:latest&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">credentials</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GcpCredentials</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;GCP Credentials&quot;</span><span class="p">,</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="n">GcpCredentials</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The GCP Credentials used to initiate the &quot;</span>
+        <span class="s2">&quot;Vertex AI Job. If not provided credentials will be &quot;</span>
+        <span class="s2">&quot;inferred from the local environment.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">machine_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Machine Type&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The machine type to use for the run, which controls &quot;</span>
+            <span class="s2">&quot;the available CPU and memory. &quot;</span>
+            <span class="s2">&quot;See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec&quot;</span>
+        <span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;n1-standard-4&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">accelerator_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Accelerator Type&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The type of accelerator to attach to the machine. &quot;</span>
+            <span class="s2">&quot;See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec&quot;</span>
+        <span class="p">),</span>
+        <span class="n">example</span><span class="o">=</span><span class="s2">&quot;NVIDIA_TESLA_K80&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">accelerator_count</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Accelerator Count&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The number of accelerators to attach to the machine. &quot;</span>
+            <span class="s2">&quot;See https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec&quot;</span>
+        <span class="p">),</span>
+        <span class="n">example</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">boot_disk_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Boot Disk Type&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The type of boot disk to attach to the machine.&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;pd-ssd&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">boot_disk_size_gb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Boot Disk Size (GB)&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The size of the boot disk to attach to the machine, in gigabytes.&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">maximum_run_time_hours</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Maximum Run Time (Hours)&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The maximum job running time, in hours&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">network</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Network&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The full name of the Compute Engine network&quot;</span>
+        <span class="s2">&quot;to which the Job should be peered. Private services access must &quot;</span>
+        <span class="s2">&quot;already be configured for the network. If left unspecified, the job &quot;</span>
+        <span class="s2">&quot;is not peered with any network. &quot;</span>
+        <span class="s2">&quot;For example: projects/12345/global/networks/myVPC&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">reserved_ip_ranges</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Reserved IP Ranges&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;A list of names for the reserved ip ranges under the VPC &quot;</span>
+        <span class="s2">&quot;network that can be used for this job. If set, we will deploy the job &quot;</span>
+        <span class="s2">&quot;within the provided ip ranges. Otherwise, the job will be deployed to &quot;</span>
+        <span class="s2">&quot;any ip ranges under the provided VPC network.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">service_account_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Service Account Name&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Specifies the service account to use &quot;</span>
+            <span class="s2">&quot;as the run-as account in Vertex AI. The worker submitting jobs must have &quot;</span>
+            <span class="s2">&quot;act-as permission on this run-as account. If unspecified, the AI &quot;</span>
+            <span class="s2">&quot;Platform Custom Code Service Agent for the CustomJob&#39;s project is &quot;</span>
+            <span class="s2">&quot;used. Takes precedence over the service account found in GCP credentials, &quot;</span>
+            <span class="s2">&quot;and required if a service account cannot be detected in GCP credentials.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">job_watch_poll_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Poll Interval (Seconds)&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The amount of time to wait between GCP API calls while monitoring the &quot;</span>
+            <span class="s2">&quot;state of a Vertex AI Job.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.prefect.io/slack/" target="_blank" rel="noopener" title="www.prefect.io" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://discourse.prefect.io/" target="_blank" rel="noopener" title="discourse.prefect.io" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M225.9 32C103.3 32 0 130.5 0 252.1 0 256 .1 480 .1 480l225.8-.2c122.7 0 222.1-102.3 222.1-223.9C448 134.3 348.6 32 225.9 32zM224 384c-19.4 0-37.9-4.3-54.4-12.1L88.5 392l22.9-75c-9.8-18.1-15.4-38.9-15.4-61 0-70.7 57.3-128 128-128s128 57.3 128 128-57.3 128-128 128z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.youtube.com/c/PrefectIO/videos" target="_blank" rel="noopener" title="www.youtube.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://prefect.io/guide/" target="_blank" rel="noopener" title="prefect.io" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M168 80c-13.3 0-24 10.7-24 24v304c0 8.4-1.4 16.5-4.1 24H440c13.3 0 24-10.7 24-24V104c0-13.3-10.7-24-24-24H168zM72 480c-39.8 0-72-32.2-72-72V112c0-13.3 10.7-24 24-24s24 10.7 24 24v296c0 13.3 10.7 24 24 24s24-10.7 24-24V104c0-39.8 32.2-72 72-72h272c39.8 0 72 32.2 72 72v304c0 39.8-32.2 72-72 72H72zm104-344c0-13.3 10.7-24 24-24h96c13.3 0 24 10.7 24 24v80c0 13.3-10.7 24-24 24h-96c-13.3 0-24-10.7-24-24v-80zm200-24h32c13.3 0 24 10.7 24 24s-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24s10.7-24 24-24zm0 80h32c13.3 0 24 10.7 24 24s-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24s10.7-24 24-24zm-176 80h208c13.3 0 24 10.7 24 24s-10.7 24-24 24H200c-13.3 0-24-10.7-24-24s10.7-24 24-24zm0 80h208c13.3 0 24 10.7 24 24s-10.7 24-24 24H200c-13.3 0-24-10.7-24-24s10.7-24 24-24z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/PrefectIO" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/company/prefect/" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/PrefectHQ/prefect" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://hub.docker.com/r/prefecthq/prefect/" target="_blank" rel="noopener" title="hub.docker.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M349.9 236.3h-66.1v-59.4h66.1v59.4zm0-204.3h-66.1v60.7h66.1V32zm78.2 144.8H362v59.4h66.1v-59.4zm-156.3-72.1h-66.1v60.1h66.1v-60.1zm78.1 0h-66.1v60.1h66.1v-60.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4.4 67.6.1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1l-13.3-8.9zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm-78.1-72.1h-66.1v60.1h66.1v-60.1z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/prefect/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6zM286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3zM167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4zm-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a264c092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.4e0fa4ba.min.js"></script>
+      
+    
+  </body>
+</html>
