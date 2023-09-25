@@ -103,7 +103,7 @@ You can create a new work pool using the Prefect UI or CLI. The following comman
 prefect work-pool create --type cloud-run my-cloud-run-pool
 ```
 
-Once the workpool is created, find the work pool in the UI and edit it.
+Once the work pool is created, find the work pool in the UI and edit it.
 
 There are many ways to customize the base job template for the work pool. Modifying the template influences the infrastructure configuration that the worker provisions for flow runs submitted to the work pool. For this guide we are going to modify just a few of the available fields.
 
