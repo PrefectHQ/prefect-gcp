@@ -97,7 +97,7 @@ Now you're ready to create the GCP Credentials block. Navigate to the Blocks pag
 Copy the contents of the JSON key file in your directory and paste them into the `Service Account Info` field.
 Last but not least, save the block.
 
-#### Fill Out the Work Pool Base Job Template
+#### Fill out the work pool base job template
 You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type `cloud-run`:
 ```bash
 prefect work-pool create --type cloud-run my-cloud-run-pool
