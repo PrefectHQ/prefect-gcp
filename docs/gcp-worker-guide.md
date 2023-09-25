@@ -304,5 +304,5 @@ Once the flow is deployed to Prefect Cloud or your local Prefect Server, it's ti
 ### Step 5. Flow Execution
 Find your deployment in the UI, and hit the *Quick Run* button.
 You have now successfully submitted a flow run to your Cloud Run worker!
-If you used the flow script provided in this guide, check the artifacts tab for the flow run once it completes.
+If you used the flow script provided in this guide, check the *Artifacts* tab for the flow run once it completes.
 You'll have a nice little weather report waiting for you there.
