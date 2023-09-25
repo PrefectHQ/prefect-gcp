@@ -265,7 +265,7 @@ deployments:
 ```
 
 !!!Tip
-    After copying the example above, don't forget to replace `[WORKING_DIRECTORY]` with the name of the directory where your flow folder and prefect.yaml live.
+    After copying the example above, don't forget to replace `[WORKING_DIRECTORY]` with the name of the directory where your flow folder and `prefect.yaml` live.
 
 To get a better understanding of the different components of the `prefect.yaml` file above and what they do, feel free to read this next section. Otherwise, you can skip ahead to *Flow Deployment*.
 
