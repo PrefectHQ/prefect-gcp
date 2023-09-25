@@ -269,7 +269,7 @@ deployments:
 
 To get a better understanding of the different components of the `prefect.yaml` file above and what they do, feel free to read this next section. Otherwise, you can skip ahead to *Flow Deployment*.
 
-In the `build` section of the `prefect.yaml` file, there are two steps which are executed:
+In the `build` section of the `prefect.yaml` file two steps are executed at deployment build time:
 
 1. `prefect.deployments.steps.run_shell_script` : runs a shell command which configures Docker to authenticate with GCR using your Google Cloud credentials.
 2. `prefect_docker.deployments.steps.build_docker_image` : builds a Docker image automatically which uses the name and tag chosen previously.
