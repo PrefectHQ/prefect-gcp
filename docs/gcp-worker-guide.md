@@ -118,7 +118,7 @@ Save the name of the service account created in first step of this guide.
 
 Your work pool is now ready to receive scheduled flow runs!
 
-### Step 3. Deploying a Cloud Run Worker
+### Step 3. Deploy a Cloud Run worker
 Now you can launch a Cloud Run service to host the Cloud Run worker. This worker will poll the work pool that you created in the previous step.
 
 Navigate back to your terminal and run the following commands to set your Prefect API key and URL as environment variables.
