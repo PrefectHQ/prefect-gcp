@@ -148,7 +148,7 @@ The next prompt will ask if you'd like to allow unauthentiated invocations to yo
 After a few seconds, you'll be able to see your new `prefect-worker` service by navigating to the Cloud Run page of your Google Cloud console. Additionally, you should be able to see a record of this worker in the Prefect UI on the work pool's page by navigating to the `Worker` tab.
 Let's not leave our worker hanging, it's time to give it a job.
 
-### Step 4. Deploying a Flow
+### Step 4. Deploy a flow
 Let's prepare a flow to run as a Cloud Run job. In this section of the guide, we'll "bake" our code into a Docker image, and push that image to Google Cloud Container Registry (GCR).
 
 ### Write a flow
