@@ -153,7 +153,7 @@ Let's prepare a flow to run as a Cloud Run job. In this section of the guide, we
 
 ### Write a flow
 First, create a new directory. This will serve as the root of your project's repository. Within the directory, create a sub-directory called `flows`.
-Navigate to the `flows` subdirectory and create a new flow. Feel free to write your own, but here's a ready-made script for your convenience.
+Navigate to the `flows` subdirectory and create a new file for your flow. Feel free to write your own flow, but here's a ready-made one for your convenience:
 
 ```python
 import httpx
