@@ -32,7 +32,7 @@ Before starting this guide, make sure you have:
 - [Docker](https://www.docker.com/get-started/) installed on your local machine.
 - A Prefect server instance. You can sign up for a forever free [Prefect Cloud Account](https://app.prefect.cloud/) or, alternatively, self-host a [Prefect server](https://docs.prefect.io/latest/guides/host/).
 
-### Step 1. Creating a Google Cloud Service Account
+### Step 1. Create a Google Cloud service account
 First, open a terminal or command prompt on your local machine where `gcloud` is installed. If you haven't already authenticated with `gcloud`, run the following command and follow the instructions to log in to your GCP account.
 
 ```bash
