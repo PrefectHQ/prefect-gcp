@@ -79,7 +79,7 @@ gcloud projects add-iam-policy-binding [PROJECT_ID] \
     --role="roles/run.admin"
 ```
 
-### Step 2. Creating a Cloud Run Work Pool
+### Step 2. Create a Cloud Run work pool
 Let's walk through the process of creating a Cloud Run work pool.
 
 #### Create a GCP Credentials Block
