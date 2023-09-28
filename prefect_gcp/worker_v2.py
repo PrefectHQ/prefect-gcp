@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Literal, Optional
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
+
+# noinspection PyProtectedMember
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 from prefect.logging.loggers import PrefectLogAdapter
@@ -110,8 +112,6 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         ),
     )
 
-    config_job_name: Optional[None] = None
-
     @property
     def project(self) -> str:
         """
@@ -123,24 +123,18 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         return self.credentials.project
 
     @property
-    def job_name(self) -> str:
+    def job_name(self):
         """
         Returns the job name, if it does not exist, it creates it.
-
-        Returns:
-            str: The job name.
         """
-        if self.config_job_name is None:
-            pre_trim_cr_job_name = f"prefect-{self.name}"
+        pre_trim_cr_job_name = f"prefect-{self.name}"
 
-            if len(pre_trim_cr_job_name) > 17:
-                pre_trim_cr_job_name = pre_trim_cr_job_name[:17]
+        if len(pre_trim_cr_job_name) > 40:
+            pre_trim_cr_job_name = pre_trim_cr_job_name[:40]
 
-            pre_trim_cr_job_name = pre_trim_cr_job_name.rstrip("-")
+        pre_trim_cr_job_name = pre_trim_cr_job_name.rstrip("-")
 
-            self.config_job_name = pre_trim_cr_job_name
-
-        return self.config_job_name
+        return pre_trim_cr_job_name
 
     def prepare_for_flow_run(
         self,
@@ -362,7 +356,7 @@ class CloudRunWorkerV2Variables(BaseVariables):
         description="The name of the VPC connector to use for the Cloud Run job.",
     )
 
-    config_job_name: Optional[str] = None
+    _config_job_name: Optional[str]
 
 
 class CloudRunWorkerV2Result(BaseWorkerResult):
@@ -521,8 +515,8 @@ class CloudRunWorkerV2(BaseWorker):
 
             raise
 
+    @staticmethod
     def _wait_for_job_creation(
-        self,
         cr_client: Resource,
         configuration: CloudRunWorkerJobV2Configuration,
         logger: PrefectLogAdapter,
@@ -760,7 +754,7 @@ class CloudRunWorkerV2(BaseWorker):
 
     @staticmethod
     def _job_run_submission_error(
-        exc: HttpError,
+        exc: Exception,
         configuration: CloudRunWorkerJobV2Configuration,
     ):
         """
