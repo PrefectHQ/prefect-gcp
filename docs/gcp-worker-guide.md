@@ -232,7 +232,7 @@ At this point, there will be a new `prefect.yaml` file available at the root of 
 
 # Generic metadata about this project
 name: <WORKING-DIRECTORY>
-prefect-version: 2.11.0
+prefect-version: 2.13.4
 
 # build section allows you to manage and build docker image
 build:
