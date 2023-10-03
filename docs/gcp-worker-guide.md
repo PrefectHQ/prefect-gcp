@@ -216,10 +216,10 @@ Now we're ready to make a `prefect.yaml` file, which will be responsible for man
 prefect init --recipe docker
 ```
 
-You'll receive a prompt to put in values for the image name and tag. Since we will be pushing the image to Google Artifact Registry, the name of your image should be prefixed with the path to the docker repository you created within the registry. For example: `us-east1-docker.pkg.dev/<PROJECT-ID>/<REPOSITORY-NAME>/`. You'll want to replace `<PROJECT-ID>` with the ID of your project in GCP. This should match the ID of the project you used in first step of this guide. Here is an example of what this could look like:
+You'll receive a prompt to put in values for the image name and tag. Since we will be pushing the image to Google Artifact Registry, the name of your image should be prefixed with the path to the docker repository you created within the registry. For example: `us-docker.pkg.dev/<PROJECT-ID>/<REPOSITORY-NAME>/`. You'll want to replace `<PROJECT-ID>` with the ID of your project in GCP. This should match the ID of the project you used in first step of this guide. Here is an example of what this could look like:
 
 ```bash
-image_name: us-east1-docker.pkg.dev/prefect-project/my-artifact-registry/gcp-weather-image
+image_name: us-docker.pkg.dev/prefect-project/my-artifact-registry/gcp-weather-image
 tag: latest
 ```
 
@@ -291,7 +291,7 @@ In the `build` section of the `prefect.yaml` the following step is executed at d
     - prefect_docker.deployments.steps.build_docker_image:
     id: build_image
     requires: prefect-docker>=0.3.1
-    image_name: us-east1-docker.pkg.dev/prefect-project/my-docker-repository/gcp-weather-image
+    image_name: us-docker.pkg.dev/prefect-project/my-docker-repository/gcp-weather-image
     tag: latest
     dockerfile: auto
     platform: linux/amd64
