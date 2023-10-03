@@ -39,10 +39,10 @@ First, open a terminal or command prompt on your local machine where `gcloud` is
 gcloud auth login
 ```
 
-Next, you'll set your project where you'd like to create the service account. Use the following command and replace `[PROJECT_ID]` with your GCP project's ID.
+Next, you'll set your project where you'd like to create the service account. Use the following command and replace `<PROJECT_ID>` with your GCP project's ID.
 
 ```bash
-gcloud config set project [PROJECT_ID]
+gcloud config set project <PROJECT-ID>
 ```
 
 For example, if your project's ID is `prefect-project` the command will look like this:
@@ -54,7 +54,7 @@ gcloud config set project prefect-project
 Now you're ready to make the service account. To do so, you'll need to run this command:
 
 ```bash
-gcloud iam service-accounts create [SERVICE_ACCOUNT_NAME] --display-name="[DISPLAY_NAME]"
+gcloud iam service-accounts create <SERVICE-ACCOUNT-NAME> --display-name="<DISPLAY-NAME>"
 ```
 
 Here's an example of the command above which you can use which already has the service account name and display name provided. An additional option to describe the service account has also been added:
@@ -69,13 +69,13 @@ The last step of this process is to make sure the service account has the proper
 Run the following commands to grant the necessary permissions:
 
 ```bash
-gcloud projects add-iam-policy-binding [PROJECT_ID] \
-    --member="serviceAccount:[SERVICE_ACCOUNT_NAME]@[PROJECT_ID].iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding <PROJECT-ID> \
+    --member="serviceAccount:<SERVICE-ACCOUNT-NAME>@<PROJECT-ID>.iam.gserviceaccount.com" \
     --role="roles/iam.serviceAccountUser"
 ```
 ```bash
-gcloud projects add-iam-policy-binding [PROJECT_ID] \
-    --member="serviceAccount:[SERVICE_ACCOUNT_NAME]@[PROJECT_ID].iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding <PROJECT-ID> \
+    --member="serviceAccount:<SERVICE-ACCOUNT-NAME>@<PROJECT-ID>.iam.gserviceaccount.com" \
     --role="roles/run.admin"
 ```
 
@@ -89,7 +89,7 @@ The block created in this guide will contain the JSON key for the service accoun
 To get the JSON key, paste the following command into your terminal.
 ```bash
 gcloud iam service-accounts keys create my_key.json \
-    --serviceAccount:[SERVICE_ACCOUNT_NAME]@[PROJECT_ID].iam.gserviceaccount.com
+    --serviceAccount:<SERVICE_ACCOUNT_NAME>@<PROJECT_ID>.iam.gserviceaccount.com
 ```
 Running this command will generate a JSON key file in your directory.
 
@@ -98,9 +98,9 @@ Copy the contents of the JSON key file in your directory and paste them into the
 Last but not least, save the block.
 
 #### Fill out the work pool base job template
-You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type `cloud-run`:
+You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type `cloud-run` via the CLI (you'll want to replace the <WORK-POOL-NAME> with the name of your work pool, and remove the square brackets):
 ```bash
-prefect work-pool create --type cloud-run my-cloud-run-pool
+prefect work-pool create --type cloud-run <WORK-POOL-NAME>
 ```
 
 Once the work pool is created, find the work pool in the UI and edit it.
@@ -122,24 +122,24 @@ Your work pool is now ready to receive scheduled flow runs!
 Now you can launch a Cloud Run service to host the Cloud Run worker. This worker will poll the work pool that you created in the previous step.
 
 Navigate back to your terminal and run the following commands to set your Prefect API key and URL as environment variables.
-Be sure to replace `[ACCOUNT-ID]` and `[WORKSPACE-ID]` with your Prefect account and workspace IDs (both will be available in the URL of the UI when previewing the workspace dashboard).
-You'll want to replace `[YOUR-API-KEY]` with an active API key as well.
+Be sure to replace `<ACCOUNT-ID>` and `<WORKSPACE-ID>` with your Prefect account and workspace IDs (both will be available in the URL of the UI when previewing the workspace dashboard).
+You'll want to replace `<YOUR-API-KEY>` with an active API key as well.
 
 ```bash
-export PREFECT_API_URL='https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]'
-export PREFECT_API_KEY='[YOUR-API-KEY]'
+export PREFECT_API_URL='https://api.prefect.cloud/api/accounts/<ACCOUNT-ID>/workspaces/<WORKSPACE-ID>'
+export PREFECT_API_KEY='<YOUR-API-KEY>'
 ```
 
 Once those variables are set, run the following shell command to deploy your worker as a service.
-Don't forget to replace `[YOUR-SERVICE-ACCOUNT-NAME]` with the name of the service account you created in the first step of this guide.
+Don't forget to replace `<YOUR-SERVICE-ACCOUNT-NAME>` with the name of the service account you created in the first step of this guide, and replace `<WORK-POOL-NAME>` with the name of the work pool you created in the second step.
 
 ```bash
 gcloud run deploy prefect-worker --image=prefecthq/prefect:2-latest \
 --set-env-vars PREFECT_API_URL=$PREFECT_API_URL,PREFECT_API_KEY=$PREFECT_API_KEY \
---service-account [YOUR-SERVICE-ACCOUNT-NAME] \
+--service-account <YOUR-SERVICE-ACCOUNT-NAME> \
 --no-cpu-throttling \
 --min-instances 1 \
---args "prefect","worker","start","--install-policy","always","--with-healthcheck","-p","gcp-pool","-t","cloud-run"
+--args "prefect","worker","start","--install-policy","always","--with-healthcheck","-p","<WORK-POOL-NAME>","-t","cloud-run"
 ```
 
 After running this command, you'll be prompted to specify a region. Choose the same region that you selected when creating the Cloud Run work pool in the second step of this guide.
@@ -149,7 +149,21 @@ After a few seconds, you'll be able to see your new `prefect-worker` service by 
 Let's not leave our worker hanging, it's time to give it a job.
 
 ### Step 4. Deploy a flow
-Let's prepare a flow to run as a Cloud Run job. In this section of the guide, we'll "bake" our code into a Docker image, and push that image to Google Cloud Container Registry (GCR).
+Let's prepare a flow to run as a Cloud Run job. In this section of the guide, we'll "bake" our code into a Docker image, and push that image to Google Artifact Registry.
+
+### Create a registry
+Let's create a docker repository in your Google Artifact Registry to host your custom image. If you already have a registry, and are authenticated to it, skip ahead to the *Write a flow* section.
+
+The following command creates a repository using the gcloud CLI. You'll want to replace the `<REPOSITORY-NAME>` with your own value. :
+```bash
+gcloud artifacts repositories create <REPOSITORY-NAME> \
+--repository-format=docker --location=us
+```
+
+Now you can authenticate to artifact registry:
+```bash
+gcloud auth configure-docker us-docker.pkg.dev
+```
 
 ### Write a flow
 First, create a new directory. This will serve as the root of your project's repository. Within the directory, create a sub-directory called `flows`.
@@ -202,10 +216,10 @@ Now we're ready to make a `prefect.yaml` file, which will be responsible for man
 prefect init --recipe docker
 ```
 
-You'll receive a prompt to put in values for the image name and tag. Since we will be pushing the image to GCR, the name of your image should be prefixed with `gcr.io/[PROJECT_ID]/`. You'll want to replace `[PROJECT_ID]` with the ID of your project in GCP. This should match the ID of the project you used in step 1 of this guide. Here is an example of what this could look like:
+You'll receive a prompt to put in values for the image name and tag. Since we will be pushing the image to Google Artifact Registry, the name of your image should be prefixed with the path to the docker repository you created within the registry. For example: `us-east1-docker.pkg.dev/<PROJECT-ID>/<REPOSITORY-NAME>/`. You'll want to replace `<PROJECT-ID>` with the ID of your project in GCP. This should match the ID of the project you used in first step of this guide. Here is an example of what this could look like:
 
 ```bash
-image_name: gcr.io/prefect-project/gcp-weather-image
+image_name: us-east1-docker.pkg.dev/prefect-project/my-artifact-registry/gcp-weather-image
 tag: latest
 ```
 
@@ -217,21 +231,18 @@ At this point, there will be a new `prefect.yaml` file available at the root of 
 # control along with your flow code.
 
 # Generic metadata about this project
-name: [WORKING_DIRECTORY]
+name: <WORKING-DIRECTORY>
 prefect-version: 2.11.0
 
-# build section allows you to manage and build docker images
+# build section allows you to manage and build docker image
 build:
-- prefect.deployments.steps.run_shell_script:
-    id: configure-docker
-    script: gcloud auth configure-docker
-    stream_output: true
 - prefect_docker.deployments.steps.build_docker_image:
     id: build_image
     requires: prefect-docker>=0.3.1
-    image_name: gcr.io/prefect-project/gcp-weather-image
+    image_name: <PATH-TO-ARTIFACT-REGISTRY>/gcp-weather-image
     tag: latest
     dockerfile: auto
+    platform: linux/amd64
 
 # push section allows you to manage if and how this project is uploaded to remote locations
 push:
@@ -243,7 +254,7 @@ push:
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
 - prefect.deployments.steps.set_working_directory:
-    directory: /opt/prefect/[WORKING_DIRECTORY]
+    directory: /opt/prefect/<WORKING-DIRECTORY>
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
@@ -265,34 +276,35 @@ deployments:
 ```
 
 !!!Tip
-    After copying the example above, don't forget to replace `[WORKING_DIRECTORY]` with the name of the directory where your flow folder and `prefect.yaml` live.
+    After copying the example above, don't forget to replace `<WORKING-DIRECTORY>` with the name of the directory where your flow folder and `prefect.yaml` live. You'll also need to replace `<PATH-TO-ARTIFACT-REGISTRY>` with the path to the Docker repository in your Google Artifact Registry. 
 
 To get a better understanding of the different components of the `prefect.yaml` file above and what they do, feel free to read this next section. Otherwise, you can skip ahead to *Flow Deployment*.
 
-In the `build` section of the `prefect.yaml` file two steps are executed at deployment build time:
+In the `build` section of the `prefect.yaml` the following step is executed at deployment build time:
 
-1. `prefect.deployments.steps.run_shell_script` : runs a shell command which configures Docker to authenticate with GCR using your Google Cloud credentials.
-2. `prefect_docker.deployments.steps.build_docker_image` : builds a Docker image automatically which uses the name and tag chosen previously.
+1. `prefect_docker.deployments.steps.build_docker_image` : builds a Docker image automatically which uses the name and tag chosen previously.
 
 !!!Warning
     If you are using an ARM-based chip (such as an M1 or M2 Mac), you'll want to ensure that you add `platform: linux/amd64` to your `build_docker_image` step to ensure that your docker image uses an AMD architecture. For example:
 
-    ```yaml 
+    ```yaml
     - prefect_docker.deployments.steps.build_docker_image:
     id: build_image
     requires: prefect-docker>=0.3.1
-    image_name: gcr.io/prefect-project/gcp-weather-image
+    image_name: us-east1-docker.pkg.dev/prefect-project/my-docker-repository/gcp-weather-image
     tag: latest
     dockerfile: auto
     platform: linux/amd64
     ```
 
 
-The `push` section sends the Docker image to GCR, so that it can be easily accessed by the worker for flow run execution.
+The `push` section sends the Docker image to the Docker repository in your Google Artifact Registry, so that it can be easily accessed by the worker for flow run execution.
+
+The `pull` section sets the working directory for the process prior to importing your flow.
 
 In the `deployments` section of the `prefect.yaml` file above, you'll see that there is a deployment declaration named `gcp-weather-deploy`. Within the declaration, the entrypoint for the flow is specified along with some default parameters which will be passed to the flow at runtime. Last but not least, the name of the workpool that we created in step 2 of this guide is specified.
 
-#### Flow Deployment
+#### Flow deployment
 Once you're happy with the specifications in the `prefect.yaml` file, run the following command in the terminal to deploy your flow:
 
 ```bash
@@ -301,8 +313,25 @@ prefect deploy --name gcp-weather-deploy
 
 Once the flow is deployed to Prefect Cloud or your local Prefect Server, it's time to queue up a flow run!
 
-### Step 5. Flow Execution
+### Step 5. Flow execution
 Find your deployment in the UI, and hit the *Quick Run* button.
 You have now successfully submitted a flow run to your Cloud Run worker!
 If you used the flow script provided in this guide, check the *Artifacts* tab for the flow run once it completes.
-You'll have a nice little weather report waiting for you there.
+You'll have a nice little weather report waiting for you there. Hope your day is a sunny one!
+
+### Recap and next steps
+Congratulations on completing this guide! Looking back on our journey, you have:
+
+1. Created a Google Cloud service account
+2. Created a Cloud Run work pool
+3. Deployed a Cloud Run worker
+4. Deployed a flow
+5. Executed a flow
+
+For next steps, you could:
+
+- Take a look at some of the other [work pools](https://docs.prefect.io/latest/concepts/work-pools/) Prefect has to offer
+- Do a deep drive on Prefect [concepts](https://docs.prefect.io/latest/concepts/)
+- Try out [another guide](https://docs.prefect.io/latest/guides/) to explore new deployment patterns and recipes
+
+The world is your oyster 🦪✨.
