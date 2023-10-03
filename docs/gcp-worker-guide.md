@@ -12,7 +12,7 @@ This interoperability enables you to build end-to-end data pipelines that use a 
 
 4. Portability: Since Cloud Run uses container images, you can develop your pipelines locally using Docker and then deploy them on Google Cloud Run without significant modifications. This portability allows you to run the same pipeline in different environments.
 
-## Google Cloud Run Guide
+## Google Cloud Run guide
 After completing this guide, you will have:
 
 1. Created a Google Cloud Service Account
