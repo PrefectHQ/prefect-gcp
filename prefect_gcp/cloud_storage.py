@@ -564,7 +564,7 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         ```
     """
 
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
     _block_type_name = "GCS Bucket"
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/cloud_storage/#prefect_gcp.cloud_storage.GcsBucket"  # noqa: E501
 
@@ -870,7 +870,12 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         client = self.gcp_credentials.get_cloud_storage_client()
 
         bucket_path = self._join_bucket_folder(folder)
-        self.logger.info(f"Listing blobs in bucket {bucket_path}.")
+        if bucket_path is None:
+            self.logger.info(f"Listing blobs in bucket {self.bucket!r}.")
+        else:
+            self.logger.info(
+                f"Listing blobs in folder {bucket_path!r} in bucket {self.bucket!r}."
+            )
         blobs = await run_sync_in_worker_thread(
             client.list_blobs, self.bucket, prefix=bucket_path
         )
@@ -903,12 +908,19 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
-            gcs_bucket.list_folders('years)
+            gcs_bucket.list_folders("years")
             ```
         """
 
-        bucket_path = self._join_bucket_folder()
-        self.logger.info(f"Listing folders in bucket {bucket_path}.")
+        # Beware of calling _join_bucket_folder twice, see note in method.
+        # However, we just want to use it to check if we are listing the root folder
+        bucket_path = self._join_bucket_folder(folder)
+        if bucket_path is None:
+            self.logger.info(f"Listing folders in bucket {self.bucket!r}.")
+        else:
+            self.logger.info(
+                f"Listing folders in {bucket_path!r} in bucket {self.bucket!r}."
+            )
 
         blobs = await self.list_blobs(folder)
         # gets all folders with full path
