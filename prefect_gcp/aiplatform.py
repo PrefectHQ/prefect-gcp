@@ -102,7 +102,7 @@ class VertexAICustomTrainingJob(Infrastructure):
 
     _block_type_name = "Vertex AI Custom Training Job"
     _block_type_slug = "vertex-ai-custom-training-job"
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/aiplatform/#prefect_gcp.aiplatform.VertexAICustomTrainingJob"  # noqa: E501
 
     type: Literal["vertex-ai-custom-training-job"] = Field(
@@ -184,7 +184,6 @@ class VertexAICustomTrainingJob(Infrastructure):
             "and required if a service account cannot be detected in gcp_credentials."
         ),
     )
-
     job_watch_poll_interval: float = Field(
         default=5.0,
         description=(
@@ -200,16 +199,13 @@ class VertexAICustomTrainingJob(Infrastructure):
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
         try:
-            repo_name = self.image.split("/")[2]  # `gcr.io/<project_name>/<repo>/`"
+            base_name = self.name or self.image.split("/")[2]
+            return f"{base_name}-{uuid4().hex}"
         except IndexError:
             raise ValueError(
                 "The provided image must be from either Google Container Registry "
                 "or Google Artifact Registry"
             )
-
-        unique_suffix = uuid4().hex
-        job_name = f"{repo_name}-{unique_suffix}"
-        return job_name
 
     def _get_compatible_labels(self) -> Dict[str, str]:
         """
@@ -430,6 +426,7 @@ class VertexAICustomTrainingJob(Infrastructure):
             raise RuntimeError(f"{self._log_prefix}: {error_msg}")
 
         status_code = 0 if final_job_run.state == JobState.JOB_STATE_SUCCEEDED else 1
+
         return VertexAICustomTrainingJobResult(
             identifier=final_job_run.display_name, status_code=status_code
         )

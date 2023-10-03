@@ -17,15 +17,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix `list_folders` and `list_blobs` now logging bucket name and bucket path - [#184](https://github.com/PrefectHQ/prefect-gcp/pull/214)
+
 ### Security
 
-## 0.4.6
+## 0.4.7
 
-Not yet released
+Released September 22nd, 2023.
+
+### Added
+
+- Vertex AI `CustomJob` worker - [#211](https://github.com/PrefectHQ/prefect-gcp/pull/211)
+- Add `kill_infrastructure` method to Vertex AI worker - [#213](https://github.com/PrefectHQ/prefect-gcp/pull/213)
 
 ### Changed
 
-- Vertex AI CustomJob sets labels specified by Prefect Agent when Deployment triggered on infrastructure.
+- Use flow run name for name of created custom jobs - [#208](https://github.com/PrefectHQ/prefect-gcp/pull/208)
+
+## 0.4.6
+
+Released September 5th, 2023.
+
+### Changed
+
+- Persist Labels to Vertex AI Custom Job - [#198](https://github.com/PrefectHQ/prefect-gcp/pull/208) 
 
 ## 0.4.5
 
