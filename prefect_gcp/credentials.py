@@ -12,7 +12,12 @@ from google.oauth2.service_account import Credentials
 from prefect.blocks.abstract import CredentialsBlock
 from prefect.blocks.fields import SecretDict
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import Field, root_validator, validator
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import Field, root_validator, validator
+else:
+    from pydantic import Field, root_validator, validator
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient

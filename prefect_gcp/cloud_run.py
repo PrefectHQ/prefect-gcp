@@ -43,7 +43,13 @@ from googleapiclient.discovery import Resource
 from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import BaseModel, Field, root_validator, validator
+else:
+    from pydantic import BaseModel, Field, root_validator, validator
+
 from typing_extensions import Literal
 
 from prefect_gcp.credentials import GcpCredentials

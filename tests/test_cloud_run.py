@@ -1,7 +1,13 @@
 from unittest.mock import Mock
 
 import anyio
-import pydantic
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    import pydantic.v1 as pydantic
+else:
+    import pydantic
+
 import pytest
 from googleapiclient.errors import HttpError
 from prefect.exceptions import InfrastructureNotFound
