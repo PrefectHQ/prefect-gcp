@@ -3,7 +3,13 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import anyio
-import pydantic
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    import pydantic.v1 as pydantic
+else:
+    import pydantic
+
 import pytest
 from google.cloud.aiplatform_v1.types.job_service import CancelCustomJobRequest
 from google.cloud.aiplatform_v1.types.job_state import JobState

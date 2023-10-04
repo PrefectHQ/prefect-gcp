@@ -13,7 +13,12 @@ from prefect.filesystems import WritableDeploymentStorage, WritableFileSystem
 from prefect.logging import disable_run_logger
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from prefect.utilities.filesystem import filter_files
-from pydantic import Field, validator
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import Field, validator
+else:
+    from pydantic import Field, validator
 
 # cannot be type_checking only or else `fields = cls.schema()` raises
 # TypeError: issubclass() arg 1 must be a class
