@@ -870,7 +870,12 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
         client = self.gcp_credentials.get_cloud_storage_client()
 
         bucket_path = self._join_bucket_folder(folder)
-        self.logger.info(f"Listing blobs in bucket {bucket_path}.")
+        if bucket_path is None:
+            self.logger.info(f"Listing blobs in bucket {self.bucket!r}.")
+        else:
+            self.logger.info(
+                f"Listing blobs in folder {bucket_path!r} in bucket {self.bucket!r}."
+            )
         blobs = await run_sync_in_worker_thread(
             client.list_blobs, self.bucket, prefix=bucket_path
         )
@@ -903,12 +908,19 @@ class GcsBucket(WritableDeploymentStorage, WritableFileSystem, ObjectStorageBloc
             from prefect_gcp.cloud_storage import GcsBucket
 
             gcs_bucket = GcsBucket.load("my-bucket")
-            gcs_bucket.list_folders('years)
+            gcs_bucket.list_folders("years")
             ```
         """
 
-        bucket_path = self._join_bucket_folder()
-        self.logger.info(f"Listing folders in bucket {bucket_path}.")
+        # Beware of calling _join_bucket_folder twice, see note in method.
+        # However, we just want to use it to check if we are listing the root folder
+        bucket_path = self._join_bucket_folder(folder)
+        if bucket_path is None:
+            self.logger.info(f"Listing folders in bucket {self.bucket!r}.")
+        else:
+            self.logger.info(
+                f"Listing folders in {bucket_path!r} in bucket {self.bucket!r}."
+            )
 
         blobs = await self.list_blobs(folder)
         # gets all folders with full path

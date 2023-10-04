@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Bug that `put_directory` method in `cloud_storage.py`(GcsBucket) do not upload files that in directory
 
+- Fix `list_folders` and `list_blobs` now logging bucket name and bucket path - [#184](https://github.com/PrefectHQ/prefect-gcp/pull/214)
+
 ### Security
 
 ## 0.4.7
