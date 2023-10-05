@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.1">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.4">
     
     
       
@@ -26,10 +26,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.72749a73.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.bd3936ea.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.a5377069.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.356b1318.min.css">
       
       
 
@@ -366,14 +366,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
+          
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
@@ -723,14 +725,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_8" >
         
+          
           <label class="md-nav__link" for="__nav_5_8" id="__nav_5_8_label" tabindex="0">
             
   
@@ -1085,12 +1089,7 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
 
             <details class="quote">
               <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">532</span>
-<span class="normal">533</span>
-<span class="normal">534</span>
-<span class="normal">535</span>
-<span class="normal">536</span>
-<span class="normal">537</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">537</span>
 <span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
@@ -1493,7 +1492,12 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
 <span class="normal">937</span>
 <span class="normal">938</span>
 <span class="normal">939</span>
-<span class="normal">940</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BigQueryWarehouse</span><span class="p">(</span><span class="n">DatabaseBlock</span><span class="p">):</span>
+<span class="normal">940</span>
+<span class="normal">941</span>
+<span class="normal">942</span>
+<span class="normal">943</span>
+<span class="normal">944</span>
+<span class="normal">945</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BigQueryWarehouse</span><span class="p">(</span><span class="n">DatabaseBlock</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A block for querying a database with BigQuery.</span>
 
@@ -1935,16 +1939,16 @@ clause, or the dialect's equivalent clause, like <code>TOP</code>, to the query.
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span>
-<span class="normal">910</span>
-<span class="normal">911</span>
-<span class="normal">912</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">912</span>
 <span class="normal">913</span>
 <span class="normal">914</span>
 <span class="normal">915</span>
-<span class="normal">916</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
+<span class="normal">918</span>
+<span class="normal">919</span>
+<span class="normal">920</span>
+<span class="normal">921</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Closes connection and its cursors.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2064,12 +2068,7 @@ upon calling.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">814</span>
 <span class="normal">815</span>
 <span class="normal">816</span>
 <span class="normal">817</span>
@@ -2109,7 +2108,12 @@ upon calling.</p>
 <span class="normal">851</span>
 <span class="normal">852</span>
 <span class="normal">853</span>
-<span class="normal">854</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2258,12 +2262,7 @@ upon calling.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">856</span>
-<span class="normal">857</span>
-<span class="normal">858</span>
-<span class="normal">859</span>
-<span class="normal">860</span>
-<span class="normal">861</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">861</span>
 <span class="normal">862</span>
 <span class="normal">863</span>
 <span class="normal">864</span>
@@ -2307,7 +2306,12 @@ upon calling.</p>
 <span class="normal">902</span>
 <span class="normal">903</span>
 <span class="normal">904</span>
-<span class="normal">905</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">905</span>
+<span class="normal">906</span>
+<span class="normal">907</span>
+<span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">execute_many</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2494,12 +2498,7 @@ where each row is a tuple and each column is a value in the tuple.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
-<span class="normal">755</span>
-<span class="normal">756</span>
-<span class="normal">757</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">757</span>
 <span class="normal">758</span>
 <span class="normal">759</span>
 <span class="normal">760</span>
@@ -2549,7 +2548,12 @@ where each row is a tuple and each column is a value in the tuple.</p>
 <span class="normal">804</span>
 <span class="normal">805</span>
 <span class="normal">806</span>
-<span class="normal">807</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span>
+<span class="normal">811</span>
+<span class="normal">812</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">fetch_all</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2763,12 +2767,7 @@ where each row is a tuple and each column is a value in the tuple.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">690</span>
 <span class="normal">691</span>
 <span class="normal">692</span>
 <span class="normal">693</span>
@@ -2828,7 +2827,12 @@ where each row is a tuple and each column is a value in the tuple.</p>
 <span class="normal">747</span>
 <span class="normal">748</span>
 <span class="normal">749</span>
-<span class="normal">750</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">fetch_many</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3033,12 +3037,7 @@ where each row is a tuple and each column is a value in the tuple.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">631</span>
 <span class="normal">632</span>
 <span class="normal">633</span>
 <span class="normal">634</span>
@@ -3090,7 +3089,12 @@ where each row is a tuple and each column is a value in the tuple.</p>
 <span class="normal">680</span>
 <span class="normal">681</span>
 <span class="normal">682</span>
-<span class="normal">683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">fetch_one</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3172,11 +3176,11 @@ where each row is a tuple and each column is a value in the tuple.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Connection&quot;</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Connection&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the opened connection to BigQuery.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3205,19 +3209,19 @@ where each row is a tuple and each column is a value in the tuple.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
 <span class="normal">618</span>
 <span class="normal">619</span>
 <span class="normal">620</span>
 <span class="normal">621</span>
 <span class="normal">622</span>
 <span class="normal">623</span>
-<span class="normal">624</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">reset_cursors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">reset_cursors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tries to close all opened cursors.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3303,12 +3307,7 @@ Example:
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
@@ -3394,7 +3393,12 @@ Example:
 <span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
-<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">bigquery_create_table</span><span class="p">(</span>
     <span class="n">dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3667,12 +3671,7 @@ not provided, will default to the one inferred from your credentials.</p>
 </details>
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">270</span>
 <span class="normal">271</span>
 <span class="normal">272</span>
 <span class="normal">273</span>
@@ -3739,7 +3738,12 @@ not provided, will default to the one inferred from your credentials.</p>
 <span class="normal">334</span>
 <span class="normal">335</span>
 <span class="normal">336</span>
-<span class="normal">337</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">bigquery_insert_stream</span><span class="p">(</span>
     <span class="n">dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3897,12 +3901,7 @@ Args:
 </details>
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
@@ -3982,7 +3981,12 @@ Args:
 <span class="normal">422</span>
 <span class="normal">423</span>
 <span class="normal">424</span>
-<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">bigquery_load_cloud_storage</span><span class="p">(</span>
     <span class="n">dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -4304,12 +4308,7 @@ not provided, will default to the one inferred from your credentials.</p>
 </details>
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">433</span>
 <span class="normal">434</span>
 <span class="normal">435</span>
 <span class="normal">436</span>
@@ -4405,7 +4404,12 @@ not provided, will default to the one inferred from your credentials.</p>
 <span class="normal">526</span>
 <span class="normal">527</span>
 <span class="normal">528</span>
-<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">bigquery_load_file</span><span class="p">(</span>
     <span class="n">dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -4782,12 +4786,7 @@ provided, will default to the one inferred from your credentials.</p>
 </details>
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/bigquery.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
-<span class="normal"> 45</span>
-<span class="normal"> 46</span>
-<span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 49</span>
 <span class="normal"> 50</span>
 <span class="normal"> 51</span>
 <span class="normal"> 52</span>
@@ -4906,7 +4905,12 @@ provided, will default to the one inferred from your credentials.</p>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">bigquery_query</span><span class="p">(</span>
     <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">gcp_credentials</span><span class="p">:</span> <span class="n">GcpCredentials</span><span class="p">,</span>
@@ -5186,10 +5190,11 @@ provided, will default to the one inferred from your credentials.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a264c092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.4e0fa4ba.min.js"></script>
+      <script src="../assets/javascripts/bundle.94c44541.min.js"></script>
       
     
   </body>

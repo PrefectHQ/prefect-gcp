@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.1">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.4">
     
     
       
@@ -26,10 +26,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.72749a73.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.bd3936ea.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.a5377069.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.356b1318.min.css">
       
       
 
@@ -366,14 +366,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
+          
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
@@ -667,14 +669,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_8" >
         
+          
           <label class="md-nav__link" for="__nav_5_8" id="__nav_5_8_label" tabindex="0">
             
   
@@ -973,13 +977,7 @@
 
             <details class="quote">
               <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
@@ -1363,7 +1361,13 @@
 <span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
-<span class="normal">488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAICustomTrainingJob</span><span class="p">(</span><span class="n">Infrastructure</span><span class="p">):</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAICustomTrainingJob</span><span class="p">(</span><span class="n">Infrastructure</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Infrastructure block used to run Vertex AI custom training jobs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1869,13 +1873,7 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">440</span>
 <span class="normal">441</span>
 <span class="normal">442</span>
 <span class="normal">443</span>
@@ -1892,7 +1890,13 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 <span class="normal">454</span>
 <span class="normal">455</span>
 <span class="normal">456</span>
-<span class="normal">457</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">grace_seconds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Kill a job running Cloud Run.</span>
@@ -1940,15 +1944,15 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
 <span class="normal">242</span>
-<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">preview</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">preview</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a preview of the job definition that will be sent to GCP.&quot;&quot;&quot;</span>
     <span class="n">job_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_job_spec</span><span class="p">()</span>
     <span class="n">custom_job</span> <span class="o">=</span> <span class="n">CustomJob</span><span class="p">(</span>
@@ -2039,13 +2043,7 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">391</span>
 <span class="normal">392</span>
 <span class="normal">393</span>
 <span class="normal">394</span>
@@ -2086,7 +2084,13 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 <span class="normal">429</span>
 <span class="normal">430</span>
 <span class="normal">431</span>
-<span class="normal">432</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@sync_compatible</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">task_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;TaskStatus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VertexAICustomTrainingJobResult</span><span class="p">:</span>
@@ -2169,8 +2173,8 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
 
             <details class="quote">
               <summary>Source code in <code>prefect_gcp/aiplatform.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">94</span>
-<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAICustomTrainingJobResult</span><span class="p">(</span><span class="n">InfrastructureResult</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
+<span class="normal">101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">VertexAICustomTrainingJobResult</span><span class="p">(</span><span class="n">InfrastructureResult</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result from a Vertex AI custom training job.&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2329,10 +2333,11 @@ https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.ai
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a264c092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.4e0fa4ba.min.js"></script>
+      <script src="../assets/javascripts/bundle.94c44541.min.js"></script>
       
     
   </body>
