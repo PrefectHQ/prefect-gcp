@@ -364,11 +364,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             if command is None:
                 self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                     "containers"
-                ][0]["command"] = [
-                    "python",
-                    "-m",
-                    "prefect.engine",
-                ]
+                ][0]["command"] = shlex.split(self._base_flow_run_command())
             elif isinstance(command, str):
                 self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                     "containers"
