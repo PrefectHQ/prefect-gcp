@@ -317,11 +317,9 @@ class VertexAIWorkerJobConfiguration(BaseJobConfiguration):
 
         existing_command = worker_pool_specs[0]["container_spec"].get("command")
         if existing_command is None:
-            worker_pool_specs[0]["container_spec"]["command"] = [
-                "python",
-                "-m",
-                "prefect.engine",
-            ]
+            worker_pool_specs[0]["container_spec"]["command"] = shlex.split(
+                self._base_flow_run_command()
+            )
         elif isinstance(existing_command, str):
             worker_pool_specs[0]["container_spec"]["command"] = shlex.split(
                 existing_command

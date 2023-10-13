@@ -21,6 +21,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## 0.5.1
+
+Released October 12th, 2023.
+
+### Changed
+
+- Updated workers to respect default command from base worker configuration - [#216](https://github.com/PrefectHQ/prefect-gcp/pull/216)
+
+## 0.5.0
+
+Released October 5th, 2023.
+
+### Fixed
+
+- Empty logging in `list_folders` and `list_blobs` - [#214](https://github.com/PrefectHQ/prefect-gcp/pull/214)
+
+### Added
+
+- Conditional imports to support operating with `pydantic>2` installed - [#215](https://github.com/PrefectHQ/prefect-gcp/pull/215)
+
 ## 0.4.7
 
 Released September 22nd, 2023.
