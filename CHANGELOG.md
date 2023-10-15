@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The max allowed timeout for CloudRunJobs is now 24hrs.
+
 ### Deprecated
 
 ### Removed
