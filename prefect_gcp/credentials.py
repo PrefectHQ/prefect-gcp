@@ -164,8 +164,12 @@ class GcpCredentials(CredentialsBlock):
         if self.project is None:
             if self.service_account_info or self.service_account_file:
                 credentials_project = credentials.project_id
-            else:  # google.auth.default using gcloud auth application-default login
+            # google.auth.default using gcloud auth application-default login
+            elif credentials.quota_project_id:
                 credentials_project = credentials.quota_project_id
+            # compute-assigned service account via GCP metadata server
+            else:
+                _, credentials_project = google.auth.default()
             self.project = credentials_project
 
         if hasattr(credentials, "service_account_email"):
