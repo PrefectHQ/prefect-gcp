@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `list_folders` and `list_blobs` now logging bucket name and bucket path - [#184](https://github.com/PrefectHQ/prefect-gcp/pull/214)
-- Fix empty `GcpCredentials` not inferring the GCP project upon initialization when running on Compute Engine, Cloud Run, and App Engine [#219](https://github.com/PrefectHQ/prefect-gcp/pull/219)
+- Fix empty `GcpCredentials` not inferring the GCP project upon initialization when running on Compute Engine, Cloud Run, and App Engine - [#219](https://github.com/PrefectHQ/prefect-gcp/pull/219)
 
 ### Security
 
