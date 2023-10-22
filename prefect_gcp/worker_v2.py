@@ -10,6 +10,7 @@ from googleapiclient import discovery
 # noinspection PyProtectedMember
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
+from prefect.exceptions import InfrastructureNotFound
 from prefect.logging.loggers import PrefectLogAdapter
 from prefect.utilities.asyncutils import run_sync_in_worker_thread
 from prefect.utilities.dockerutils import get_prefect_image_name
@@ -356,8 +357,6 @@ class CloudRunWorkerV2Variables(BaseVariables):
         description="The name of the VPC connector to use for the Cloud Run job.",
     )
 
-    _config_job_name: Optional[str]
-
 
 class CloudRunWorkerV2Result(BaseWorkerResult):
     """
@@ -430,7 +429,20 @@ class CloudRunWorkerV2(BaseWorker):
         configuration: CloudRunWorkerJobV2Configuration,
         grace_seconds: int = 30,
     ):
-        raise NotImplementedError
+        if grace_seconds != 30:
+            self._logger.warning(
+                f"Kill grace period of {grace_seconds}s requested, but GCP does not "
+                "support dynamic grace period configuration. See here for more info: "
+                "https://cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs/delete"  # noqa
+            )
+
+        with self._get_client(configuration=configuration) as cr_client:
+            await run_sync_in_worker_thread(
+                self._stop_job,
+                cr_client=cr_client,
+                configuration=configuration,
+                job_name=infrastructure_pid,
+            )
 
     @staticmethod
     def _get_client(
@@ -453,6 +465,7 @@ class CloudRunWorkerV2(BaseWorker):
                 "v2",
                 client_options=options,
                 credentials=gcp_creds,
+                num_retries=3,  # Set to 3 in case of intermittent/connection issues
             )
             .projects()
             .locations()
@@ -615,7 +628,7 @@ class CloudRunWorkerV2(BaseWorker):
 
             job_execution = ExecutionV2.get(
                 cr_client=cr_client,
-                execution_name=submission["metadata"]["name"],
+                execution_id=submission["metadata"]["name"],
             )
 
             command = (
@@ -736,7 +749,7 @@ class CloudRunWorkerV2(BaseWorker):
         while execution.is_running():
             execution = ExecutionV2.get(
                 cr_client=cr_client,
-                execution_name=execution.name,
+                execution_id=execution.name,
             )
 
             elapsed_time = time.time() - t0
@@ -781,3 +794,24 @@ class CloudRunWorkerV2(BaseWorker):
                 ) from exc
             else:
                 raise exc
+
+    @staticmethod
+    def _stop_job(
+        cr_client: Resource,
+        configuration: CloudRunWorkerJobV2Configuration,
+        job_name: str,
+    ):
+        try:
+            JobV2.delete(
+                cr_client=cr_client,
+                project=configuration.project,
+                location=configuration.region,
+                job_name=job_name,
+            )
+        except Exception as exc:
+            if "does not exist" in str(exc):
+                raise InfrastructureNotFound(
+                    f"Cannot stop Cloud Run Job; the job name {job_name!r} "
+                    "could not be found."
+                ) from exc
+            raise

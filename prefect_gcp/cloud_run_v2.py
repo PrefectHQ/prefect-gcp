@@ -184,6 +184,30 @@ class JobV2(BaseModel):
             dict: The response from the Cloud Run V2 API.
         """
         # noinspection PyUnresolvedReferences
+        list_executions_request = (
+            cr_client.jobs()
+            .executions()
+            .list(
+                parent=f"projects/{project}/locations/{location}/jobs/{job_name}",
+            )
+        )
+        list_executions_response = list_executions_request.execute()
+
+        for execution_to_delete in list_executions_response.get("executions", []):
+            # noinspection PyUnresolvedReferences
+            delete_execution_request = (
+                cr_client.jobs()
+                .executions()
+                .delete(
+                    name=execution_to_delete["name"],
+                )
+            )
+            delete_execution_request.execute()
+
+            # Sleep to give delete execution request time to execute
+            time.sleep(3)
+
+        # noinspection PyUnresolvedReferences
         request = cr_client.jobs().delete(
             name=f"projects/{project}/locations/{location}/jobs/{job_name}",
         )
@@ -318,7 +342,7 @@ class ExecutionV2(BaseModel):
     def get(
         cls,
         cr_client: Resource,
-        execution_name: str,
+        execution_id: str,
     ):
         """
         Get an execution from Cloud Run with the V2 API.
@@ -326,12 +350,12 @@ class ExecutionV2(BaseModel):
         Args:
             cr_client (Resource): The base client needed for interacting with GCP
                 Cloud Run V2 API.
-            execution_name (str): The name of the execution to get, in the form of
+            execution_id (str): The name of the execution to get, in the form of
                 projects/{project}/locations/{location}/jobs/{job}/executions
                     /{execution}
         """
         # noinspection PyUnresolvedReferences
-        request = cr_client.jobs().executions().get(name=execution_name)
+        request = cr_client.jobs().executions().get(name=execution_id)
 
         response = request.execute()
 
@@ -596,7 +620,7 @@ class CloudRunJobV2(Infrastructure):
 
             job_execution = ExecutionV2.get(
                 cr_client=cr_client,
-                execution_name=submission["metadata"]["name"],
+                execution_id=submission["metadata"]["name"],
             )
 
             command = (
@@ -719,7 +743,7 @@ class CloudRunJobV2(Infrastructure):
         while execution.is_running():
             execution = ExecutionV2.get(
                 cr_client=cr_client,
-                execution_name=execution.name,
+                execution_id=execution.name,
             )
 
             elapsed_time = time.time() - t0
@@ -799,6 +823,7 @@ class CloudRunJobV2(Infrastructure):
                 "v2",
                 client_options=options,
                 credentials=gcp_creds,
+                num_retries=3,  # Set to 3 in case of intermittent/connection issues
             )
             .projects()
             .locations()
