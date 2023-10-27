@@ -108,6 +108,13 @@ def test_block_initialization_gcloud_cli(google_auth, oauth2_credentials):
     assert gcp_credentials.project == "my_project"
 
 
+def test_block_initialization_metadata_server(
+    google_auth_no_quota_project, oauth2_credentials
+):
+    gcp_credentials = GcpCredentials()
+    assert gcp_credentials.project == "my_project"
+
+
 @pytest.mark.parametrize("override_project", [None, "override_project"])
 def test_get_cloud_storage_client(
     override_project, service_account_info, oauth2_credentials, storage_client

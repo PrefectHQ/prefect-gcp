@@ -2,7 +2,13 @@ import uuid
 from unittest.mock import Mock
 
 import anyio
-import pydantic
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    import pydantic.v1 as pydantic
+else:
+    import pydantic
+
 import pytest
 from googleapiclient.errors import HttpError
 from jsonschema.exceptions import ValidationError
@@ -11,7 +17,7 @@ from prefect.exceptions import InfrastructureNotFound
 from prefect.server.schemas.actions import DeploymentCreate
 
 from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.worker import (
+from prefect_gcp.workers.cloud_run import (
     CloudRunWorker,
     CloudRunWorkerJobConfiguration,
     CloudRunWorkerResult,
@@ -354,7 +360,7 @@ def mock_client(monkeypatch, mock_credentials):
         return m
 
     monkeypatch.setattr(
-        "prefect_gcp.worker.CloudRunWorker._get_client",
+        "prefect_gcp.workers.cloud_run.CloudRunWorker._get_client",
         get_mock_client,
     )
 

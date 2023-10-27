@@ -28,7 +28,7 @@ theme:
   icon:
     repo: fontawesome/brands/github
   logo:
-    img/prefect-logo-mark-solid-white-500.png
+    img/prefect-logo-mark.png
   font:
     text: Inter
     code: Source Code Pro
@@ -74,6 +74,7 @@ watch:
 
 nav:
     - Home: index.md
+    - Google Cloud Run Execution Guide: gcp-worker-guide.md
     - Blocks Catalog: blocks_catalog.md
     - Examples Catalog: examples_catalog.md
     - Contributing: contributing.md
@@ -83,9 +84,13 @@ nav:
         - BigQuery: bigquery.md
         - Secret Manager: secret_manager.md
         - Cloud Run: cloud_run.md
+        - Cloud Run V2: cloud_run_v2.md
         - AI Platform: aiplatform.md
         - Deployment Steps: deployments/steps.md
-        - Worker: worker.md
+        - Workers:
+          - Cloud Run: cloud_run_worker.md
+          - Cloud Run V2: cloud_run_worker_v2.md
+          - Vertex AI: vertex_worker.md
 
 extra:
     social:

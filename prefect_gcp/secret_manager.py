@@ -6,7 +6,12 @@ from google.api_core.exceptions import NotFound
 from prefect import get_run_logger, task
 from prefect.blocks.abstract import SecretBlock
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import Field
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import Field
+else:
+    from pydantic import Field
 
 from prefect_gcp.credentials import GcpCredentials
 
@@ -300,7 +305,7 @@ class GcpSecret(SecretBlock):
         secret_version: Version number of the secret to use, or "latest".
     """
 
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/secret_manager/#prefect_gcp.secret_manager.GcpSecret"  # noqa: E501
 
     gcp_credentials: GcpCredentials

@@ -163,7 +163,12 @@ from prefect.workers.base import (
     BaseWorker,
     BaseWorkerResult,
 )
-from pydantic import Field, validator
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import Field, validator
+else:
+    from pydantic import Field, validator
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
@@ -364,11 +369,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             if command is None:
                 self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                     "containers"
-                ][0]["command"] = [
-                    "python",
-                    "-m",
-                    "prefect.engine",
-                ]
+                ][0]["command"] = shlex.split(self._base_flow_run_command())
             elif isinstance(command, str):
                 self.job_body["spec"]["template"]["spec"]["template"]["spec"][
                     "containers"
@@ -519,8 +520,8 @@ class CloudRunWorker(BaseWorker):
         "a Google Cloud Platform account."
     )
     _display_name = "Google Cloud Run"
-    _documentation_url = "https://prefecthq.github.io/prefect-gcp/worker/"
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4SpnOBvMYkHp6z939MDKP6/549a91bc1ce9afd4fb12c68db7b68106/social-icon-google-cloud-1200-630.png?h=250"  # noqa
+    _documentation_url = "https://prefecthq.github.io/prefect-gcp/cloud_run_worker/"
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
 
     def _create_job_error(self, exc, configuration):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""

@@ -53,6 +53,7 @@ Examples:
 """
 
 import datetime
+import re
 import time
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
@@ -61,7 +62,14 @@ from anyio.abc import TaskStatus
 from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import Field
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import Field
+else:
+    from pydantic import Field
+
+from slugify import slugify
 from typing_extensions import Literal
 
 # to prevent "Failed to load collection" from surfacing
@@ -86,6 +94,8 @@ except ModuleNotFoundError:
 
 from prefect_gcp.credentials import GcpCredentials
 
+_DISALLOWED_GCP_LABEL_CHARACTERS = re.compile(r"[^-a-zA-Z0-9_]+")
+
 
 class VertexAICustomTrainingJobResult(InfrastructureResult):
     """Result from a Vertex AI custom training job."""
@@ -98,7 +108,7 @@ class VertexAICustomTrainingJob(Infrastructure):
 
     _block_type_name = "Vertex AI Custom Training Job"
     _block_type_slug = "vertex-ai-custom-training-job"
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/aiplatform/#prefect_gcp.aiplatform.VertexAICustomTrainingJob"  # noqa: E501
 
     type: Literal["vertex-ai-custom-training-job"] = Field(
@@ -180,7 +190,6 @@ class VertexAICustomTrainingJob(Infrastructure):
             "and required if a service account cannot be detected in gcp_credentials."
         ),
     )
-
     job_watch_poll_interval: float = Field(
         default=5.0,
         description=(
@@ -196,21 +205,47 @@ class VertexAICustomTrainingJob(Infrastructure):
         https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.CustomJob#google_cloud_aiplatform_CustomJob_display_name
         """  # noqa
         try:
-            repo_name = self.image.split("/")[2]  # `gcr.io/<project_name>/<repo>/`"
+            base_name = self.name or self.image.split("/")[2]
+            return f"{base_name}-{uuid4().hex}"
         except IndexError:
             raise ValueError(
                 "The provided image must be from either Google Container Registry "
                 "or Google Artifact Registry"
             )
 
-        unique_suffix = uuid4().hex
-        job_name = f"{repo_name}-{unique_suffix}"
-        return job_name
+    def _get_compatible_labels(self) -> Dict[str, str]:
+        """
+        Ensures labels are compatible with GCP label requirements.
+        https://cloud.google.com/resource-manager/docs/creating-managing-labels
+
+        Ex: the Prefect provided key of prefect.io/flow-name -> prefect-io_flow-name
+        """
+        compatible_labels = {}
+        for key, val in self.labels.items():
+            new_key = slugify(
+                key,
+                lowercase=True,
+                replacements=[("/", "_"), (".", "-")],
+                max_length=63,
+                regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS,
+            )
+            compatible_labels[new_key] = slugify(
+                val,
+                lowercase=True,
+                replacements=[("/", "_"), (".", "-")],
+                max_length=63,
+                regex_pattern=_DISALLOWED_GCP_LABEL_CHARACTERS,
+            )
+        return compatible_labels
 
     def preview(self) -> str:
         """Generate a preview of the job definition that will be sent to GCP."""
         job_spec = self._build_job_spec()
-        custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
+        custom_job = CustomJob(
+            display_name=self.job_name,
+            job_spec=job_spec,
+            labels=self._get_compatible_labels(),
+        )
         return str(custom_job)  # outputs a json string
 
     def _build_job_spec(self) -> "CustomJobSpec":
@@ -273,7 +308,11 @@ class VertexAICustomTrainingJob(Infrastructure):
         Builds a custom job and begins running it.
         """
         # create custom job
-        custom_job = CustomJob(display_name=self.job_name, job_spec=job_spec)
+        custom_job = CustomJob(
+            display_name=self.job_name,
+            job_spec=job_spec,
+            labels=self._get_compatible_labels(),
+        )
 
         # run job
         self.logger.info(
@@ -393,6 +432,7 @@ class VertexAICustomTrainingJob(Infrastructure):
             raise RuntimeError(f"{self._log_prefix}: {error_msg}")
 
         status_code = 0 if final_job_run.state == JobState.JOB_STATE_SUCCEEDED else 1
+
         return VertexAICustomTrainingJobResult(
             identifier=final_job_run.display_name, status_code=status_code
         )

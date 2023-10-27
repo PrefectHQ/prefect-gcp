@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `CloudRunJobV2` and `CloudRunWorkerV2` for executing Prefect flows via Google Cloud Run - [#220](https://github.com/PrefectHQ/prefect-gcp/pull/220)
+
 ### Changed
 
 ### Deprecated
@@ -17,7 +19,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix `list_folders` and `list_blobs` now logging bucket name and bucket path - [#184](https://github.com/PrefectHQ/prefect-gcp/pull/214)
+- Fix empty `GcpCredentials` not inferring the GCP project upon initialization when running on Compute Engine, Cloud Run, and App Engine - [#219](https://github.com/PrefectHQ/prefect-gcp/pull/219)
+
 ### Security
+
+## 0.5.1
+
+Released October 12th, 2023.
+
+### Changed
+
+- Updated workers to respect default command from base worker configuration - [#216](https://github.com/PrefectHQ/prefect-gcp/pull/216)
+
+## 0.5.0
+
+Released October 5th, 2023.
+
+### Fixed
+
+- Empty logging in `list_folders` and `list_blobs` - [#214](https://github.com/PrefectHQ/prefect-gcp/pull/214)
+
+### Added
+
+- Conditional imports to support operating with `pydantic>2` installed - [#215](https://github.com/PrefectHQ/prefect-gcp/pull/215)
+
+## 0.4.7
+
+Released September 22nd, 2023.
+
+### Added
+
+- Vertex AI `CustomJob` worker - [#211](https://github.com/PrefectHQ/prefect-gcp/pull/211)
+- Add `kill_infrastructure` method to Vertex AI worker - [#213](https://github.com/PrefectHQ/prefect-gcp/pull/213)
+
+### Changed
+
+- Use flow run name for name of created custom jobs - [#208](https://github.com/PrefectHQ/prefect-gcp/pull/208)
+
+## 0.4.6
+
+Released September 5th, 2023.
+
+### Changed
+
+- Persist Labels to Vertex AI Custom Job - [#198](https://github.com/PrefectHQ/prefect-gcp/pull/208) 
 
 ## 0.4.5
 

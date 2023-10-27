@@ -43,7 +43,13 @@ from googleapiclient.discovery import Resource
 from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import BaseModel, Field, root_validator, validator
+else:
+    from pydantic import BaseModel, Field, root_validator, validator
+
 from typing_extensions import Literal
 
 from prefect_gcp.credentials import GcpCredentials
@@ -213,7 +219,7 @@ class CloudRunJob(Infrastructure):
     _block_type_slug = "cloud-run-job"
     _block_type_name = "GCP Cloud Run Job"
     _description = "Infrastructure block used to run GCP Cloud Run Jobs. Note this block is experimental. The interface may change without notice."  # noqa
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/cloud_run/#prefect_gcp.cloud_run.CloudRunJob"  # noqa: E501
 
     type: Literal["cloud-run-job"] = Field(

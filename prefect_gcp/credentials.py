@@ -12,7 +12,12 @@ from google.oauth2.service_account import Credentials
 from prefect.blocks.abstract import CredentialsBlock
 from prefect.blocks.fields import SecretDict
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import Field, root_validator, validator
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import Field, root_validator, validator
+else:
+    from pydantic import Field, root_validator, validator
 
 try:
     from google.cloud.bigquery import Client as BigQueryClient
@@ -96,7 +101,7 @@ class GcpCredentials(CredentialsBlock):
         ```
     """  # noqa
 
-    _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa
+    _logo_url = "https://cdn.sanity.io/images/3ugk85nk/production/10424e311932e31c477ac2b9ef3d53cefbaad708-250x250.png"  # noqa
     _block_type_name = "GCP Credentials"
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/credentials/#prefect_gcp.credentials.GcpCredentials"  # noqa: E501
 
@@ -159,8 +164,12 @@ class GcpCredentials(CredentialsBlock):
         if self.project is None:
             if self.service_account_info or self.service_account_file:
                 credentials_project = credentials.project_id
-            else:  # google.auth.default using gcloud auth application-default login
+            # google.auth.default using gcloud auth application-default login
+            elif credentials.quota_project_id:
                 credentials_project = credentials.quota_project_id
+            # compute-assigned service account via GCP metadata server
+            else:
+                _, credentials_project = google.auth.default()
             self.project = credentials_project
 
         if hasattr(credentials, "service_account_email"):

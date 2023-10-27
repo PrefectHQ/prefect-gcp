@@ -43,6 +43,20 @@ def google_auth(monkeypatch):
 
 
 @pytest.fixture
+def google_auth_no_quota_project(monkeypatch):
+    google_auth_mock = MagicMock()
+    default_credentials_mock = MagicMock(
+        client_id="my_client_id", quota_project_id=None
+    )
+    google_auth_mock.default.side_effect = lambda *args, **kwargs: (
+        default_credentials_mock,
+        "my_project",
+    )
+    monkeypatch.setattr("google.auth", google_auth_mock)
+    return google_auth_mock
+
+
+@pytest.fixture
 def oauth2_credentials(monkeypatch):
     CredentialsMock = MagicMock()
     CredentialsMock.from_service_account_info.side_effect = (
