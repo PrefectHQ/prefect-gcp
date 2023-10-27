@@ -1,7 +1,7 @@
 import re
 import shlex
 import time
-from typing import TYPE_CHECKING, Any, Literal, Optional
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
 
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
@@ -32,12 +32,12 @@ if TYPE_CHECKING:
     from prefect.server.schemas.responses import DeploymentResponse
 
 
-def _get_default_job_body_template() -> dict[str, Any]:
+def _get_default_job_body_template() -> Dict[str, Any]:
     """
     Returns the default job body template for the Cloud Run worker.
 
     Returns:
-        dict[str, Any]: The default job body template.
+        The default job body template.
     """
     return {
         "client": "prefect",
@@ -65,12 +65,12 @@ def _get_default_job_body_template() -> dict[str, Any]:
     }
 
 
-def _get_base_job_body() -> dict[str, Any]:
+def _get_base_job_body() -> Dict[str, Any]:
     """
     Returns the base job body for the Cloud Run worker's job body validation.
 
     Returns:
-        dict[str, Any]: The base job body.
+        The base job body.
     """
     return {
         "template": {
@@ -91,7 +91,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             "the local environment."
         ),
     )
-    job_body: dict[str, Any] = Field(
+    job_body: Dict[str, Any] = Field(
         template=_get_default_job_body_template(),
     )
     keep_job: Optional[bool] = Field(
@@ -220,10 +220,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
 
     # noinspection PyMethodParameters
     @validator("job_body")
-    def _ensure_job_includes_all_required_components(
-        cls,
-        value: dict[str, Any],
-    ) -> dict[str, Any]:
+    def _ensure_job_includes_all_required_components(cls, value: Dict[str, Any]):
         """
         Ensures that the job body includes all required components.
 
@@ -245,25 +242,21 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
 
     # noinspection PyMethodParameters
     @validator("job_body")
-    def _ensure_job_has_compatible_values(
-        cls,
-        value: dict[str, Any],
-    ) -> dict[str, Any]:
+    def _ensure_job_has_compatible_values(cls, value: Dict[str, Any]):
+        """Ensure that the job body has compatible values."""
         patch = JsonPatch.from_diff(value, _get_base_job_body())
-
-        incompatible_paths = sorted(
+        incompatible = sorted(
             [
-                f"{op['path']} must have value {op['value']!r} not {op['old_value']!r}"
+                f"{op['path']} must have value {op['value']!r}"
                 for op in patch
                 if op["op"] == "replace"
             ]
         )
-
-        if incompatible_paths:
+        if incompatible:
             raise ValueError(
-                f"Job body has incompatible values: {', '.join(incompatible_paths)}"
+                "Job has incompatible values for the following attributes: "
+                f"{', '.join(incompatible)}"
             )
-
         return value
 
 
@@ -275,17 +268,6 @@ class CloudRunWorkerV2Variables(BaseVariables):
     default base job template.
     """
 
-    args: Optional[list[str]] = Field(
-        default_factory=list,
-        description=(
-            "The arguments to pass to the Cloud Run Job V2's entrypoint command."
-        ),
-    )
-    cpu: Optional[str] = Field(
-        default=None,
-        title="CPU",
-        description="The CPU to allocate to the Cloud Run job.",
-    )
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
@@ -295,12 +277,22 @@ class CloudRunWorkerV2Variables(BaseVariables):
             "the local environment."
         ),
     )
+    region: str = Field(
+        default="us-central1",
+        description="The region in which to run the Cloud Run job",
+    )
     image: Optional[str] = Field(
         default=None,
         title="Image Name",
         description=(
             "The image to use for the Cloud Run job. "
             "If not provided the default Prefect image will be used."
+        ),
+    )
+    args: Optional[list[str]] = Field(
+        default_factory=list,
+        description=(
+            "The arguments to pass to the Cloud Run Job V2's entrypoint command."
         ),
     )
     keep_job: Optional[bool] = Field(
@@ -330,16 +322,20 @@ class CloudRunWorkerV2Variables(BaseVariables):
         title="Max Retries",
         description="The number of times to retry the Cloud Run job.",
     )
+    cpu: Optional[str] = Field(
+        default=None,
+        title="CPU",
+        description="The CPU to allocate to the Cloud Run job.",
+    )
     memory: Optional[str] = Field(
         default=None,
         title="Memory",
-        description="The memory to allocate to the Cloud Run job.",
+        description=(
+            "The memory to allocate to the Cloud Run job along with the units, which"
+            "could be: G, Gi, M, Mi."
+        ),
         example="512Mi",
         regex=r"^\d+(?:G|Gi|M|Mi)$",
-    )
-    region: str = Field(
-        default="us-central1",
-        description="The region in which to run the Cloud Run job",
     )
     timeout: Optional[int] = Field(
         default=600,
@@ -348,7 +344,7 @@ class CloudRunWorkerV2Variables(BaseVariables):
         title="Job Timeout",
         description=(
             "The length of time that Prefect will wait for a Cloud Run Job to "
-            "complete before raising an exception."
+            "complete before raising an exception (maximum of 86400 seconds, 1 day)."
         ),
     )
     vpc_connector_name: Optional[str] = Field(
@@ -390,8 +386,9 @@ class CloudRunWorkerV2(BaseWorker):
             flow_run: The flow run to run.
             configuration: The configuration for the job.
             task_status: The task status to update.
+
         Returns:
-            CloudRunWorkerV2Result: The result of the job.
+            The result of the job.
         """
         logger = self.get_flow_run_logger(flow_run)
 
@@ -429,6 +426,14 @@ class CloudRunWorkerV2(BaseWorker):
         configuration: CloudRunWorkerJobV2Configuration,
         grace_seconds: int = 30,
     ):
+        """
+        Stops the Cloud Run job.
+
+        Args:
+            infrastructure_pid: The ID of the infrastructure to stop.
+            configuration: The configuration for the job.
+            grace_seconds: The number of seconds to wait before stopping the job.
+        """
         if grace_seconds != 30:
             self._logger.warning(
                 f"Kill grace period of {grace_seconds}s requested, but GCP does not "
@@ -611,8 +616,9 @@ class CloudRunWorkerV2(BaseWorker):
             cr_client: The Cloud Run client.
             configuration: The configuration for the job.
             logger: The logger to use.
+
         Returns:
-            ExecutionV2: The Cloud Run job execution.
+            The Cloud Run job execution.
         """
         try:
             logger.info(
@@ -670,8 +676,9 @@ class CloudRunWorkerV2(BaseWorker):
             logger (PrefectLogAdapter): The logger to use.
             poll_interval (int): The number of seconds to wait between polls.
                 Defaults to 5 seconds.
+
         Returns:
-            CloudRunJobV2Result: The result of the job.
+            The result of the job.
         """
         try:
             execution = self._watch_job_execution(
@@ -741,8 +748,9 @@ class CloudRunWorkerV2(BaseWorker):
                 the job.
             execution (ExecutionV2): The execution to watch.
             poll_interval (int): The number of seconds to wait between polls.
+
         Returns:
-            ExecutionV2: The execution.
+            The execution.
         """
         t0 = time.time()
 
@@ -801,6 +809,14 @@ class CloudRunWorkerV2(BaseWorker):
         configuration: CloudRunWorkerJobV2Configuration,
         job_name: str,
     ):
+        """
+        Stops/deletes the Cloud Run job.
+
+        Args:
+            cr_client: The Cloud Run client.
+            configuration: The configuration for the job.
+            job_name: The name of the job to stop.
+        """
         try:
             JobV2.delete(
                 cr_client=cr_client,

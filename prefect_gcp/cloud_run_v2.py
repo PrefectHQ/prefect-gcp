@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from typing import Literal, Optional
+from typing import Dict, Literal, Optional
 from uuid import uuid4
 
 from anyio.abc import TaskStatus
@@ -23,8 +23,8 @@ class JobV2(BaseModel):
     name: str
     uid: str
     generation: str
-    labels: dict[str, str]
-    annotations: dict[str, str]
+    labels: Dict[str, str]
+    annotations: Dict[str, str]
     createTime: str
     updateTime: str
     deleteTime: Optional[str]
@@ -43,13 +43,13 @@ class JobV2(BaseModel):
         "UNIMPLEMENTED",
         "LAUNCH_TAG_UNSPECIFIED",
     ]
-    binaryAuthorization: dict
-    template: dict
+    binaryAuthorization: Dict
+    template: Dict
     observedGeneration: Optional[str]
-    terminalCondition: dict
-    conditions: list[dict]
+    terminalCondition: Dict
+    conditions: list[Dict]
     executionCount: int
-    latestCreatedExecution: dict
+    latestCreatedExecution: Dict
     reconciling: bool
     satisfiesPzs: bool
     etag: str
@@ -59,7 +59,7 @@ class JobV2(BaseModel):
         Check if the job is ready to run.
 
         Returns:
-            bool: Whether the job is ready to run.
+            Whether the job is ready to run.
         """
         ready_condition = self.get_ready_condition()
 
@@ -68,12 +68,12 @@ class JobV2(BaseModel):
 
         return ready_condition.get("state") == "CONDITION_SUCCEEDED"
 
-    def get_ready_condition(self) -> dict:
+    def get_ready_condition(self) -> Dict:
         """
         Get the ready condition for the job.
 
         Returns:
-            dict: The ready condition for the job.
+            The ready condition for the job.
         """
         if self.terminalCondition.get("type") == "Ready":
             return self.terminalCondition
@@ -138,8 +138,8 @@ class JobV2(BaseModel):
         project: str,
         location: str,
         job_id: str,
-        body: dict,
-    ) -> dict:
+        body: Dict,
+    ) -> Dict:
         """
         Create a job on Cloud Run with the V2 API.
 
@@ -149,9 +149,9 @@ class JobV2(BaseModel):
             project (str): The GCP project ID.
             location (str): The GCP region.
             job_id (str): The ID of the job to create.
-            body (dict): The job body.
+            body (Dict): The job body.
         Returns:
-            dict: The response from the Cloud Run V2 API.
+            The response from the Cloud Run V2 API.
         """
         # noinspection PyUnresolvedReferences
         request = cr_client.jobs().create(
@@ -170,7 +170,7 @@ class JobV2(BaseModel):
         project: str,
         location: str,
         job_name: str,
-    ) -> dict:
+    ) -> Dict:
         """
         Delete a job on Cloud Run with the V2 API.
 
@@ -181,7 +181,7 @@ class JobV2(BaseModel):
             location (str): The GCP region.
             job_name (str): The name of the job to delete.
         Returns:
-            dict: The response from the Cloud Run V2 API.
+            Dict: The response from the Cloud Run V2 API.
         """
         # noinspection PyUnresolvedReferences
         list_executions_request = (
@@ -204,7 +204,7 @@ class JobV2(BaseModel):
             )
             delete_execution_request.execute()
 
-            # Sleep to give delete execution request time to execute
+            # Sleep 3 seconds so that the execution is deleted before deleting the job
             time.sleep(3)
 
         # noinspection PyUnresolvedReferences
@@ -243,14 +243,14 @@ class JobV2(BaseModel):
         return response
 
     @staticmethod
-    def _is_missing_container(ready_condition: dict) -> bool:
+    def _is_missing_container(ready_condition: Dict) -> bool:
         """
         Check if the job is missing a container.
 
         Args:
-            ready_condition (dict): The ready condition for the job.
+            ready_condition (Dict): The ready condition for the job.
         Returns:
-            bool: Whether the job is missing a container.
+            Whether the job is missing a container.
         """
         if (
             ready_condition.get("state") == "CONTAINER_FAILED"
@@ -270,8 +270,8 @@ class ExecutionV2(BaseModel):
     name: str
     uid: str
     generation: str
-    labels: dict[str, str]
-    annotations: dict[str, str]
+    labels: Dict[str, str]
+    annotations: Dict[str, str]
     createTime: str
     startTime: Optional[str]
     completionTime: Optional[str]
@@ -290,9 +290,9 @@ class ExecutionV2(BaseModel):
     job: str
     parallelism: int
     taskCount: int
-    template: dict
+    template: Dict
     reconciling: bool
-    conditions: list[dict]
+    conditions: list[Dict]
     observedGeneration: Optional[str]
     runningCount: Optional[int]
     succeededCount: Optional[int]
@@ -308,7 +308,7 @@ class ExecutionV2(BaseModel):
         Return whether the execution is running.
 
         Returns:
-            bool: Whether the execution is running.
+            Whether the execution is running.
         """
         return self.completionTime is None
 
@@ -317,16 +317,16 @@ class ExecutionV2(BaseModel):
         Return whether the execution succeeded.
 
         Returns:
-            bool: Whether the execution succeeded.
+            Whether the execution succeeded.
         """
         return True if self.condition_after_completion() else False
 
-    def condition_after_completion(self) -> dict:
+    def condition_after_completion(self) -> Dict:
         """
         Return the condition after completion.
 
         Returns:
-            dict: The condition after completion.
+            The condition after completion.
         """
         if isinstance(self.conditions, list):
             for condition in self.conditions:
@@ -412,33 +412,10 @@ class CloudRunJobV2(Infrastructure):
         description="The slug for this task type. Must be `cloud-run-job-v2`.",
     )
 
-    args: Optional[list[str]] = Field(
-        default_factory=list,
-        description=(
-            "The arguments to pass to the Cloud Run Job V2's entrypoint command."
-        ),
-    )
-    binary_authorization: Optional[dict] = Field(
-        default=None,
-        description=(
-            "The binary authorization policy for the Cloud Run Job V2. "
-            "See https://cloud.google.com/run/docs/configuring/binary-authorization "
-            "for additional details."
-        ),
-    )
     credentials: GcpCredentials  # cannot be a field; else it shows as JSON in UI
-    cpu: Optional[str] = Field(
-        default="1",
-        title="CPU",
-        description=(
-            "The amount of CPU allocated to the Cloud Run Job V2. "
-            "The int must be valid based on the rules specified at "
-            "https://cloud.google.com/run/docs/configuring/cpu#setting-jobs ."
-        ),
-    )
-    env: dict[str, str] = Field(
-        default_factory=dict,
-        description="The environment variables to pass to the Cloud Run Job V2.",
+    region: str = Field(
+        ...,
+        desciption="The region to run the Cloud Run Job V2 in.",
     )
     image: str = Field(
         ...,
@@ -448,6 +425,20 @@ class CloudRunJobV2(Infrastructure):
             "or Google Artifact Registry, like `gcr.io/<project_name>/<repo>/`."
         ),
     )
+    args: Optional[list[str]] = Field(
+        default_factory=list,
+        description=(
+            "The arguments to pass to the Cloud Run Job V2's entrypoint command."
+        ),
+    )
+    env: Dict[str, str] = Field(
+        default_factory=Dict,
+        description="The environment variables to pass to the Cloud Run Job V2.",
+    )
+    labels: Dict[str, str] = Field(
+        default_factory=Dict,
+        description="The labels to pass to the Cloud Run Job V2.",
+    )
     keep_job: Optional[bool] = Field(
         default=False,
         title="Keep Job after Completion",
@@ -455,10 +446,6 @@ class CloudRunJobV2(Infrastructure):
             "Whether to keep the Cloud Run Job V2 after it is completed. "
             "If False, the Cloud Run Job V2 will be deleted after completion."
         ),
-    )
-    labels: dict[str, str] = Field(
-        default_factory=dict,
-        description="The labels to pass to the Cloud Run Job V2.",
     )
     launch_stage: Literal[
         "ALPHA",
@@ -479,19 +466,26 @@ class CloudRunJobV2(Infrastructure):
     )
     max_retries: Optional[int] = Field(
         default=0,
-        description=("The maximum number of times to retry the Cloud Run Job V2. "),
+        description="The maximum number of times to retry the Cloud Run Job V2. ",
+    )
+    cpu: Optional[str] = Field(
+        default="1",
+        title="CPU",
+        description=(
+            "The amount of CPU allocated to the Cloud Run Job V2. "
+            "The int must be valid based on the rules specified at "
+            "https://cloud.google.com/run/docs/configuring/cpu#setting-jobs ."
+        ),
     )
     memory: Optional[str] = Field(
         default=None,
         title="Memory",
         description=(
-            "The amount of memory allocated to the Cloud Run Job V2 with unit."
+            "The memory to allocate to the Cloud Run job along with the units, which"
+            "could be: G, Gi, M, Mi."
         ),
         example="512Mi",
-    )
-    region: str = Field(
-        ...,
-        desciption="The region to run the Cloud Run Job V2 in.",
+        regex=r"^\d+(?:G|Gi|M|Mi)$",
     )
     timeout: Optional[int] = Field(
         default=600,
@@ -499,8 +493,8 @@ class CloudRunJobV2(Infrastructure):
         le=86400,
         title="Job Timeout",
         description=(
-            "The timeout for the Cloud Run Job V2 in seconds. Once the timeout "
-            "is reached, an exception will be raised."
+            "The length of time that Prefect will wait for a Cloud Run Job to "
+            "complete before raising an exception (maximum of 86400 seconds, 1 day)."
         ),
     )
     vpc_connector_name: Optional[str] = Field(
@@ -554,8 +548,9 @@ class CloudRunJobV2(Infrastructure):
 
         Args:
             redact_values (bool): Whether to redact values in the preview from the env.
+
         Returns:
-            str: A preview of the Cloud Run Job V2 .
+            A preview of the Cloud Run Job V2 .
         """
         body = self._job_body()
 
@@ -577,7 +572,7 @@ class CloudRunJobV2(Infrastructure):
         Returns the job name, if it does not exist, it creates it.
 
         Returns:
-            str: The job name.
+            The job name.
         """
         if self._job_name is None:
             modified_image_name = (
@@ -604,7 +599,7 @@ class CloudRunJobV2(Infrastructure):
             cr_client (Resource): The base client needed for interacting with GCP
                 Cloud Run V2 API.
         Returns:
-            ExecutionV2: The execution.
+            The execution.
         """
         try:
             self.logger.info(
@@ -736,7 +731,7 @@ class CloudRunJobV2(Infrastructure):
             execution (ExecutionV2): The execution to watch.
             poll_interval (int): The number of seconds to wait between polls.
         Returns:
-            ExecutionV2: The execution.
+            The execution.
         """
         t0 = time.time()
 
@@ -810,7 +805,7 @@ class CloudRunJobV2(Infrastructure):
         Get the base client needed for interacting with GCP Cloud Run V2 API.
 
         Returns:
-            Resource: The base client needed for interacting with GCP Cloud Run V2 API.
+            The base client needed for interacting with GCP Cloud Run V2 API.
         """
         api_endpoint = "https://run.googleapis.com"
         gcp_creds = self.credentials.get_credentials_from_service_account()
@@ -890,13 +885,13 @@ class CloudRunJobV2(Infrastructure):
 
         raise exc
 
-    def _job_body(self) -> dict:
+    def _job_body(self) -> Dict:
         """
         Creates a properly formatted job body for the Cloud Run V2 API POST CREATE
         request.
 
         Returns:
-            dict: The job body.
+            The job body.
         """
         body = {
             "client": "prefect",
@@ -925,9 +920,6 @@ class CloudRunJobV2(Infrastructure):
 
         if self.labels:
             body["labels"].update(self.labels)
-
-        if self.binary_authorization:
-            body["binaryAuthorization"] = self.binary_authorization
 
         if self.env:
             body["template"]["template"]["containers"][0]["env"] = [self.env]

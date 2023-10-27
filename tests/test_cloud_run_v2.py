@@ -420,7 +420,6 @@ class TestCloudRunJobRunV2:
             "maxRetries": 1,
             "timeout": "600s",
         },
-        "reconciling": None,
         "conditions": [
             {
                 "type": "ResourcesAvailable",
