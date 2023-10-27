@@ -507,7 +507,7 @@ class CloudRunJobV2(Infrastructure):
     @sync_compatible
     async def run(
         self,
-        task_status: TaskStatus | None = None,
+        task_status: Optional[TaskStatus] = None,
     ) -> CloudRunJobV2Result:
         with self._get_client() as cr_client:
             await run_sync_in_worker_thread(
