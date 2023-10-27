@@ -2,7 +2,7 @@ import pytest
 from prefect.utilities.dockerutils import get_prefect_image_name
 
 from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.workers.worker_v2 import CloudRunWorkerJobV2Configuration
+from prefect_gcp.workers.cloud_run_v2 import CloudRunWorkerJobV2Configuration
 
 
 @pytest.fixture

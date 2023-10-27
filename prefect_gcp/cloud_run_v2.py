@@ -401,9 +401,7 @@ class CloudRunJobV2(Infrastructure):
 
     _block_type_slug = "cloud-run-job-v2"
     _block_type_name = "GCP Cloud Run Job V2"
-    _description = (
-        "A Prefect Infrastructure for running a job on Cloud Run with the V2 API."
-    )
+    _description = "Infrastructure block used to run GCP Cloud Run Jobs (V2 API). Note this block is experimental. The interface may change without notice."  # noqa
     _logo_url = "https://images.ctfassets.net/gm98wzqotmnx/4CD4wwbiIKPkZDt4U3TEuW/c112fe85653da054b6d5334ef662bec4/gcp.png?h=250"  # noqa: E501
     _documentation_url = "https://prefecthq.github.io/prefect-gcp/cloud_run/#prefect_gcp.cloud_run_v2.CloudRunJobV2"  # noqa: E501
 
@@ -415,7 +413,7 @@ class CloudRunJobV2(Infrastructure):
     credentials: GcpCredentials  # cannot be a field; else it shows as JSON in UI
     region: str = Field(
         ...,
-        desciption="The region to run the Cloud Run Job V2 in.",
+        description="The region to run the Cloud Run Job V2 in.",
     )
     image: str = Field(
         ...,
@@ -426,23 +424,23 @@ class CloudRunJobV2(Infrastructure):
         ),
     )
     args: Optional[List[str]] = Field(
-        default_factory=List,
+        default_factory=list,
         description=(
             "The arguments to pass to the Cloud Run Job V2's entrypoint command."
         ),
     )
     env: Dict[str, str] = Field(
-        default_factory=Dict,
+        default_factory=dict,
         description="The environment variables to pass to the Cloud Run Job V2.",
     )
     labels: Dict[str, str] = Field(
-        default_factory=Dict,
+        default_factory=dict,
         description="The labels to pass to the Cloud Run Job V2.",
     )
     keep_job: Optional[bool] = Field(
         default=False,
         title="Keep Job after Completion",
-        defscription=(
+        description=(
             "Whether to keep the Cloud Run Job V2 after it is completed. "
             "If False, the Cloud Run Job V2 will be deleted after completion."
         ),
@@ -466,7 +464,7 @@ class CloudRunJobV2(Infrastructure):
     )
     max_retries: Optional[int] = Field(
         default=0,
-        description="The maximum number of times to retry the Cloud Run Job V2. ",
+        description="The maximum number of times to retry the Cloud Run Job V2.",
     )
     cpu: Optional[str] = Field(
         default="1",
@@ -485,7 +483,7 @@ class CloudRunJobV2(Infrastructure):
             "could be: G, Gi, M, Mi."
         ),
         example="512Mi",
-        regex=r"^\d+(?:G|Gi|M|Mi)$",
+        pattern=r"^\d+(?:G|Gi|M|Mi)$",
     )
     timeout: Optional[int] = Field(
         default=600,
