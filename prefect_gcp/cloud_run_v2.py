@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from typing import Dict, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from uuid import uuid4
 
 from anyio.abc import TaskStatus
@@ -47,7 +47,7 @@ class JobV2(BaseModel):
     template: Dict
     observedGeneration: Optional[str]
     terminalCondition: Dict
-    conditions: list[Dict]
+    conditions: List[Dict]
     executionCount: int
     latestCreatedExecution: Dict
     reconciling: bool
@@ -292,7 +292,7 @@ class ExecutionV2(BaseModel):
     taskCount: int
     template: Dict
     reconciling: bool
-    conditions: list[Dict]
+    conditions: List[Dict]
     observedGeneration: Optional[str]
     runningCount: Optional[int]
     succeededCount: Optional[int]
@@ -328,7 +328,7 @@ class ExecutionV2(BaseModel):
         Returns:
             The condition after completion.
         """
-        if isinstance(self.conditions, list):
+        if isinstance(self.conditions, List):
             for condition in self.conditions:
                 if (
                     condition["state"] == "CONDITION_SUCCEEDED"
@@ -425,8 +425,8 @@ class CloudRunJobV2(Infrastructure):
             "or Google Artifact Registry, like `gcr.io/<project_name>/<repo>/`."
         ),
     )
-    args: Optional[list[str]] = Field(
-        default_factory=list,
+    args: Optional[List[str]] = Field(
+        default_factory=List,
         description=(
             "The arguments to pass to the Cloud Run Job V2's entrypoint command."
         ),
