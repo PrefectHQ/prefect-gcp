@@ -21,7 +21,12 @@ from prefect.workers.base import (
     BaseWorker,
     BaseWorkerResult,
 )
-from pydantic import Field, validator
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import Field, validator
+else:
+    from pydantic import Field, validator
 
 from prefect_gcp.cloud_run_v2 import CloudRunJobV2Result, ExecutionV2, JobV2
 from prefect_gcp.credentials import GcpCredentials

@@ -10,7 +10,12 @@ from googleapiclient import discovery, errors
 from googleapiclient.discovery import Resource
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
-from pydantic import BaseModel, Field
+from pydantic import VERSION as PYDANTIC_VERSION
+
+if PYDANTIC_VERSION.startswith("2."):
+    from pydantic.v1 import BaseModel, Field
+else:
+    from pydantic import BaseModel, Field
 
 from prefect_gcp.credentials import GcpCredentials
 
