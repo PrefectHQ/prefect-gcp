@@ -6,7 +6,6 @@ from . import _version
 from .aiplatform import VertexAICustomTrainingJob  # noqa
 from .bigquery import BigQueryWarehouse  # noqa
 from .cloud_run import CloudRunJob  # noqa
-from .cloud_run_v2 import CloudRunJobV2  # noqa
 from .cloud_storage import GcsBucket  # noqa
 from .credentials import GcpCredentials  # noqa
 from .secret_manager import GcpSecret  # noqa

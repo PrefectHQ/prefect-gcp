@@ -1,7 +1,7 @@
 import re
 import shlex
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
 
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
@@ -28,8 +28,8 @@ if PYDANTIC_VERSION.startswith("2."):
 else:
     from pydantic import Field, validator
 
-from prefect_gcp.cloud_run_v2 import CloudRunJobV2Result, ExecutionV2, JobV2
 from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.models.cloud_run_v2 import CloudRunJobV2Result, ExecutionV2, JobV2
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -87,7 +87,14 @@ def _get_base_job_body() -> Dict[str, Any]:
 
 
 class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
-    credentials: Optional[GcpCredentials] = Field(
+    """
+    The configuration for the Cloud Run worker V2.
+
+    The schema for this class is used to populate the `job_body` section of the
+    default base job template.
+    """
+
+    credentials: GcpCredentials = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
         description=(
@@ -99,7 +106,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
     job_body: Dict[str, Any] = Field(
         template=_get_default_job_body_template(),
     )
-    keep_job: Optional[bool] = Field(
+    keep_job: bool = Field(
         default=False,
         title="Keep Job After Completion",
         description="Keep the completed Cloud run job on Google Cloud Platform.",
@@ -108,7 +115,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         default="us-central1",
         description="The region in which to run the Cloud Run job",
     )
-    timeout: Optional[int] = Field(
+    timeout: int = Field(
         default=600,
         gt=0,
         le=86400,
@@ -273,7 +280,7 @@ class CloudRunWorkerV2Variables(BaseVariables):
     default base job template.
     """
 
-    credentials: Optional[GcpCredentials] = Field(
+    credentials: GcpCredentials = Field(
         title="GCP Credentials",
         default_factory=GcpCredentials,
         description=(
@@ -286,21 +293,20 @@ class CloudRunWorkerV2Variables(BaseVariables):
         default="us-central1",
         description="The region in which to run the Cloud Run job",
     )
-    image: Optional[str] = Field(
-        default=None,
+    image: str = Field(
         title="Image Name",
         description=(
             "The image to use for the Cloud Run job. "
             "If not provided the default Prefect image will be used."
         ),
     )
-    args: Optional[List[str]] = Field(
-        default_factory=List,
+    args: list[str] = Field(
+        default_factory=list,
         description=(
             "The arguments to pass to the Cloud Run Job V2's entrypoint command."
         ),
     )
-    keep_job: Optional[bool] = Field(
+    keep_job: bool = Field(
         default=False,
         title="Keep Job After Completion",
         description="Keep the completed Cloud run job on Google Cloud Platform.",
@@ -322,18 +328,18 @@ class CloudRunWorkerV2Variables(BaseVariables):
             "for additional details."
         ),
     )
-    max_retries: Optional[int] = Field(
+    max_retries: int = Field(
         default=0,
         title="Max Retries",
         description="The number of times to retry the Cloud Run job.",
     )
-    cpu: Optional[str] = Field(
-        default=None,
+    cpu: str = Field(
+        default="1000m",
         title="CPU",
         description="The CPU to allocate to the Cloud Run job.",
     )
-    memory: Optional[str] = Field(
-        default=None,
+    memory: str = Field(
+        default="512Mi",
         title="Memory",
         description=(
             "The memory to allocate to the Cloud Run job along with the units, which"
@@ -342,7 +348,7 @@ class CloudRunWorkerV2Variables(BaseVariables):
         example="512Mi",
         pattern=r"^\d+(?:G|Gi|M|Mi)$",
     )
-    timeout: Optional[int] = Field(
+    timeout: int = Field(
         default=600,
         gt=0,
         le=86400,
@@ -382,7 +388,7 @@ class CloudRunWorkerV2(BaseWorker):
         self,
         flow_run: "FlowRun",
         configuration: CloudRunWorkerJobV2Configuration,
-        task_status: TaskStatus = None,
+        task_status: Optional[TaskStatus] = None,
     ) -> CloudRunJobV2Result:
         """
         Runs the flow run on Cloud Run and waits for it to complete.
