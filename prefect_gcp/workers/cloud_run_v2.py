@@ -1,7 +1,7 @@
 import re
 import shlex
 import time
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
@@ -300,7 +300,7 @@ class CloudRunWorkerV2Variables(BaseVariables):
             "If not provided the default Prefect image will be used."
         ),
     )
-    args: list[str] = Field(
+    args: List[str] = Field(
         default_factory=list,
         description=(
             "The arguments to pass to the Cloud Run Job V2's entrypoint command."
