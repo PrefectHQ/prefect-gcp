@@ -31,7 +31,6 @@ Read more about configuring work pools
                 "annotations":
                 {
                     "run.googleapis.com/launch-stage": "BETA",
-                    "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
                 }
             },
             "spec":
@@ -70,7 +69,15 @@ Read more about configuring work pools
                         }
                     }
                     }
+                },
+                "metadata":
+                {
+                    "annotations":
+                    {
+                        "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
+                    }
                 }
+            },
         },
         "timeout": "{{ timeout }}",
         "keep_job": "{{ keep_job }}"
@@ -101,7 +108,6 @@ Read more about configuring work pools
             {
                 "run.googleapis.com/my-custom-annotation": "{{ my_custom_annotation }}",
                 "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
             },
           ...
         },
@@ -126,17 +132,21 @@ Read more about configuring work pools
     {
         "apiVersion": "run.googleapis.com/v1",
         "kind": "Job",
-        "metadata":
+        "spec":
         {
-            "name": "{{ name }}",
-            "annotations":
+            "template":
             {
-                "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "my-vpc-connector"
-            }
-          ...
-        },
-      ...
+                "metadata":
+                {
+                    "annotations":
+                    {
+                        "run.googleapis.com/vpc-access-connector": "my-vpc-connector"
+                    }
+                },
+                ...
+            },
+            ...
+        }
     }
     ```
 """
@@ -169,7 +179,10 @@ from pydantic import VERSION as PYDANTIC_VERSION
 if PYDANTIC_VERSION.startswith("2."):
     from pydantic.v1 import Field, validator
 else:
-    from pydantic import Field, validator
+    from pydantic import (
+        Field,
+        validator,
+    )
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
@@ -181,7 +194,7 @@ if TYPE_CHECKING:
     from prefect.server.schemas.responses import DeploymentResponse
 
 
-def _get_default_job_body_template() -> Dict[str, Any]:
+def _get_default_job_body_template() -> (Dict[str, Any]):
     """Returns the default job body template used by the Cloud Run Job."""
     return {
         "apiVersion": "run.googleapis.com/v1",
@@ -191,7 +204,6 @@ def _get_default_job_body_template() -> Dict[str, Any]:
             "annotations": {
                 # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
                 "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}",
             },
         },
         "spec": {  # JobSpec
@@ -220,12 +232,17 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                         }
                     },
                 },
+                "metadata": {
+                    "annotations": {
+                        "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"  # noqa
+                    }
+                },
             },
         },
     }
 
 
-def _get_base_job_body() -> Dict[str, Any]:
+def _get_base_job_body() -> (Dict[str, Any]):
     """Returns a base job body to use for job body validation."""
     return {
         "apiVersion": "run.googleapis.com/v1",
@@ -265,7 +282,8 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
     """
 
     region: str = Field(
-        default="us-central1", description="The region where the Cloud Run Job resides."
+        default="us-central1",
+        description="The region where the Cloud Run Job resides.",
     )
     credentials: Optional[GcpCredentials] = Field(
         title="GCP Credentials",
@@ -336,7 +354,9 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
             "env"
         ] = envs
 
-    def _populate_name_if_not_present(self):
+    def _populate_name_if_not_present(
+        self,
+    ):
         """Adds the flow run name to the job if one is not already provided."""
         try:
             if "name" not in self.job_body["metadata"]:
@@ -346,7 +366,9 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         except KeyError:
             raise ValueError("Unable to verify name due to invalid job body template.")
 
-    def _populate_image_if_not_present(self):
+    def _populate_image_if_not_present(
+        self,
+    ):
         """Adds the latest prefect image to the job if one is not already provided."""
         try:
             if (
@@ -361,7 +383,9 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         except KeyError:
             raise ValueError("Unable to verify image due to invalid job body template.")
 
-    def _populate_or_format_command(self):
+    def _populate_or_format_command(
+        self,
+    ):
         """
         Ensures that the command is present in the job manifest. Populates the command
         with the `prefect -m prefect.engine` if a command is not present.
@@ -595,7 +619,10 @@ class CloudRunWorker(BaseWorker):
                 logger,
             )
             job_execution = await run_sync_in_worker_thread(
-                self._begin_job_execution, configuration, client, logger
+                self._begin_job_execution,
+                configuration,
+                client,
+                logger,
             )
 
             if task_status:
@@ -610,7 +637,10 @@ class CloudRunWorker(BaseWorker):
             )
             return result
 
-    def _get_client(self, configuration: CloudRunWorkerJobConfiguration) -> Resource:
+    def _get_client(
+        self,
+        configuration: CloudRunWorkerJobConfiguration,
+    ) -> Resource:
         """Get the base client needed for interacting with GCP APIs."""
         # region needed for 'v1' API
         api_endpoint = f"https://{configuration.region}-run.googleapis.com"
@@ -618,7 +648,10 @@ class CloudRunWorker(BaseWorker):
         options = ClientOptions(api_endpoint=api_endpoint)
 
         return discovery.build(
-            "run", "v1", client_options=options, credentials=gcp_creds
+            "run",
+            "v1",
+            client_options=options,
+            credentials=gcp_creds,
         ).namespaces()
 
     def _create_job_and_wait_for_registration(
@@ -636,12 +669,14 @@ class CloudRunWorker(BaseWorker):
                 namespace=configuration.credentials.project,
                 body=configuration.job_body,
             )
-        except googleapiclient.errors.HttpError as exc:
+        except (googleapiclient.errors.HttpError) as exc:
             self._create_job_error(exc, configuration)
 
         try:
             self._wait_for_job_creation(
-                client=client, configuration=configuration, logger=logger
+                client=client,
+                configuration=configuration,
+                logger=logger,
             )
         except Exception:
             logger.exception(
@@ -746,11 +781,16 @@ class CloudRunWorker(BaseWorker):
                 )
 
         return CloudRunWorkerResult(
-            identifier=configuration.job_name, status_code=status_code
+            identifier=configuration.job_name,
+            status_code=status_code,
         )
 
     def _watch_job_execution(
-        self, client, job_execution: Execution, timeout: int, poll_interval: int = 5
+        self,
+        client,
+        job_execution: Execution,
+        timeout: int,
+        poll_interval: int = 5,
     ):
         """
         Update job_execution status until it is no longer running or timeout is reached.
@@ -839,9 +879,18 @@ class CloudRunWorker(BaseWorker):
                 job_name=infrastructure_pid,
             )
 
-    def _stop_job(self, client: Resource, namespace: str, job_name: str):
+    def _stop_job(
+        self,
+        client: Resource,
+        namespace: str,
+        job_name: str,
+    ):
         try:
-            Job.delete(client=client, namespace=namespace, job_name=job_name)
+            Job.delete(
+                client=client,
+                namespace=namespace,
+                job_name=job_name,
+            )
         except Exception as exc:
             if "does not exist" in str(exc):
                 raise InfrastructureNotFound(
