@@ -82,23 +82,8 @@ gcloud projects add-iam-policy-binding <PROJECT-ID> \
 ### Step 2. Create a Cloud Run work pool
 Let's walk through the process of creating a Cloud Run work pool.
 
-#### Create a GCP Credentials Block
-You'll need to create a GCP Credenitals block to manage authentication wth GCP. This block will be referenced in the base job template of your work pool.
-
-The block created in this guide will contain the JSON key for the service account created in the previous step.
-To get the JSON key, paste the following command into your terminal.
-```bash
-gcloud iam service-accounts keys create my_key.json \
-    --serviceAccount:<SERVICE_ACCOUNT_NAME>@<PROJECT_ID>.iam.gserviceaccount.com
-```
-Running this command will generate a JSON key file in your directory.
-
-Now you're ready to create the GCP Credentials block. Navigate to the Blocks page in Prefect UI, and create a new GCP credentials block with a descriptive block name. Enter your GCP project ID into the `Project` field.
-Copy the contents of the JSON key file in your directory and paste them into the `Service Account Info` field.
-Last but not least, save the block.
-
 #### Fill out the work pool base job template
-You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type `cloud-run` via the CLI (you'll want to replace the <WORK-POOL-NAME> with the name of your work pool, and remove the square brackets):
+You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type `cloud-run` via the CLI (you'll want to replace the `<WORK-POOL-NAME>` with the name of your work pool, and remove the square brackets):
 ```bash
 prefect work-pool create --type cloud-run <WORK-POOL-NAME>
 ```
@@ -109,9 +94,6 @@ There are many ways to customize the base job template for the work pool. Modify
 
 Specify the region for the cloud run job.
 ![region](img/cloud-run-work-pool-region.png)
-
-Select the GCP credentials block that has the JSON key file for the service account.
-![creds](img/cloud-run-work-pool-gcp-creds.png)
 
 Save the name of the service account created in first step of this guide.
 ![name](img/cloud-run-work-pool-service-account-name.png)
@@ -152,7 +134,7 @@ Let's not leave our worker hanging, it's time to give it a job.
 Let's prepare a flow to run as a Cloud Run job. In this section of the guide, we'll "bake" our code into a Docker image, and push that image to Google Artifact Registry.
 
 ### Create a registry
-Let's create a docker repository in your Google Artifact Registry to host your custom image. If you already have a registry, and are authenticated to it, skip ahead to the *Write a flow* section.
+First, let's create a docker repository in your Google Artifact Registry to host your custom image. If you already have a registry, and are authenticated to it, skip ahead to the *Write a flow* section.
 
 The following command creates a repository using the gcloud CLI. You'll want to replace the `<REPOSITORY-NAME>` with your own value. :
 ```bash
@@ -166,7 +148,7 @@ gcloud auth configure-docker us-docker.pkg.dev
 ```
 
 ### Write a flow
-First, create a new directory. This will serve as the root of your project's repository. Within the directory, create a sub-directory called `flows`.
+Now let's create a new directory which will serve as the root of your project's repository. Within the directory, create a sub-directory called `flows`.
 Navigate to the `flows` subdirectory and create a new file for your flow. Feel free to write your own flow, but here's a ready-made one for your convenience:
 
 ```python
