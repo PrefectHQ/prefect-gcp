@@ -136,7 +136,7 @@ class TestCloudRunWorkerJobConfiguration:
         cloud_run_worker_job_config._populate_or_format_command()
 
         assert "command" in container
-        assert container["command"] == ["python", "-m", "prefect.engine"]
+        assert container["command"] == ["prefect", "flow-run", "execute"]
 
     def test_populate_or_format_command_already_exists(
         self, cloud_run_worker_job_config
