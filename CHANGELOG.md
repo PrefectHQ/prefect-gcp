@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `CloudRunJobV2` and `CloudRunWorkerV2` for executing Prefect flows via Google Cloud Run - [#220](https://github.com/PrefectHQ/prefect-gcp/pull/220)
+
 ### Changed
 
 ### Deprecated
