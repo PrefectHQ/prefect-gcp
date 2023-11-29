@@ -82,7 +82,7 @@ gcloud projects add-iam-policy-binding <PROJECT-ID> \
 Let's walk through the process of creating a Cloud Run work pool.
 
 #### Fill out the work pool base job template
-You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type `cloud-run` via the CLI (you'll want to replace the `<WORK-POOL-NAME>` with the name of your work pool, and remove the square brackets):
+You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type `cloud-run` via the CLI (you'll want to replace the `<WORK-POOL-NAME>` with the name of your work pool):
 ```bash
 prefect work-pool create --type cloud-run <WORK-POOL-NAME>
 ```
