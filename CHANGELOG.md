@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `CloudRunJobV2` and `CloudRunWorkerV2` for executing Prefect flows via Google Cloud Run - [#220](https://github.com/PrefectHQ/prefect-gcp/pull/220)
-
 ### Changed
 
 ### Deprecated
@@ -19,10 +17,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+### Security
+
+## 0.5.4
+
+Released November 29th, 2023.
+
+### Changed
+- Fix display name for Google Cloud Run v2 worker / work pool - [#229](https://github.com/PrefectHQ/prefect-gcp/pull/229)
+- Removed credentials block creation step from the google cloud run worker guide - [#228](https://github.com/PrefectHQ/prefect-gcp/pull/228)
+
+## 0.5.3
+
+Released November 29th, 2023.
+
+### Added
+
+- Added `CloudRunJobV2` and `CloudRunWorkerV2` for executing Prefect flows via Google Cloud Run - [#220](https://github.com/PrefectHQ/prefect-gcp/pull/220)
+
+### Fixed
+
 - Fix `list_folders` and `list_blobs` now logging bucket name and bucket path - [#184](https://github.com/PrefectHQ/prefect-gcp/pull/214)
 - Fix empty `GcpCredentials` not inferring the GCP project upon initialization when running on Compute Engine, Cloud Run, and App Engine - [#219](https://github.com/PrefectHQ/prefect-gcp/pull/219)
 
-### Security
+## 0.5.2
+
+Released November 13th, 2023.
+
+### Added
+
+- GCP Cloud Run worker guide - [#203](https://github.com/PrefectHQ/prefect-gcp/pull/203)
+
+### Fixed
+
+- Default `project_id` in `GcpCredentials` if quota project is not provided - [#219](https://github.com/PrefectHQ/prefect-gcp/pull/219)
 
 ## 0.5.1
 
