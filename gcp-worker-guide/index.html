@@ -400,15 +400,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#create-a-gcp-credentials-block" class="md-nav__link">
-    <span class="md-ellipsis">
-      Create a GCP Credentials Block
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#fill-out-the-work-pool-base-job-template" class="md-nav__link">
     <span class="md-ellipsis">
       Fill out the work pool base job template
@@ -967,15 +958,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#create-a-gcp-credentials-block" class="md-nav__link">
-    <span class="md-ellipsis">
-      Create a GCP Credentials Block
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#fill-out-the-work-pool-base-job-template" class="md-nav__link">
     <span class="md-ellipsis">
       Fill out the work pool base job template
@@ -1101,8 +1083,7 @@
 <p>Scalability: Cloud Run can automatically scale your pipeline to handle varying workloads and traffic. It can quickly respond to increased demand and scale back down during low activity periods, ensuring efficient resource utilization.</p>
 </li>
 <li>
-<p>Integration with Google Cloud services: Google Cloud Run easily integrates with other Google Cloud services, such as Google Cloud Storage, Google Cloud Pub/Sub, and Google Cloud Build. 
-This interoperability enables you to build end-to-end data pipelines that use a variety of services.</p>
+<p>Integration with Google Cloud services: Google Cloud Run easily integrates with other Google Cloud services, such as Google Cloud Storage, Google Cloud Pub/Sub, and Google Cloud Build. This interoperability enables you to build end-to-end data pipelines that use a variety of services.</p>
 </li>
 <li>
 <p>Portability: Since Cloud Run uses container images, you can develop your pipelines locally using Docker and then deploy them on Google Cloud Run without significant modifications. This portability allows you to run the same pipeline in different environments.</p>
@@ -1157,29 +1138,16 @@ Run the following commands to grant the necessary permissions:</p>
 </code></pre></div></p>
 <h3 id="step-2-create-a-cloud-run-work-pool">Step 2. Create a Cloud Run work pool</h3>
 <p>Let's walk through the process of creating a Cloud Run work pool.</p>
-<h4 id="create-a-gcp-credentials-block">Create a GCP Credentials Block</h4>
-<p>You'll need to create a GCP Credenitals block to manage authentication wth GCP. This block will be referenced in the base job template of your work pool.</p>
-<p>The block created in this guide will contain the JSON key for the service account created in the previous step.
-To get the JSON key, paste the following command into your terminal.
-<div class="highlight"><pre><span></span><code>gcloud<span class="w"> </span>iam<span class="w"> </span>service-accounts<span class="w"> </span>keys<span class="w"> </span>create<span class="w"> </span>my_key.json<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--serviceAccount:&lt;SERVICE_ACCOUNT_NAME&gt;@&lt;PROJECT_ID&gt;.iam.gserviceaccount.com
-</code></pre></div>
-Running this command will generate a JSON key file in your directory.</p>
-<p>Now you're ready to create the GCP Credentials block. Navigate to the Blocks page in Prefect UI, and create a new GCP credentials block with a descriptive block name. Enter your GCP project ID into the <code>Project</code> field.
-Copy the contents of the JSON key file in your directory and paste them into the <code>Service Account Info</code> field.
-Last but not least, save the block.</p>
 <h4 id="fill-out-the-work-pool-base-job-template">Fill out the work pool base job template</h4>
-<p>You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type <code>cloud-run</code> via the CLI (you'll want to replace the <WORK-POOL-NAME> with the name of your work pool, and remove the square brackets):
+<p>You can create a new work pool using the Prefect UI or CLI. The following command creates a work pool of type <code>cloud-run</code> via the CLI (you'll want to replace the <code>&lt;WORK-POOL-NAME&gt;</code> with the name of your work pool):
 <div class="highlight"><pre><span></span><code>prefect<span class="w"> </span>work-pool<span class="w"> </span>create<span class="w"> </span>--type<span class="w"> </span>cloud-run<span class="w"> </span>&lt;WORK-POOL-NAME&gt;
 </code></pre></div></p>
 <p>Once the work pool is created, find the work pool in the UI and edit it.</p>
 <p>There are many ways to customize the base job template for the work pool. Modifying the template influences the infrastructure configuration that the worker provisions for flow runs submitted to the work pool. For this guide we are going to modify just a few of the available fields.</p>
-<p>Specify the region for the cloud run job.
-<img alt="region" src="../img/cloud-run-work-pool-region.png" /></p>
-<p>Select the GCP credentials block that has the JSON key file for the service account.
-<img alt="creds" src="../img/cloud-run-work-pool-gcp-creds.png" /></p>
-<p>Save the name of the service account created in first step of this guide.
-<img alt="name" src="../img/cloud-run-work-pool-service-account-name.png" /></p>
+<p>Specify the region for the cloud run job.</p>
+<p><img alt="region" src="../img/cloud-run-work-pool-region.png" /></p>
+<p>Save the name of the service account created in first step of this guide.</p>
+<p><img alt="name" src="../img/cloud-run-work-pool-service-account-name.png" /></p>
 <p>Your work pool is now ready to receive scheduled flow runs!</p>
 <h3 id="step-3-deploy-a-cloud-run-worker">Step 3. Deploy a Cloud Run worker</h3>
 <p>Now you can launch a Cloud Run service to host the Cloud Run worker. This worker will poll the work pool that you created in the previous step.</p>
