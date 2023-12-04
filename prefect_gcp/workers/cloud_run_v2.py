@@ -369,9 +369,9 @@ class CloudRunWorkerV2Variables(BaseVariables):
         default=None,
         title="Service Account Name",
         description=(
-           "The name of the service account to use for the task execution "
-           "of Cloud Run Job. By default Cloud Run jobs run as the default "
-           "Compute Engine Service Account."
+            "The name of the service account to use for the task execution "
+            "of Cloud Run Job. By default Cloud Run jobs run as the default "
+            "Compute Engine Service Account."
         ),
         example="service-account@example.iam.gserviceaccount.com",
     )
