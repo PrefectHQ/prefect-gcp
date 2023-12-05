@@ -293,6 +293,16 @@ class CloudRunJob(Infrastructure):
             "before raising an exception."
         ),
     )
+    max_retries: Optional[int] = Field(
+        default=3,
+        ge=0,
+        le=10,
+        title="Max Retries",
+        description=(
+            "The maximum retries setting specifies the number of times a task is "
+            "allowed to restart in case of failure before being failed permanently."
+        ),
+    )
     # For private use
     _job_name: str = None
     _execution: Optional[Execution] = None
@@ -586,6 +596,9 @@ class CloudRunJob(Infrastructure):
         # apply this timeout to each task
         timeout_seconds = str(self.timeout)
 
+        # apply this max retries to each task
+        max_retries = self.max_retries
+
         body = {
             "apiVersion": "run.googleapis.com/v1",
             "kind": "Job",
@@ -598,6 +611,7 @@ class CloudRunJob(Infrastructure):
                             "spec": {
                                 "containers": containers,
                                 "timeoutSeconds": timeout_seconds,
+                                "maxRetries": max_retries,
                             }  # TaskSpec
                         }
                     },
