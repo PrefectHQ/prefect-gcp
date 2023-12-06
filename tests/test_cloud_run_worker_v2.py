@@ -84,7 +84,7 @@ class TestCloudRunWorkerJobV2Configuration:
 
         assert cloud_run_worker_v2_job_config.job_body["template"]["template"][
             "containers"
-        ][0]["command"] == ["python", "-m", "prefect.engine"]
+        ][0]["command"] == ["prefect", "flow-run", "execute"]
 
     def test_format_args_if_present(self, cloud_run_worker_v2_job_config):
         cloud_run_worker_v2_job_config._format_args_if_present()

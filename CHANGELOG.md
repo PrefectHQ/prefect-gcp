@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Modified default command logic in `CloudRunWorkerJobV2Configuration` to utilize the `BaseJobConfiguration._base_flow_run_command` method.
+
 ### Security
 
 ## 0.5.4
