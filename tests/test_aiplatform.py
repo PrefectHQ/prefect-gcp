@@ -1,3 +1,4 @@
+from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,6 +11,8 @@ from prefect_gcp.aiplatform import (
     VertexAICustomTrainingJob,
     VertexAICustomTrainingJobResult,
 )
+from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.workers.vertex import VertexAIWorker
 
 
 class TestVertexAICustomTrainingJob:
@@ -177,3 +180,127 @@ class TestVertexAICustomTrainingJob:
             job_spec.worker_pool_specs[0].machine_spec.accelerator_type
             == AcceleratorType.NVIDIA_TESLA_T4
         )
+
+
+@pytest.fixture
+def default_base_job_template():
+    return deepcopy(VertexAIWorker.get_default_base_job_template())
+
+
+@pytest.fixture
+async def credentials_block(service_account_info):
+    credentials_block = GcpCredentials(
+        service_account_info=service_account_info, project="my-project"
+    )
+    await credentials_block.save("test-for-publish", overwrite=True)
+    return credentials_block
+
+
+@pytest.fixture
+def base_job_template_with_defaults(default_base_job_template, credentials_block):
+    base_job_template_with_defaults = deepcopy(default_base_job_template)
+    base_job_template_with_defaults["variables"]["properties"]["command"][
+        "default"
+    ] = "python my_script.py"
+    base_job_template_with_defaults["variables"]["properties"]["env"]["default"] = {
+        "VAR1": "value1",
+        "VAR2": "value2",
+    }
+    base_job_template_with_defaults["variables"]["properties"]["labels"]["default"] = {
+        "label1": "value1",
+        "label2": "value2",
+    }
+    base_job_template_with_defaults["variables"]["properties"]["name"][
+        "default"
+    ] = "prefect-job"
+    base_job_template_with_defaults["variables"]["properties"]["image"][
+        "default"
+    ] = "docker.io/my_image:latest"
+    base_job_template_with_defaults["variables"]["properties"]["credentials"][
+        "default"
+    ] = {"$ref": {"block_document_id": str(credentials_block._block_document_id)}}
+    base_job_template_with_defaults["variables"]["properties"]["region"][
+        "default"
+    ] = "us-central1"
+    base_job_template_with_defaults["variables"]["properties"]["machine_type"][
+        "default"
+    ] = "n1-standard-4"
+    base_job_template_with_defaults["variables"]["properties"]["accelerator_count"][
+        "default"
+    ] = 1
+    base_job_template_with_defaults["variables"]["properties"]["accelerator_type"][
+        "default"
+    ] = "NVIDIA_TESLA_T4"
+    base_job_template_with_defaults["variables"]["properties"]["boot_disk_type"][
+        "default"
+    ] = "pd-ssd"
+    base_job_template_with_defaults["variables"]["properties"]["boot_disk_size_gb"][
+        "default"
+    ] = 200
+    base_job_template_with_defaults["variables"]["properties"][
+        "maximum_run_time_hours"
+    ]["default"] = 24
+    base_job_template_with_defaults["variables"]["properties"]["network"][
+        "default"
+    ] = "my-network"
+    base_job_template_with_defaults["variables"]["properties"]["reserved_ip_ranges"][
+        "default"
+    ] = ["172.31.0.0/16", "192.168.0.0./16"]
+    base_job_template_with_defaults["variables"]["properties"]["service_account_name"][
+        "default"
+    ] = "my-service-account"
+    base_job_template_with_defaults["variables"]["properties"][
+        "job_watch_poll_interval"
+    ]["default"] = 60
+    return base_job_template_with_defaults
+
+
+@pytest.mark.parametrize(
+    "job_config",
+    [
+        "default",
+        "custom",
+    ],
+)
+async def test_generate_work_pool_base_job_template(
+    job_config,
+    base_job_template_with_defaults,
+    credentials_block,
+    default_base_job_template,
+):
+    job = VertexAICustomTrainingJob(
+        image="docker.io/my_image:latest",
+        region="us-central1",
+    )
+    expected_template = default_base_job_template
+    default_base_job_template["variables"]["properties"]["image"][
+        "default"
+    ] = "docker.io/my_image:latest"
+    default_base_job_template["variables"]["properties"]["region"][
+        "default"
+    ] = "us-central1"
+    if job_config == "custom":
+        expected_template = base_job_template_with_defaults
+        job = VertexAICustomTrainingJob(
+            command=["python", "my_script.py"],
+            env={"VAR1": "value1", "VAR2": "value2"},
+            labels={"label1": "value1", "label2": "value2"},
+            name="prefect-job",
+            image="docker.io/my_image:latest",
+            gcp_credentials=credentials_block,
+            region="us-central1",
+            machine_type="n1-standard-4",
+            accelerator_count=1,
+            accelerator_type="NVIDIA_TESLA_T4",
+            boot_disk_type="pd-ssd",
+            boot_disk_size_gb=200,
+            maximum_run_time=60 * 60 * 24,
+            network="my-network",
+            reserved_ip_ranges=["172.31.0.0/16", "192.168.0.0./16"],
+            service_account="my-service-account",
+            job_watch_poll_interval=60,
+        )
+
+    template = await job.generate_work_pool_base_job_template()
+
+    assert template == expected_template
