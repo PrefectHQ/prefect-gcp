@@ -271,6 +271,7 @@ async def test_generate_work_pool_base_job_template(
     job = VertexAICustomTrainingJob(
         image="docker.io/my_image:latest",
         region="us-central1",
+        gcp_credentials=credentials_block,
     )
     expected_template = default_base_job_template
     default_base_job_template["variables"]["properties"]["image"][
@@ -279,6 +280,9 @@ async def test_generate_work_pool_base_job_template(
     default_base_job_template["variables"]["properties"]["region"][
         "default"
     ] = "us-central1"
+    default_base_job_template["variables"]["properties"]["credentials"]["default"] = {
+        "$ref": {"block_document_id": str(credentials_block._block_document_id)}
+    }
     if job_config == "custom":
         expected_template = base_job_template_with_defaults
         job = VertexAICustomTrainingJob(
