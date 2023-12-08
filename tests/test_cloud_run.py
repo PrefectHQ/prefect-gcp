@@ -829,8 +829,10 @@ def default_base_job_template():
 
 
 @pytest.fixture
-async def credentials_block():
-    credentials_block = GcpCredentials()
+async def credentials_block(service_account_info):
+    credentials_block = GcpCredentials(
+        service_account_info=service_account_info, project="my-project"
+    )
     await credentials_block.save("test-for-publish", overwrite=True)
     return credentials_block
 
