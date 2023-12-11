@@ -260,10 +260,10 @@ class VertexAICustomTrainingJob(Infrastructure):
 
     async def generate_work_pool_base_job_template(self) -> dict:
         """
-        Generate a base job template for a cloud-run work pool with the same
+        Generate a base job template for a `Vertex AI` work pool with the same
         configuration as this block.
         Returns:
-            - dict: a base job template for a cloud-run work pool
+            - dict: a base job template for a `Vertex AI` work pool
         """
         base_job_template = await get_default_base_job_template_for_infrastructure_type(
             self.get_corresponding_worker_type(),
@@ -312,7 +312,7 @@ class VertexAICustomTrainingJob(Infrastructure):
                 base_job_template["variables"]["properties"][key]["default"] = value
             else:
                 self.logger.warning(
-                    f"Variable {key!r} is not supported by Cloud Run work pools."
+                    f"Variable {key!r} is not supported by `Vertex AI` work pools."
                     " Skipping."
                 )
 
