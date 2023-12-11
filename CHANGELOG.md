@@ -17,9 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Modified default command logic in `CloudRunWorkerJobV2Configuration` to utilize the `BaseJobConfiguration._base_flow_run_command` method.
-
 ### Security
+
+## 0.5.5
+
+Released December 11th, 2023.
+
+### Added
+
+- Ability to publish `CloudRun` blocks as cloud-run work pools - [#237](https://github.com/PrefectHQ/prefect-gcp/pull/237)
+- Ability to publish `VertexAICustomTrainingJob` blocks as a vertex-ai work pool - [#238](https://github.com/PrefectHQ/prefect-gcp/pull/238)
+
+### Fixed
+
+- Modified default command logic in `CloudRunWorkerJobV2Configuration` to utilize the `BaseJobConfiguration._base_flow_run_command` method.
 
 ## 0.5.4
 

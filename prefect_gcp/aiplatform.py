@@ -54,6 +54,7 @@ Examples:
 
 import datetime
 import re
+import shlex
 import time
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
@@ -91,6 +92,11 @@ try:
     from tenacity import retry, stop_after_attempt, wait_fixed, wait_random
 except ModuleNotFoundError:
     pass
+
+from prefect.blocks.core import BlockNotSavedError
+from prefect.workers.utilities import (
+    get_default_base_job_template_for_infrastructure_type,
+)
 
 from prefect_gcp.credentials import GcpCredentials
 
@@ -247,6 +253,70 @@ class VertexAICustomTrainingJob(Infrastructure):
             labels=self._get_compatible_labels(),
         )
         return str(custom_job)  # outputs a json string
+
+    def get_corresponding_worker_type(self) -> str:
+        """Return the corresponding worker type for this infrastructure block."""
+        return "vertex-ai"
+
+    async def generate_work_pool_base_job_template(self) -> dict:
+        """
+        Generate a base job template for a `Vertex AI` work pool with the same
+        configuration as this block.
+        Returns:
+            - dict: a base job template for a `Vertex AI` work pool
+        """
+        base_job_template = await get_default_base_job_template_for_infrastructure_type(
+            self.get_corresponding_worker_type(),
+        )
+        assert (
+            base_job_template is not None
+        ), "Failed to generate default base job template for Cloud Run worker."
+        for key, value in self.dict(exclude_unset=True, exclude_defaults=True).items():
+            if key == "command":
+                base_job_template["variables"]["properties"]["command"][
+                    "default"
+                ] = shlex.join(value)
+            elif key in [
+                "type",
+                "block_type_slug",
+                "_block_document_id",
+                "_block_document_name",
+                "_is_anonymous",
+            ]:
+                continue
+            elif key == "gcp_credentials":
+                if not self.gcp_credentials._block_document_id:
+                    raise BlockNotSavedError(
+                        "It looks like you are trying to use a block that"
+                        " has not been saved. Please call `.save` on your block"
+                        " before publishing it as a work pool."
+                    )
+                base_job_template["variables"]["properties"]["credentials"][
+                    "default"
+                ] = {
+                    "$ref": {
+                        "block_document_id": str(
+                            self.gcp_credentials._block_document_id
+                        )
+                    }
+                }
+            elif key == "maximum_run_time":
+                base_job_template["variables"]["properties"]["maximum_run_time_hours"][
+                    "default"
+                ] = round(value.total_seconds() / 3600)
+            elif key == "service_account":
+                base_job_template["variables"]["properties"]["service_account_name"][
+                    "default"
+                ] = value
+            elif key in base_job_template["variables"]["properties"]:
+                base_job_template["variables"]["properties"][key]["default"] = value
+            else:
+                self.logger.warning(
+                    f"Variable {key!r} is not supported by `Vertex AI` work pools."
+                    " Skipping."
+                )
+
+        return base_job_template
 
     def _build_job_spec(self) -> "CustomJobSpec":
         """
