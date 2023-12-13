@@ -49,6 +49,7 @@ def _get_default_job_body_template() -> Dict[str, Any]:
         "launchStage": "{{ launch_stage }}",
         "template": {
             "template": {
+                "serviceAccount": "{{ service_account_name }}",
                 "maxRetries": "{{ max_retries }}",
                 "timeout": "{{ timeout }}",
                 "containers": [
@@ -361,6 +362,16 @@ class CloudRunWorkerV2Variables(BaseVariables):
         default=None,
         title="VPC Connector Name",
         description="The name of the VPC connector to use for the Cloud Run job.",
+    )
+    service_account_name: Optional[str] = Field(
+        default=None,
+        title="Service Account Name",
+        description=(
+            "The name of the service account to use for the task execution "
+            "of Cloud Run Job. By default Cloud Run jobs run as the default "
+            "Compute Engine Service Account."
+        ),
+        example="service-account@example.iam.gserviceaccount.com",
     )
 
 
