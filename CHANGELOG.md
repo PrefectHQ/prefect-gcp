@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added `service_account_name` to Cloud Run v2 default template and variables - [#231](https://github.com/PrefectHQ/prefect-gcp/pull/231)
+- Added `labels` to Cloud Run v2 default template - [#240](https://github.com/PrefectHQ/prefect-gcp/pull/231)
 
 ### Changed
 
