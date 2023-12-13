@@ -1,7 +1,10 @@
+from copy import deepcopy
 from unittest.mock import Mock
 
 import anyio
 from pydantic import VERSION as PYDANTIC_VERSION
+
+from prefect_gcp.workers.cloud_run import CloudRunWorker
 
 if PYDANTIC_VERSION.startswith("2."):
     import pydantic.v1 as pydantic
@@ -14,6 +17,7 @@ from prefect.exceptions import InfrastructureNotFound
 from prefect.settings import (
     PREFECT_API_KEY,
     PREFECT_API_URL,
+    PREFECT_LOGGING_TO_API_ENABLED,
     PREFECT_PROFILES_PATH,
     temporary_settings,
 )
@@ -427,7 +431,8 @@ class TestCloudRunJobContainerSettings:
                 PREFECT_API_KEY: "Dog",
                 PREFECT_API_URL: "Puppy",
                 PREFECT_PROFILES_PATH: "Woof",
-            }
+            },
+            restore_defaults={PREFECT_LOGGING_TO_API_ENABLED},
         ):
             result = cloud_run_job._add_container_settings(base_setting)
             assert remove_server_url_from_env(result["env"]) == [
@@ -445,7 +450,8 @@ class TestCloudRunJobContainerSettings:
                 PREFECT_API_KEY: "Dog",
                 PREFECT_API_URL: "Puppy",
                 PREFECT_PROFILES_PATH: "Woof",
-            }
+            },
+            restore_defaults={PREFECT_LOGGING_TO_API_ENABLED},
         ):
             result = cloud_run_job._add_container_settings(base_setting)
             assert remove_server_url_from_env(result["env"]) == [
@@ -468,7 +474,8 @@ class TestCloudRunJobContainerSettings:
                 PREFECT_API_KEY: "Dog",
                 PREFECT_API_URL: "Puppy",
                 PREFECT_PROFILES_PATH: "Woof",
-            }
+            },
+            restore_defaults={PREFECT_LOGGING_TO_API_ENABLED},
         ):
             result = cloud_run_job._add_container_settings(base_setting)
             assert remove_server_url_from_env(result["env"]) == [
@@ -814,3 +821,121 @@ class TestCloudRunJobRun:
                 break
         else:
             raise AssertionError("Expected message not found.")
+
+
+@pytest.fixture
+def default_base_job_template():
+    return deepcopy(CloudRunWorker.get_default_base_job_template())
+
+
+@pytest.fixture
+async def credentials_block(service_account_info):
+    credentials_block = GcpCredentials(
+        service_account_info=service_account_info, project="my-project"
+    )
+    await credentials_block.save("test-for-publish", overwrite=True)
+    return credentials_block
+
+
+@pytest.fixture
+def base_job_template_with_defaults(default_base_job_template, credentials_block):
+    base_job_template_with_defaults = deepcopy(default_base_job_template)
+    base_job_template_with_defaults["variables"]["properties"]["command"][
+        "default"
+    ] = "python my_script.py"
+    base_job_template_with_defaults["variables"]["properties"]["env"]["default"] = {
+        "VAR1": "value1",
+        "VAR2": "value2",
+    }
+    base_job_template_with_defaults["variables"]["properties"]["labels"]["default"] = {
+        "label1": "value1",
+        "label2": "value2",
+    }
+    base_job_template_with_defaults["variables"]["properties"]["name"][
+        "default"
+    ] = "prefect-job"
+    base_job_template_with_defaults["variables"]["properties"]["image"][
+        "default"
+    ] = "docker.io/my_image:latest"
+    base_job_template_with_defaults["variables"]["properties"]["cpu"][
+        "default"
+    ] = "1000m"
+    base_job_template_with_defaults["variables"]["properties"]["memory"][
+        "default"
+    ] = "512Mi"
+    base_job_template_with_defaults["variables"]["properties"]["timeout"][
+        "default"
+    ] = 60
+    base_job_template_with_defaults["variables"]["properties"]["vpc_connector_name"][
+        "default"
+    ] = "my-vpc-connector"
+    base_job_template_with_defaults["variables"]["properties"]["keep_job"][
+        "default"
+    ] = True
+    base_job_template_with_defaults["variables"]["properties"]["credentials"][
+        "default"
+    ] = {"$ref": {"block_document_id": str(credentials_block._block_document_id)}}
+    base_job_template_with_defaults["variables"]["properties"]["region"][
+        "default"
+    ] = "us-central1"
+    base_job_template_with_defaults["variables"]["properties"]["args"] = {
+        "title": "Arguments",
+        "type": "string",
+        "description": "Arguments to be passed to your Cloud Run Job's entrypoint command.",  # noqa
+        "default": ["--arg1", "value1", "--arg2", "value2"],
+    }
+    base_job_template_with_defaults["job_configuration"]["job_body"]["spec"][
+        "template"
+    ]["spec"]["template"]["spec"]["containers"][0]["args"] = "{{ args }}"
+
+    return base_job_template_with_defaults
+
+
+@pytest.mark.parametrize(
+    "job_config",
+    [
+        "default",
+        "custom",
+    ],
+)
+async def test_generate_work_pool_base_job_template(
+    job_config,
+    base_job_template_with_defaults,
+    credentials_block,
+    default_base_job_template,
+):
+    job = CloudRunJob(
+        image="docker.io/my_image:latest",
+        region="us-central1",
+        credentials=credentials_block,
+    )
+    expected_template = default_base_job_template
+    expected_template["variables"]["properties"]["image"][
+        "default"
+    ] = "docker.io/my_image:latest"
+    expected_template["variables"]["properties"]["region"]["default"] = "us-central1"
+    expected_template["variables"]["properties"]["credentials"]["default"] = {
+        "$ref": {"block_document_id": str(credentials_block._block_document_id)}
+    }
+    if job_config == "custom":
+        expected_template = base_job_template_with_defaults
+        job = CloudRunJob(
+            command=["python", "my_script.py"],
+            env={"VAR1": "value1", "VAR2": "value2"},
+            labels={"label1": "value1", "label2": "value2"},
+            name="prefect-job",
+            image="docker.io/my_image:latest",
+            cpu=1,
+            memory=512,
+            memory_unit="Mi",
+            timeout=60,
+            vpc_connector_name="my-vpc-connector",
+            keep_job=True,
+            credentials=credentials_block,
+            region="us-central1",
+            args=["--arg1", "value1", "--arg2", "value2"],
+        )
+
+    template = await job.generate_work_pool_base_job_template()
+
+    assert template == expected_template
