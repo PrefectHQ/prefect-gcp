@@ -46,6 +46,7 @@ def _get_default_job_body_template() -> Dict[str, Any]:
     """
     return {
         "client": "prefect",
+        "labels": "{{ labels }}",
         "launchStage": "{{ launch_stage }}",
         "template": {
             "template": {
