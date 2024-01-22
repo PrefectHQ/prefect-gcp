@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
 import time
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
@@ -50,6 +51,10 @@ if PYDANTIC_VERSION.startswith("2."):
 else:
     from pydantic import BaseModel, Field, root_validator, validator
 
+from prefect.blocks.core import BlockNotSavedError
+from prefect.workers.utilities import (
+    get_default_base_job_template_for_infrastructure_type,
+)
 from typing_extensions import Literal
 
 from prefect_gcp.credentials import GcpCredentials
@@ -351,6 +356,81 @@ class CloudRunJob(Infrastructure):
                 " value other than the default memory value."
             )
         return values
+
+    def get_corresponding_worker_type(self) -> str:
+        """Return the corresponding worker type for this infrastructure block."""
+        return "cloud-run"
+
+    async def generate_work_pool_base_job_template(self) -> dict:
+        """
+        Generate a base job template for a cloud-run work pool with the same
+        configuration as this block.
+
+        Returns:
+            - dict: a base job template for a cloud-run work pool
+        """
+        base_job_template = await get_default_base_job_template_for_infrastructure_type(
+            self.get_corresponding_worker_type(),
+        )
+        assert (
+            base_job_template is not None
+        ), "Failed to generate default base job template for Cloud Run worker."
+        for key, value in self.dict(exclude_unset=True, exclude_defaults=True).items():
+            if key == "command":
+                base_job_template["variables"]["properties"]["command"][
+                    "default"
+                ] = shlex.join(value)
+            elif key in [
+                "type",
+                "block_type_slug",
+                "_block_document_id",
+                "_block_document_name",
+                "_is_anonymous",
+                "memory_unit",
+            ]:
+                continue
+            elif key == "credentials":
+                if not self.credentials._block_document_id:
+                    raise BlockNotSavedError(
+                        "It looks like you are trying to use a block that"
+                        " has not been saved. Please call `.save` on your block"
+                        " before publishing it as a work pool."
+                    )
+                base_job_template["variables"]["properties"]["credentials"][
+                    "default"
+                ] = {
+                    "$ref": {
+                        "block_document_id": str(self.credentials._block_document_id)
+                    }
+                }
+            elif key == "memory" and self.memory_string:
+                base_job_template["variables"]["properties"]["memory"][
+                    "default"
+                ] = self.memory_string
+            elif key == "cpu" and self.cpu is not None:
+                base_job_template["variables"]["properties"]["cpu"][
+                    "default"
+                ] = f"{self.cpu * 1000}m"
+            elif key == "args":
+                # Not a default variable, but we can add it to the template
+                base_job_template["variables"]["properties"]["args"] = {
+                    "title": "Arguments",
+                    "type": "string",
+                    "description": "Arguments to be passed to your Cloud Run Job's entrypoint command.",  # noqa
+                    "default": value,
+                }
+                base_job_template["job_configuration"]["job_body"]["spec"]["template"][
+                    "spec"
+                ]["template"]["spec"]["containers"][0]["args"] = "{{ args }}"
+            elif key in base_job_template["variables"]["properties"]:
+                base_job_template["variables"]["properties"][key]["default"] = value
+            else:
+                self.logger.warning(
+                    f"Variable {key!r} is not supported by Cloud Run work pools."
+                    " Skipping."
+                )
+
+        return base_job_template
 
     def _create_job_error(self, exc):
         """Provides a nicer error for 404s when trying to create a Cloud Run Job."""

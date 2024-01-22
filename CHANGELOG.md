@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
-
-- Adding **MaxRetries** parameter to CloudRunJob block.
+- Adding **MaxRetries** parameter to CloudRunJob block  - [#235](https://github.com/PrefectHQ/prefect-gcp/pull/235)
+- Added `service_account_name` to Cloud Run v2 default template and variables - [#231](https://github.com/PrefectHQ/prefect-gcp/pull/231)
 
 ### Changed
 
@@ -19,15 +19,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Modified default command logic in `CloudRunWorkerJobV2Configuration` to utilize the `BaseJobConfiguration._base_flow_run_command` method.
-
 ### Security
+
+## 0.5.5
+
+Released December 11th, 2023.
+
+### Added
+
+- Ability to publish `CloudRun` blocks as cloud-run work pools - [#237](https://github.com/PrefectHQ/prefect-gcp/pull/237)
+- Ability to publish `VertexAICustomTrainingJob` blocks as a vertex-ai work pool - [#238](https://github.com/PrefectHQ/prefect-gcp/pull/238)
+
+### Fixed
+
+- Modified default command logic in `CloudRunWorkerJobV2Configuration` to utilize the `BaseJobConfiguration._base_flow_run_command` method.
 
 ## 0.5.4
 
 Released November 29th, 2023.
 
 ### Changed
+
 - Fix display name for Google Cloud Run v2 worker / work pool - [#229](https://github.com/PrefectHQ/prefect-gcp/pull/229)
 - Removed credentials block creation step from the google cloud run worker guide - [#228](https://github.com/PrefectHQ/prefect-gcp/pull/228)
 
@@ -95,13 +107,14 @@ Released September 5th, 2023.
 
 ### Changed
 
-- Persist Labels to Vertex AI Custom Job - [#198](https://github.com/PrefectHQ/prefect-gcp/pull/208) 
+- Persist Labels to Vertex AI Custom Job - [#198](https://github.com/PrefectHQ/prefect-gcp/pull/208)
 
 ## 0.4.5
 
 Released July 20th, 2023.
 
 ### Changed
+
 - Promoted workers to GA, removed beta disclaimers
 
 ## 0.4.4
@@ -127,7 +140,7 @@ Released June 15th, 2023.
 
 ### Fixed
 
-- Bug that `list_folders` method removes dot(`"."`)s in the middle of paths 
+- Bug that `list_folders` method removes dot(`"."`)s in the middle of paths
 
 ## 0.4.2
 
@@ -147,6 +160,7 @@ Released on April 20th, 2023.
 ### Added
 
 - `CloudRunWorker` for executing Prefect flows via Google Cloud Run - [#172](https://github.com/PrefectHQ/prefect-gcp/pull/172)
+
 ### Fixed
 
 - Fix `CloudRunJob` with VPC Connector usage. - [#170](https://github.com/PrefectHQ/prefect-gcp/pull/170)
@@ -155,13 +169,13 @@ Released on April 20th, 2023.
 
 Released on April 6th, 2023.
 
-### Added 
+### Added
 
 - `pull_project_from_gcs` and `push_project_to_gcs` steps - [#167](https://github.com/PrefectHQ/prefect-gcp/pull/167)
 
 ### Fixed
 
-- `upload_from_dataframe` docstring - [#162](https://github.com/PrefectHQ/prefect-gcp/pull/162) 
+- `upload_from_dataframe` docstring - [#162](https://github.com/PrefectHQ/prefect-gcp/pull/162)
 - `upload_from_dataframe` file extensions for compressed parquet ('.snappy.parquet', '.gz.parquet') - [#166](https://github.com/PrefectHQ/prefect-gcp/pull/166)
 
 ## 0.3.0
@@ -299,6 +313,7 @@ Released on September 28th, 2022.
 Released on September 19th, 2022.
 
 ### Added
+
 - `CloudRunJob` infrastructure block - [#48](https://github.com/PrefectHQ/prefect-gcp/pull/48)
 - `GcsBucket` block - [#41](https://github.com/PrefectHQ/prefect-gcp/pull/41)
 - `external_config` keyword argument in `bigquery_create_table` task - [#53](https://github.com/PrefectHQ/prefect-gcp/pull/53)
@@ -306,6 +321,7 @@ Released on September 19th, 2022.
 - `**kwargs` for all tasks in the module `cloud_storage.py` - [#47](https://github.com/PrefectHQ/prefect-gcp/pull/47)
 
 ### Changed
+
 - Made `schema` keyword argument optional in `bigquery_create_table` task, thus the position of the keyword changed - [#53](https://github.com/PrefectHQ/prefect-gcp/pull/53)
 - Allowed `~` character to be used in the path for service account file - [#38](https://github.com/PrefectHQ/prefect-gcp/pull/38)
 
@@ -314,15 +330,19 @@ Released on September 19th, 2022.
 - `ValidationError` using `GcpCredentials.service_account_info` in `prefect-dbt` - [#44](https://github.com/PrefectHQ/prefect-gcp/pull/44)
 
 ## 0.1.3
+
 Released on July 22nd, 2022.
 
 ### Added
+
 - Added setup.py entry point - [#35](https://github.com/PrefectHQ/prefect-gcp/pull/35)
 
 ## 0.1.2
+
 Released on July 22nd, 2022.
 
 ### Changed
+
 - Updated tests to be compatible with core Prefect library (v2.0b9) and bumped required version - [#30](https://github.com/PrefectHQ/prefect-gcp/pull/30)
 - Converted GcpCredentials into a Block - [#31](https://github.com/PrefectHQ/prefect-gcp/pull/31).
 
