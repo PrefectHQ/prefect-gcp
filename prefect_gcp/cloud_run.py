@@ -676,9 +676,6 @@ class CloudRunJob(Infrastructure):
         # apply this timeout to each task
         timeout_seconds = str(self.timeout)
 
-        # apply this max retries to each task
-        max_retries = self.max_retries
-
         body = {
             "apiVersion": "run.googleapis.com/v1",
             "kind": "Job",
@@ -691,7 +688,7 @@ class CloudRunJob(Infrastructure):
                             "spec": {
                                 "containers": containers,
                                 "timeoutSeconds": timeout_seconds,
-                                "maxRetries": max_retries,
+                                "maxRetries": self.max_retries,
                             }  # TaskSpec
                         }
                     },
