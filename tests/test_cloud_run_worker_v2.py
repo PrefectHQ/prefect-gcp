@@ -49,7 +49,9 @@ class TestCloudRunWorkerJobV2Configuration:
         assert cloud_run_worker_v2_job_config.project == "my_project"
 
     def test_job_name(self, cloud_run_worker_v2_job_config):
-        assert cloud_run_worker_v2_job_config.job_name == "prefect-my-job-name"
+        cloud_run_worker_v2_job_config._populate_job_name()
+
+        assert cloud_run_worker_v2_job_config.job_name[:-33] == "my-job-name"
 
     def test_populate_timeout(self, cloud_run_worker_v2_job_config):
         cloud_run_worker_v2_job_config._populate_timeout()

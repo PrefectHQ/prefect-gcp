@@ -168,7 +168,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         )
 
         self._populate_env()
-        self._populate_name()
+        self._populate_job_name()
         self._populate_or_format_command()
         self._format_args_if_present()
         self._populate_image_if_not_present()
@@ -188,7 +188,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
 
         self.job_body["template"]["template"]["containers"][0]["env"] = envs
 
-    def _populate_name(self):
+    def _populate_job_name(self):
         """Create a unique and valid job name."""
         base_job_name = self.name.lower()
         if len(base_job_name) > JOB_V2_NAME_MAX_LENGTH:
