@@ -48,7 +48,7 @@ class TestCloudRunWorkerJobV2Configuration:
     def test_project(self, cloud_run_worker_v2_job_config):
         assert cloud_run_worker_v2_job_config.project == "my_project"
 
-    def test_job_name(self, cloud_run_worker_v2_job_config):
+    def test_populate_job_name(self, cloud_run_worker_v2_job_config):
         cloud_run_worker_v2_job_config._populate_job_name()
 
         assert cloud_run_worker_v2_job_config.job_name[:-33] == "my-job-name"
