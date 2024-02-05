@@ -53,6 +53,16 @@ class TestCloudRunWorkerJobV2Configuration:
 
         assert cloud_run_worker_v2_job_config.job_name[:-33] == "my-job-name"
 
+    def test_job_name_different_after_retry(self, cloud_run_worker_v2_job_config):
+        cloud_run_worker_v2_job_config._populate_job_name()
+        job_name_1 = cloud_run_worker_v2_job_config.job_name
+
+        cloud_run_worker_v2_job_config._populate_job_name()
+        job_name_2 = cloud_run_worker_v2_job_config.job_name
+
+        assert job_name_1[:-33] == job_name_2[:-33]
+        assert job_name_1 != job_name_2
+
     def test_populate_timeout(self, cloud_run_worker_v2_job_config):
         cloud_run_worker_v2_job_config._populate_timeout()
 
