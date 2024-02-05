@@ -124,7 +124,7 @@ class TestCloudRunWorkerJobConfiguration:
         cloud_run_worker_job_config._populate_name_if_not_present()
 
         assert "name" in metadata
-        assert metadata["name"] == cloud_run_worker_job_config.name
+        assert metadata["name"][:-33] == cloud_run_worker_job_config.name
 
     def test_populate_or_format_command_doesnt_exist(self, cloud_run_worker_job_config):
         container = cloud_run_worker_job_config.job_body["spec"]["template"]["spec"][
