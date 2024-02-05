@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed retry and suspend/resume behavior on Cloud Run workers via unique job names - [#249](https://github.com/PrefectHQ/prefect-gcp/pull/249)
+
 ### Security
 
 ## 0.5.5
