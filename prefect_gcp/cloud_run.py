@@ -27,6 +27,7 @@ Examples:
     ```
 
 """
+
 from __future__ import annotations
 
 import json
@@ -58,6 +59,8 @@ from prefect.workers.utilities import (
 from typing_extensions import Literal
 
 from prefect_gcp.credentials import GcpCredentials
+
+JOB_NAME_MAX_LENGTH = 30
 
 
 class Job(BaseModel):

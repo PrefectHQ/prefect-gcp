@@ -11,6 +11,8 @@ if PYDANTIC_VERSION.startswith("2."):
 else:
     from pydantic import BaseModel
 
+JOB_V2_NAME_MAX_LENGTH = 30
+
 
 class JobV2(BaseModel):
     """

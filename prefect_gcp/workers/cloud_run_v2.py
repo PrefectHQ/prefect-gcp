@@ -2,6 +2,7 @@ import re
 import shlex
 import time
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
+from uuid import uuid4
 
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
@@ -29,7 +30,12 @@ else:
     from pydantic import Field, validator
 
 from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.models.cloud_run_v2 import CloudRunJobV2Result, ExecutionV2, JobV2
+from prefect_gcp.models.cloud_run_v2 import (
+    JOB_V2_NAME_MAX_LENGTH,
+    CloudRunJobV2Result,
+    ExecutionV2,
+    JobV2,
+)
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -125,6 +131,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             "complete before raising an exception."
         ),
     )
+    job_name: str = Field(default=None, description="The name of the Cloud Run job.")
 
     @property
     def project(self) -> str:
@@ -135,20 +142,6 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             str: The GCP project associated with the credentials.
         """
         return self.credentials.project
-
-    @property
-    def job_name(self):
-        """
-        Returns the job name, if it does not exist, it creates it.
-        """
-        pre_trim_cr_job_name = f"prefect-{self.name}"
-
-        if len(pre_trim_cr_job_name) > 40:
-            pre_trim_cr_job_name = pre_trim_cr_job_name[:40]
-
-        pre_trim_cr_job_name = pre_trim_cr_job_name.rstrip("-")
-
-        return pre_trim_cr_job_name
 
     def prepare_for_flow_run(
         self,
@@ -175,6 +168,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         )
 
         self._populate_env()
+        self._populate_name()
         self._populate_or_format_command()
         self._format_args_if_present()
         self._populate_image_if_not_present()
@@ -193,6 +187,14 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         envs = [{"name": k, "value": v} for k, v in self.env.items()]
 
         self.job_body["template"]["template"]["containers"][0]["env"] = envs
+
+    def _populate_name(self):
+        """Create a unique and valid job name."""
+        base_job_name = self.name.lower()
+        if len(base_job_name) > JOB_V2_NAME_MAX_LENGTH:
+            base_job_name = base_job_name[:JOB_V2_NAME_MAX_LENGTH]
+        job_name = f"{base_job_name}-{uuid4().hex}"
+        self.job_name = job_name
 
     def _populate_image_if_not_present(self):
         """

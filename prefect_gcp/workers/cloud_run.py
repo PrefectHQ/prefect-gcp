@@ -145,6 +145,7 @@ import re
 import shlex
 import time
 from typing import TYPE_CHECKING, Any, Dict, Optional
+from uuid import uuid4
 
 import anyio
 import googleapiclient
@@ -170,7 +171,7 @@ if PYDANTIC_VERSION.startswith("2."):
 else:
     from pydantic import Field, validator
 
-from prefect_gcp.cloud_run import Execution, Job
+from prefect_gcp.cloud_run import JOB_NAME_MAX_LENGTH, Execution, Job
 from prefect_gcp.credentials import GcpCredentials
 
 if TYPE_CHECKING:
@@ -338,7 +339,11 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         """Adds the flow run name to the job if one is not already provided."""
         try:
             if "name" not in self.job_body["metadata"]:
-                self.job_body["metadata"]["name"] = self.name
+                base_job_name = self.name.lower()
+                if len(base_job_name) > JOB_NAME_MAX_LENGTH:
+                    base_job_name = base_job_name[:JOB_NAME_MAX_LENGTH]
+                job_name = f"{base_job_name}-{uuid4().hex}"
+                self.job_body["metadata"]["name"] = job_name
         except KeyError:
             raise ValueError("Unable to verify name due to invalid job body template.")
 
