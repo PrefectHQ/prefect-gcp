@@ -2,6 +2,7 @@ import pytest
 from prefect.utilities.dockerutils import get_prefect_image_name
 
 from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.utilities import _slugify_name
 from prefect_gcp.workers.cloud_run_v2 import CloudRunWorkerJobV2Configuration
 
 
@@ -44,20 +45,35 @@ def cloud_run_worker_v2_job_config(service_account_info, job_body):
     )
 
 
+@pytest.fixture
+def cloud_run_worker_v2_job_config_noncompliant_name(service_account_info, job_body):
+    return CloudRunWorkerJobV2Configuration(
+        name="MY_JOB_NAME",
+        job_body=job_body,
+        credentials=GcpCredentials(service_account_info=service_account_info),
+        region="us-central1",
+        timeout=86400,
+        env={"ENV1": "VALUE1", "ENV2": "VALUE2"},
+    )
+
+
 class TestCloudRunWorkerJobV2Configuration:
     def test_project(self, cloud_run_worker_v2_job_config):
         assert cloud_run_worker_v2_job_config.project == "my_project"
 
-    def test_populate_job_name(self, cloud_run_worker_v2_job_config):
-        cloud_run_worker_v2_job_config._populate_job_name()
-
+    def test_job_name(self, cloud_run_worker_v2_job_config):
         assert cloud_run_worker_v2_job_config.job_name[:-33] == "my-job-name"
 
+    def test_slugify_job_name(self, cloud_run_worker_v2_job_config_noncompliant_name):
+        assert cloud_run_worker_v2_job_config_noncompliant_name.job_name[
+            :-33
+        ] == _slugify_name("MY_JOB_NAME")
+
     def test_job_name_different_after_retry(self, cloud_run_worker_v2_job_config):
-        cloud_run_worker_v2_job_config._populate_job_name()
         job_name_1 = cloud_run_worker_v2_job_config.job_name
 
-        cloud_run_worker_v2_job_config._populate_job_name()
+        cloud_run_worker_v2_job_config._job_name = None
+
         job_name_2 = cloud_run_worker_v2_job_config.job_name
 
         assert job_name_1[:-33] == job_name_2[:-33]

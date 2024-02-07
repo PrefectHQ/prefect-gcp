@@ -25,17 +25,13 @@ from prefect.workers.base import (
 from pydantic import VERSION as PYDANTIC_VERSION
 
 if PYDANTIC_VERSION.startswith("2."):
-    from pydantic.v1 import Field, validator
+    from pydantic.v1 import Field, PrivateAttr, validator
 else:
-    from pydantic import Field, validator
+    from pydantic import Field, validator, PrivateAttr
 
 from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.models.cloud_run_v2 import (
-    JOB_V2_NAME_MAX_LENGTH,
-    CloudRunJobV2Result,
-    ExecutionV2,
-    JobV2,
-)
+from prefect_gcp.models.cloud_run_v2 import CloudRunJobV2Result, ExecutionV2, JobV2
+from prefect_gcp.utilities import _slugify_name
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -131,7 +127,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             "complete before raising an exception."
         ),
     )
-    job_name: str = Field(default=None, description="The name of the Cloud Run job.")
+    _job_name: str = PrivateAttr(default=None)
 
     @property
     def project(self) -> str:
@@ -142,6 +138,21 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             str: The GCP project associated with the credentials.
         """
         return self.credentials.project
+
+    @property
+    def job_name(self) -> str:
+        """
+        Returns the name of the job.
+
+        Returns:
+            str: The name of the job.
+        """
+        if self._job_name is None:
+            base_job_name = _slugify_name(self.name)
+            job_name = f"{base_job_name}-{uuid4().hex}"
+            self._job_name = job_name
+
+        return self._job_name
 
     def prepare_for_flow_run(
         self,
@@ -168,7 +179,6 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         )
 
         self._populate_env()
-        self._populate_job_name()
         self._populate_or_format_command()
         self._format_args_if_present()
         self._populate_image_if_not_present()
@@ -187,14 +197,6 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         envs = [{"name": k, "value": v} for k, v in self.env.items()]
 
         self.job_body["template"]["template"]["containers"][0]["env"] = envs
-
-    def _populate_job_name(self):
-        """Create a unique and valid job name."""
-        base_job_name = self.name.lower()
-        if len(base_job_name) > JOB_V2_NAME_MAX_LENGTH:
-            base_job_name = base_job_name[:JOB_V2_NAME_MAX_LENGTH]
-        job_name = f"{base_job_name}-{uuid4().hex}"
-        self.job_name = job_name
 
     def _populate_image_if_not_present(self):
         """

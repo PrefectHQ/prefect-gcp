@@ -171,8 +171,9 @@ if PYDANTIC_VERSION.startswith("2."):
 else:
     from pydantic import Field, validator
 
-from prefect_gcp.cloud_run import JOB_NAME_MAX_LENGTH, Execution, Job
+from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.utilities import _slugify_name
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -339,9 +340,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         """Adds the flow run name to the job if one is not already provided."""
         try:
             if "name" not in self.job_body["metadata"]:
-                base_job_name = self.name.lower()
-                if len(base_job_name) > JOB_NAME_MAX_LENGTH:
-                    base_job_name = base_job_name[:JOB_NAME_MAX_LENGTH]
+                base_job_name = _slugify_name(self.name)
                 job_name = f"{base_job_name}-{uuid4().hex}"
                 self.job_body["metadata"]["name"] = job_name
         except KeyError:
