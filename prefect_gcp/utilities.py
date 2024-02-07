@@ -10,8 +10,8 @@ def _slugify_name(name: str, max_length: int = 30) -> Optional[str]:
     Keeps only alphanumeric characters and dashes, and caps the length
     of the slug at 30 chars.
 
-    The 30 character length allows room for the to generate a unique name
-    for the job while keeping the total length of a name below 50 characters,
+    The 30 character length allows room to add a uuid for generating a unique
+    name for the job while keeping the total length of a name below 63 characters,
     which is the limit for Cloud Run job names.
 
     Args:
