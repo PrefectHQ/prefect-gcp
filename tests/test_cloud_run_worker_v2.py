@@ -64,7 +64,7 @@ class TestCloudRunWorkerJobV2Configuration:
     def test_job_name(self, cloud_run_worker_v2_job_config):
         assert cloud_run_worker_v2_job_config.job_name[:-33] == "my-job-name"
 
-    def test_slugify_job_name(self, cloud_run_worker_v2_job_config_noncompliant_name):
+    def test_job_name_is_slug(self, cloud_run_worker_v2_job_config_noncompliant_name):
         assert cloud_run_worker_v2_job_config_noncompliant_name.job_name[
             :-33
         ] == _slugify_name("MY_JOB_NAME")
