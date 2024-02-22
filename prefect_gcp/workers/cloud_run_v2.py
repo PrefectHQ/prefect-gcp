@@ -214,13 +214,13 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         command = self.job_body["template"]["template"]["containers"][0].get("command")
 
         if command is None:
-            self.job_body["template"]["template"]["containers"][0]["command"] = (
-                shlex.split(self._base_flow_run_command())
-            )
+            self.job_body["template"]["template"]["containers"][0][
+                "command"
+            ] = shlex.split(self._base_flow_run_command())
         elif isinstance(command, str):
-            self.job_body["template"]["template"]["containers"][0]["command"] = (
-                shlex.split(command)
-            )
+            self.job_body["template"]["template"]["containers"][0][
+                "command"
+            ] = shlex.split(command)
 
     def _format_args_if_present(self):
         """
@@ -229,9 +229,9 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         args = self.job_body["template"]["template"]["containers"][0].get("args")
 
         if args is not None and isinstance(args, str):
-            self.job_body["template"]["template"]["containers"][0]["args"] = (
-                shlex.split(args)
-            )
+            self.job_body["template"]["template"]["containers"][0][
+                "args"
+            ] = shlex.split(args)
 
     # noinspection PyMethodParameters
     @validator("job_body")
