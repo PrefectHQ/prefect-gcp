@@ -17,6 +17,7 @@ from prefect.exceptions import InfrastructureNotFound
 from prefect.server.schemas.actions import DeploymentCreate
 
 from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.utilities import slugify_name
 from prefect_gcp.workers.cloud_run import (
     CloudRunWorker,
     CloudRunWorkerJobConfiguration,
@@ -68,10 +69,27 @@ def cloud_run_worker_job_config(service_account_info, jobs_body):
     )
 
 
+@pytest.fixture
+def cloud_run_worker_job_config_noncompliant_name(service_account_info, jobs_body):
+    return CloudRunWorkerJobConfiguration(
+        name="MY_JOB_NAME",
+        image="gcr.io//not-a/real-image",
+        region="middle-earth2",
+        job_body=jobs_body,
+        credentials=GcpCredentials(service_account_info=service_account_info),
+    )
+
+
 class TestCloudRunWorkerJobConfiguration:
     def test_job_name(self, cloud_run_worker_job_config):
         cloud_run_worker_job_config.job_body["metadata"]["name"] = "my-job-name"
         assert cloud_run_worker_job_config.job_name == "my-job-name"
+
+    def test_job_name_is_slug(self, cloud_run_worker_job_config_noncompliant_name):
+        cloud_run_worker_job_config_noncompliant_name._populate_name_if_not_present()
+        assert cloud_run_worker_job_config_noncompliant_name.job_name[
+            :-33
+        ] == slugify_name("MY_JOB_NAME")
 
     def test_populate_envs(
         self,
@@ -124,7 +142,21 @@ class TestCloudRunWorkerJobConfiguration:
         cloud_run_worker_job_config._populate_name_if_not_present()
 
         assert "name" in metadata
-        assert metadata["name"] == cloud_run_worker_job_config.name
+        assert metadata["name"][:-33] == cloud_run_worker_job_config.name
+
+    def test_job_name_different_after_retry(self, cloud_run_worker_job_config):
+        metadata = cloud_run_worker_job_config.job_body["metadata"]
+
+        assert "name" not in metadata
+
+        cloud_run_worker_job_config._populate_name_if_not_present()
+        job_name_1 = metadata.pop("name")
+
+        cloud_run_worker_job_config._populate_name_if_not_present()
+        job_name_2 = metadata.pop("name")
+
+        assert job_name_1[:-33] == job_name_2[:-33]
+        assert job_name_1 != job_name_2
 
     def test_populate_or_format_command_doesnt_exist(self, cloud_run_worker_job_config):
         container = cloud_run_worker_job_config.job_body["spec"]["template"]["spec"][

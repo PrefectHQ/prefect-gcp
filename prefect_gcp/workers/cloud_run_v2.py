@@ -2,6 +2,7 @@ import re
 import shlex
 import time
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
+from uuid import uuid4
 
 from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
@@ -24,12 +25,13 @@ from prefect.workers.base import (
 from pydantic import VERSION as PYDANTIC_VERSION
 
 if PYDANTIC_VERSION.startswith("2."):
-    from pydantic.v1 import Field, validator
+    from pydantic.v1 import Field, PrivateAttr, validator
 else:
-    from pydantic import Field, validator
+    from pydantic import Field, validator, PrivateAttr
 
 from prefect_gcp.credentials import GcpCredentials
 from prefect_gcp.models.cloud_run_v2 import CloudRunJobV2Result, ExecutionV2, JobV2
+from prefect_gcp.utilities import slugify_name
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -125,6 +127,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             "complete before raising an exception."
         ),
     )
+    _job_name: str = PrivateAttr(default=None)
 
     @property
     def project(self) -> str:
@@ -137,18 +140,19 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         return self.credentials.project
 
     @property
-    def job_name(self):
+    def job_name(self) -> str:
         """
-        Returns the job name, if it does not exist, it creates it.
+        Returns the name of the job.
+
+        Returns:
+            str: The name of the job.
         """
-        pre_trim_cr_job_name = f"prefect-{self.name}"
+        if self._job_name is None:
+            base_job_name = slugify_name(self.name)
+            job_name = f"{base_job_name}-{uuid4().hex}"
+            self._job_name = job_name
 
-        if len(pre_trim_cr_job_name) > 40:
-            pre_trim_cr_job_name = pre_trim_cr_job_name[:40]
-
-        pre_trim_cr_job_name = pre_trim_cr_job_name.rstrip("-")
-
-        return pre_trim_cr_job_name
+        return self._job_name
 
     def prepare_for_flow_run(
         self,

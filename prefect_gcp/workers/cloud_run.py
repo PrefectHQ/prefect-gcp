@@ -145,6 +145,7 @@ import re
 import shlex
 import time
 from typing import TYPE_CHECKING, Any, Dict, Optional
+from uuid import uuid4
 
 import anyio
 import googleapiclient
@@ -172,6 +173,7 @@ else:
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.utilities import slugify_name
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -338,7 +340,9 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         """Adds the flow run name to the job if one is not already provided."""
         try:
             if "name" not in self.job_body["metadata"]:
-                self.job_body["metadata"]["name"] = self.name
+                base_job_name = slugify_name(self.name)
+                job_name = f"{base_job_name}-{uuid4().hex}"
+                self.job_body["metadata"]["name"] = job_name
         except KeyError:
             raise ValueError("Unable to verify name due to invalid job body template.")
 
