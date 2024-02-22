@@ -17,7 +17,7 @@ from prefect.exceptions import InfrastructureNotFound
 from prefect.server.schemas.actions import DeploymentCreate
 
 from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.utilities import _slugify_name
+from prefect_gcp.utilities import slugify_name
 from prefect_gcp.workers.cloud_run import (
     CloudRunWorker,
     CloudRunWorkerJobConfiguration,
@@ -89,7 +89,7 @@ class TestCloudRunWorkerJobConfiguration:
         cloud_run_worker_job_config_noncompliant_name._populate_name_if_not_present()
         assert cloud_run_worker_job_config_noncompliant_name.job_name[
             :-33
-        ] == _slugify_name("MY_JOB_NAME")
+        ] == slugify_name("MY_JOB_NAME")
 
     def test_populate_envs(
         self,

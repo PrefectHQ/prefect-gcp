@@ -3,7 +3,7 @@ from typing import Optional
 from slugify import slugify
 
 
-def _slugify_name(name: str, max_length: int = 30) -> Optional[str]:
+def slugify_name(name: str, max_length: int = 30) -> Optional[str]:
     """
     Slugify text for use as a name.
 

@@ -173,7 +173,7 @@ else:
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.utilities import _slugify_name
+from prefect_gcp.utilities import slugify_name
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -340,7 +340,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         """Adds the flow run name to the job if one is not already provided."""
         try:
             if "name" not in self.job_body["metadata"]:
-                base_job_name = _slugify_name(self.name)
+                base_job_name = slugify_name(self.name)
                 job_name = f"{base_job_name}-{uuid4().hex}"
                 self.job_body["metadata"]["name"] = job_name
         except KeyError:

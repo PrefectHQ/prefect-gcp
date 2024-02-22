@@ -31,7 +31,7 @@ else:
 
 from prefect_gcp.credentials import GcpCredentials
 from prefect_gcp.models.cloud_run_v2 import CloudRunJobV2Result, ExecutionV2, JobV2
-from prefect_gcp.utilities import _slugify_name
+from prefect_gcp.utilities import slugify_name
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -148,7 +148,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             str: The name of the job.
         """
         if self._job_name is None:
-            base_job_name = _slugify_name(self.name)
+            base_job_name = slugify_name(self.name)
             job_name = f"{base_job_name}-{uuid4().hex}"
             self._job_name = job_name
 
@@ -214,13 +214,13 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         command = self.job_body["template"]["template"]["containers"][0].get("command")
 
         if command is None:
-            self.job_body["template"]["template"]["containers"][0][
-                "command"
-            ] = shlex.split(self._base_flow_run_command())
+            self.job_body["template"]["template"]["containers"][0]["command"] = (
+                shlex.split(self._base_flow_run_command())
+            )
         elif isinstance(command, str):
-            self.job_body["template"]["template"]["containers"][0][
-                "command"
-            ] = shlex.split(command)
+            self.job_body["template"]["template"]["containers"][0]["command"] = (
+                shlex.split(command)
+            )
 
     def _format_args_if_present(self):
         """
@@ -229,9 +229,9 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         args = self.job_body["template"]["template"]["containers"][0].get("args")
 
         if args is not None and isinstance(args, str):
-            self.job_body["template"]["template"]["containers"][0][
-                "args"
-            ] = shlex.split(args)
+            self.job_body["template"]["template"]["containers"][0]["args"] = (
+                shlex.split(args)
+            )
 
     # noinspection PyMethodParameters
     @validator("job_body")
