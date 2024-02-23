@@ -31,7 +31,6 @@ Read more about configuring work pools
                 "annotations":
                 {
                     "run.googleapis.com/launch-stage": "BETA",
-                    "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
                 }
             },
             "spec":
@@ -70,7 +69,15 @@ Read more about configuring work pools
                         }
                     }
                     }
+                },
+                "metadata":
+                {
+                    "annotations":
+                    {
+                        "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
+                    }
                 }
+            },
         },
         "timeout": "{{ timeout }}",
         "keep_job": "{{ keep_job }}"
@@ -101,7 +108,6 @@ Read more about configuring work pools
             {
                 "run.googleapis.com/my-custom-annotation": "{{ my_custom_annotation }}",
                 "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
             },
           ...
         },
@@ -126,17 +132,21 @@ Read more about configuring work pools
     {
         "apiVersion": "run.googleapis.com/v1",
         "kind": "Job",
-        "metadata":
+        "spec":
         {
-            "name": "{{ name }}",
-            "annotations":
+            "template":
             {
-                "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "my-vpc-connector"
-            }
-          ...
-        },
-      ...
+                "metadata":
+                {
+                    "annotations":
+                    {
+                        "run.googleapis.com/vpc-access-connector": "my-vpc-connector"
+                    }
+                },
+                ...
+            },
+            ...
+        }
     }
     ```
 """
@@ -191,7 +201,6 @@ def _get_default_job_body_template() -> Dict[str, Any]:
             "annotations": {
                 # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
                 "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}",
             },
         },
         "spec": {  # JobSpec
@@ -219,6 +228,11 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                             "serviceAccountName": "{{ service_account_name }}",
                         }
                     },
+                },
+                "metadata": {
+                    "annotations": {
+                        "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"  # noqa
+                    }
                 },
             },
         },
