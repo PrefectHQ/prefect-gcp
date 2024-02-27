@@ -299,6 +299,16 @@ class CloudRunJob(Infrastructure):
             "before raising an exception."
         ),
     )
+    max_retries: Optional[int] = Field(
+        default=3,
+        ge=0,
+        le=10,
+        title="Max Retries",
+        description=(
+            "The maximum retries setting specifies the number of times a task is "
+            "allowed to restart in case of failure before being failed permanently."
+        ),
+    )
     # For private use
     _job_name: str = None
     _execution: Optional[Execution] = None
@@ -679,6 +689,7 @@ class CloudRunJob(Infrastructure):
                             "spec": {
                                 "containers": containers,
                                 "timeoutSeconds": timeout_seconds,
+                                "maxRetries": self.max_retries,
                             }  # TaskSpec
                         }
                     },

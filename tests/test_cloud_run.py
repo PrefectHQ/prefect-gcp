@@ -520,6 +520,15 @@ class TestCloudRunJobContainerSettings:
             "timeoutSeconds"
         ] == str(timeout)
 
+    def test_max_retries_added_correctly(self, cloud_run_job):
+        max_retries = 2
+        cloud_run_job.max_retries = max_retries
+        result = cloud_run_job._jobs_body()
+        assert (
+            result["spec"]["template"]["spec"]["template"]["spec"]["maxRetries"]
+            == max_retries
+        )
+
     def test_vpc_connector_name_added_correctly(self, cloud_run_job):
         cloud_run_job.vpc_connector_name = "vpc_name"
         result = cloud_run_job._jobs_body()
