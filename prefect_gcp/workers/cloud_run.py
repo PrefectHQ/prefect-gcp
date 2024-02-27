@@ -31,7 +31,6 @@ Read more about configuring work pools
                 "annotations":
                 {
                     "run.googleapis.com/launch-stage": "BETA",
-                    "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
                 }
             },
             "spec":
@@ -70,7 +69,15 @@ Read more about configuring work pools
                         }
                     }
                     }
+                },
+                "metadata":
+                {
+                    "annotations":
+                    {
+                        "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
+                    }
                 }
+            },
         },
         "timeout": "{{ timeout }}",
         "keep_job": "{{ keep_job }}"
@@ -101,7 +108,6 @@ Read more about configuring work pools
             {
                 "run.googleapis.com/my-custom-annotation": "{{ my_custom_annotation }}",
                 "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"
             },
           ...
         },
@@ -126,17 +132,21 @@ Read more about configuring work pools
     {
         "apiVersion": "run.googleapis.com/v1",
         "kind": "Job",
-        "metadata":
+        "spec":
         {
-            "name": "{{ name }}",
-            "annotations":
+            "template":
             {
-                "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "my-vpc-connector"
-            }
-          ...
-        },
-      ...
+                "metadata":
+                {
+                    "annotations":
+                    {
+                        "run.googleapis.com/vpc-access-connector": "my-vpc-connector"
+                    }
+                },
+                ...
+            },
+            ...
+        }
     }
     ```
 """
@@ -145,6 +155,7 @@ import re
 import shlex
 import time
 from typing import TYPE_CHECKING, Any, Dict, Optional
+from uuid import uuid4
 
 import anyio
 import googleapiclient
@@ -172,6 +183,7 @@ else:
 
 from prefect_gcp.cloud_run import Execution, Job
 from prefect_gcp.credentials import GcpCredentials
+from prefect_gcp.utilities import slugify_name
 
 if TYPE_CHECKING:
     from prefect.client.schemas import FlowRun
@@ -189,7 +201,6 @@ def _get_default_job_body_template() -> Dict[str, Any]:
             "annotations": {
                 # See: https://cloud.google.com/run/docs/troubleshooting#launch-stage-validation  # noqa
                 "run.googleapis.com/launch-stage": "BETA",
-                "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}",
             },
         },
         "spec": {  # JobSpec
@@ -217,6 +228,11 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                             "serviceAccountName": "{{ service_account_name }}",
                         }
                     },
+                },
+                "metadata": {
+                    "annotations": {
+                        "run.googleapis.com/vpc-access-connector": "{{ vpc_connector_name }}"  # noqa
+                    }
                 },
             },
         },
@@ -338,7 +354,9 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
         """Adds the flow run name to the job if one is not already provided."""
         try:
             if "name" not in self.job_body["metadata"]:
-                self.job_body["metadata"]["name"] = self.name
+                base_job_name = slugify_name(self.name)
+                job_name = f"{base_job_name}-{uuid4().hex}"
+                self.job_body["metadata"]["name"] = job_name
         except KeyError:
             raise ValueError("Unable to verify name due to invalid job body template.")
 
