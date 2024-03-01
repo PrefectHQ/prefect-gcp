@@ -54,6 +54,7 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                 "serviceAccount": "{{ service_account_name }}",
                 "maxRetries": "{{ max_retries }}",
                 "timeout": "{{ timeout }}",
+                "vpcAccess": "{{ vpc_connector_name }}",
                 "containers": [
                     {
                         "env": [],
@@ -183,6 +184,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         self._format_args_if_present()
         self._populate_image_if_not_present()
         self._populate_timeout()
+        self._populate_vpc_if_present()
 
     def _populate_timeout(self):
         """
@@ -232,6 +234,15 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
             self.job_body["template"]["template"]["containers"][0][
                 "args"
             ] = shlex.split(args)
+
+    def _populate_vpc_if_present(self):
+        """
+        Populates the job body with the VPC connector if present.
+        """
+        if self.job_body["template"]["template"].get("vpcAccess") is not None:
+            self.job_body["template"]["template"]["vpcAccess"] = {
+                "connector": self.job_body["template"]["template"]["vpcAccess"],
+            }
 
     # noinspection PyMethodParameters
     @validator("job_body")
