@@ -15,7 +15,7 @@ def job_body():
             "template": {
                 "maxRetries": None,
                 "timeout": None,
-                "vpcAccess": "projects/my_project/locations/us-central1/connectors/my-connector",
+                "vpcAccess": "projects/my_project/locations/us-central1/connectors/my-connector",  # noqa: E501
                 "containers": [
                     {
                         "env": [],
@@ -125,6 +125,9 @@ class TestCloudRunWorkerJobV2Configuration:
     def test_populate_vpc_if_present(self, cloud_run_worker_v2_job_config):
         cloud_run_worker_v2_job_config._populate_vpc_if_present()
 
-        assert cloud_run_worker_v2_job_config.job_body["template"]["template"][
-            "vpcAccess"
-        ]["connector"] == "projects/my_project/locations/us-central1/connectors/my-connector"
+        assert (
+            cloud_run_worker_v2_job_config.job_body["template"]["template"][
+                "vpcAccess"
+            ]["connector"]
+            == "projects/my_project/locations/us-central1/connectors/my-connector"
+        )
