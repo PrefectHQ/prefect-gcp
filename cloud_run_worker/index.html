@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.12">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e359304.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -392,10 +392,8 @@
     
     
     
-    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
@@ -599,10 +597,8 @@
     
     
     
-    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_9" checked>
@@ -744,7 +740,7 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker.kill_infrastructure" class="md-nav__link">
     <span class="md-ellipsis">
-      kill_infrastructure()
+      kill_infrastructure
     </span>
   </a>
   
@@ -753,7 +749,7 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker.run" class="md-nav__link">
     <span class="md-ellipsis">
-      run()
+      run
     </span>
   </a>
   
@@ -825,7 +821,7 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.prepare_for_flow_run" class="md-nav__link">
     <span class="md-ellipsis">
-      prepare_for_flow_run()
+      prepare_for_flow_run
     </span>
   </a>
   
@@ -861,6 +857,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.cloud_run-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
   
 </li>
       
@@ -1022,7 +1027,7 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker.kill_infrastructure" class="md-nav__link">
     <span class="md-ellipsis">
-      kill_infrastructure()
+      kill_infrastructure
     </span>
   </a>
   
@@ -1031,7 +1036,7 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.workers.cloud_run.CloudRunWorker.run" class="md-nav__link">
     <span class="md-ellipsis">
-      run()
+      run
     </span>
   </a>
   
@@ -1103,7 +1108,7 @@
           <li class="md-nav__item">
   <a href="#prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.prepare_for_flow_run" class="md-nav__link">
     <span class="md-ellipsis">
-      prepare_for_flow_run()
+      prepare_for_flow_run
     </span>
   </a>
   
@@ -1142,6 +1147,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#prefect_gcp.workers.cloud_run-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1161,7 +1175,6 @@
 
 
 <div class="doc doc-object doc-module">
-
 
 
 
@@ -1198,7 +1211,6 @@
 <span class="w">            </span><span class="nt">&quot;annotations&quot;</span><span class="p">:</span>
 <span class="w">            </span><span class="p">{</span>
 <span class="w">                </span><span class="nt">&quot;run.googleapis.com/launch-stage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="nt">&quot;run.googleapis.com/vpc-access-connector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ vpc_connector_name }}&quot;</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;spec&quot;</span><span class="p">:</span>
@@ -1237,7 +1249,15 @@
 <span class="w">                    </span><span class="p">}</span>
 <span class="w">                </span><span class="p">}</span>
 <span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;annotations&quot;</span><span class="p">:</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;run.googleapis.com/vpc-access-connector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ vpc_connector_name }}&quot;</span>
+<span class="w">                </span><span class="p">}</span>
 <span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ timeout }}&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;keep_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ keep_job }}&quot;</span>
@@ -1266,7 +1286,6 @@ the default job template, you can add the following:
 <span class="w">        </span><span class="p">{</span>
 <span class="w">            </span><span class="nt">&quot;run.googleapis.com/my-custom-annotation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ my_custom_annotation }}&quot;</span><span class="p">,</span>
 <span class="w">            </span><span class="nt">&quot;run.googleapis.com/launch-stage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;run.googleapis.com/vpc-access-connector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ vpc_connector_name }}&quot;</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">      </span><span class="err">...</span>
 <span class="w">    </span><span class="p">},</span>
@@ -1286,17 +1305,21 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;apiVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;run.googleapis.com/v1&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Job&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">&quot;spec&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ name }}&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;annotations&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">&quot;template&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;run.googleapis.com/launch-stage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;run.googleapis.com/vpc-access-connector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-vpc-connector&quot;</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="err">...</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">  </span><span class="err">...</span>
+<span class="w">            </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;annotations&quot;</span><span class="p">:</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;run.googleapis.com/vpc-access-connector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-vpc-connector&quot;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="err">...</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="err">...</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
@@ -1316,7 +1339,6 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
 
 
-
 <h3 id="prefect_gcp.workers.cloud_run.CloudRunWorker" class="doc doc-heading">
           <code>CloudRunWorker</code>
 
@@ -1333,25 +1355,7 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
             <details class="quote">
               <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span>
-<span class="normal">529</span>
-<span class="normal">530</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
 <span class="normal">533</span>
@@ -1668,7 +1672,25 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 <span class="normal">844</span>
 <span class="normal">845</span>
 <span class="normal">846</span>
-<span class="normal">847</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorker</span><span class="p">(</span><span class="n">BaseWorker</span><span class="p">):</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span>
+<span class="normal">865</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorker</span><span class="p">(</span><span class="n">BaseWorker</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prefect worker that executes flow runs within Cloud Run Jobs.&quot;&quot;&quot;</span>
 
     <span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;cloud-run&quot;</span>
@@ -2024,7 +2046,6 @@ work pool will use the same <code>vpc_connector_name</code> value.</p>
 
 
 
-
 <h5 id="prefect_gcp.workers.cloud_run.CloudRunWorker.kill_infrastructure" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">kill_infrastructure</span></code>
   
@@ -2042,30 +2063,30 @@ and run configuration.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
-<span class="normal">817</span>
-<span class="normal">818</span>
-<span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span>
-<span class="normal">824</span>
-<span class="normal">825</span>
-<span class="normal">826</span>
-<span class="normal">827</span>
-<span class="normal">828</span>
-<span class="normal">829</span>
-<span class="normal">830</span>
-<span class="normal">831</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">831</span>
 <span class="normal">832</span>
 <span class="normal">833</span>
 <span class="normal">834</span>
 <span class="normal">835</span>
-<span class="normal">836</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">kill_infrastructure</span><span class="p">(</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">kill_infrastructure</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">infrastructure_pid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
@@ -2097,7 +2118,6 @@ and run configuration.</p>
 
 
 <div class="doc doc-object doc-function">
-
 
 
 
@@ -2202,25 +2222,7 @@ final state of the flow run</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">581</span>
 <span class="normal">582</span>
 <span class="normal">583</span>
 <span class="normal">584</span>
@@ -2246,7 +2248,25 @@ final state of the flow run</p>
 <span class="normal">604</span>
 <span class="normal">605</span>
 <span class="normal">606</span>
-<span class="normal">607</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
     <span class="n">configuration</span><span class="p">:</span> <span class="n">CloudRunWorkerJobConfiguration</span><span class="p">,</span>
@@ -2303,10 +2323,10 @@ final state of the flow run</p>
 
   </div>
 
+
 </div>
 
 <div class="doc doc-object doc-class">
-
 
 
 
@@ -2340,7 +2360,7 @@ the flow run as a Cloud Run Job.</p>
     </thead>
     <tbody>
         <tr>
-          <td><code>region</code></td>
+          <td><code><span title="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.region">region</span></code></td>
           <td>
                 <code>str</code>
           </td>
@@ -2351,7 +2371,7 @@ the flow run as a Cloud Run Job.</p>
           </td>
         </tr>
         <tr>
-          <td><code>credentials</code></td>
+          <td><code><span title="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.credentials">credentials</span></code></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="prefect_gcp.credentials.GcpCredentials" href="../credentials/#prefect_gcp.credentials.GcpCredentials">GcpCredentials</a>]</code>
           </td>
@@ -2362,7 +2382,7 @@ the flow run as a Cloud Run Job.</p>
           </td>
         </tr>
         <tr>
-          <td><code>job_body</code></td>
+          <td><code><span title="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.job_body">job_body</span></code></td>
           <td>
                 <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
           </td>
@@ -2373,7 +2393,7 @@ the flow run as a Cloud Run Job.</p>
           </td>
         </tr>
         <tr>
-          <td><code>timeout</code></td>
+          <td><code><span title="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.timeout">timeout</span></code></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[int]</code>
           </td>
@@ -2384,7 +2404,7 @@ the flow run as a Cloud Run Job.</p>
           </td>
         </tr>
         <tr>
-          <td><code>keep_job</code></td>
+          <td><code><span title="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.keep_job">keep_job</span></code></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[bool]</code>
           </td>
@@ -2399,23 +2419,7 @@ the flow run as a Cloud Run Job.</p>
 
             <details class="quote">
               <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">265</span>
 <span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
@@ -2574,7 +2578,25 @@ the flow run as a Cloud Run Job.</p>
 <span class="normal">421</span>
 <span class="normal">422</span>
 <span class="normal">423</span>
-<span class="normal">424</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerJobConfiguration</span><span class="p">(</span><span class="n">BaseJobConfiguration</span><span class="p">):</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerJobConfiguration</span><span class="p">(</span><span class="n">BaseJobConfiguration</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Configuration class used by the Cloud Run Worker to create a Cloud Run Job.</span>
 
@@ -2666,7 +2688,9 @@ the flow run as a Cloud Run Job.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds the flow run name to the job if one is not already provided.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_body</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">job_body</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">base_job_name</span> <span class="o">=</span> <span class="n">slugify_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">job_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_job_name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_body</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_name</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unable to verify name due to invalid job body template.&quot;</span><span class="p">)</span>
 
@@ -2767,7 +2791,6 @@ the flow run as a Cloud Run Job.</p>
 
 
 
-
 <h5 id="prefect_gcp.workers.cloud_run.CloudRunWorkerJobConfiguration.job_name" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">job_name</span><span class="p">:</span> <span class="nb">str</span></code>
   
@@ -2786,7 +2809,6 @@ the flow run as a Cloud Run Job.</p>
 </div>
 
 <div class="doc doc-object doc-attribute">
-
 
 
 
@@ -2811,7 +2833,6 @@ the flow run as a Cloud Run Job.</p>
 
 
 <div class="doc doc-object doc-function">
-
 
 
 
@@ -2888,23 +2909,7 @@ preparation.</p>
 
           <details class="quote">
             <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span>
 <span class="normal">321</span>
@@ -2912,7 +2917,23 @@ preparation.</p>
 <span class="normal">323</span>
 <span class="normal">324</span>
 <span class="normal">325</span>
-<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">prepare_for_flow_run</span><span class="p">(</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">prepare_for_flow_run</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">flow_run</span><span class="p">:</span> <span class="s2">&quot;FlowRun&quot;</span><span class="p">,</span>
     <span class="n">deployment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;DeploymentResponse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2949,10 +2970,10 @@ preparation.</p>
 
   </div>
 
+
 </div>
 
 <div class="doc doc-object doc-class">
-
 
 
 
@@ -2972,18 +2993,18 @@ preparation.</p>
 
             <details class="quote">
               <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">508</span>
-<span class="normal">509</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerResult</span><span class="p">(</span><span class="n">BaseWorkerResult</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">526</span>
+<span class="normal">527</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerResult</span><span class="p">(</span><span class="n">BaseWorkerResult</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains information about the final state of a completed process&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
             </details>
 
   </div>
 
+
 </div>
 
 <div class="doc doc-object doc-class">
-
 
 
 
@@ -3005,25 +3026,7 @@ base job template.</p>
 
             <details class="quote">
               <summary>Source code in <code>prefect_gcp/workers/cloud_run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
 <span class="normal">448</span>
@@ -3083,7 +3086,25 @@ base job template.</p>
 <span class="normal">502</span>
 <span class="normal">503</span>
 <span class="normal">504</span>
-<span class="normal">505</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerVariables</span><span class="p">(</span><span class="n">BaseVariables</span><span class="p">):</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">CloudRunWorkerVariables</span><span class="p">(</span><span class="n">BaseVariables</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default variables for the Cloud Run worker.</span>
 
@@ -3183,8 +3204,9 @@ base job template.</p>
 
   </div>
 
-</div>
 
+</div>
+<h2 id="prefect_gcp.workers.cloud_run-functions">Functions</h2>
 
 
 
@@ -3344,10 +3366,10 @@ base job template.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.c8d2eff1.min.js"></script>
       
     
   </body>
