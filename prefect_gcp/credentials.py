@@ -39,6 +39,12 @@ try:
 except ModuleNotFoundError:
     pass
 
+try:
+    from google.cloud import firestore
+except ModuleNotFoundError:
+    pass
+
+
 
 def _raise_help_msg(key: str):
     """
@@ -467,3 +473,42 @@ class GcpCredentials(CredentialsBlock):
             credentials=credentials, client_options=client_options
         )
         return job_service_client
+    @_raise_help_msg("firestore")
+    def get_firestore_client(
+        self,
+        project: Optional[str] = None,
+        location: str = "us-central1"
+    ) -> "firestore.Client":
+        """
+        Gets an authenticated Firestore client.
+
+        Args:
+            project: Name of the project to use; overrides the base class's project if provided.
+            location: Location of the Firestore instance.
+
+        Returns:
+            An authenticated Firestore client.
+
+        Examples:
+            Gets a GCP Firestore client.
+            ```python
+            from credentials import GcpCredentials
+
+            gcp_credentials = GcpCredentials()
+            firestore_client = gcp_credentials.get_firestore_client()
+            ```
+
+            Gets a GCP Firestore client with a specific project.
+            ```python
+            from credentials import GcpCredentials
+
+            gcp_credentials = GcpCredentials()
+            firestore_client = gcp_credentials.get_firestore_client(project="my-project")
+            ```
+        """
+        credentials = self.get_credentials_from_service_account()
+
+        # override class project if method project is provided
+        project = project or self.project
+        firestore_client = firestore.Client(credentials=credentials, project=project, location=location)
+        return firestore_client
