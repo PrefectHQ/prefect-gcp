@@ -11,7 +11,7 @@ async def firestore_create_collection(
     collection: str,
     gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
-    location: str = "us-central1",
+    location: Optional[str] = None,
 ) -> DocumentReference:
     """
     Creates a collection in Firestore.
@@ -63,7 +63,7 @@ async def firestore_create_document(
     document_data: Dict[str, Any],
     gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
-    location: str = "us-central1",
+    location: Optional[str] = None,
 ) -> DocumentReference:
     """
     Creates a document in a Firestore collection.
@@ -118,7 +118,7 @@ async def firestore_read_collection(
     collection: str,
     gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
-    location: str = "us-central1",
+    location: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     Reads all documents from a Firestore collection.
@@ -178,7 +178,7 @@ async def firestore_update_document(
     update_data: Dict[str, Any],
     gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
-    location: str = "us-central1",
+    location: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Updates a document in a Firestore collection.
@@ -242,7 +242,7 @@ async def firestore_delete_document(
     document_id: str,
     gcp_credentials: GcpCredentials,
     project: Optional[str] = None,
-    location: str = "us-central1",
+    location: Optional[str] = None,
 ) -> None:
     """
     Deletes a document from a Firestore collection.
