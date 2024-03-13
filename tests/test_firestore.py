@@ -8,6 +8,8 @@ from prefect_gcp.firestore import (
     firestore_delete_document,
     firestore_read_collection,
     firestore_update_document,
+    firestore_read_document,
+    firestore_query_collection,
 )
 
 @pytest.fixture
@@ -88,5 +90,35 @@ def test_firestore_delete_document(gcp_credentials_mock):
             project="my-project",
             location="us-central1",
         )
+
+    test_flow._run()
+
+def test_firestore_read_document(gcp_credentials_mock):
+    @Flow
+    def test_flow():
+        document = firestore_read_document(
+            collection="users",
+            document_id="document_id",
+            gcp_credentials=gcp_credentials_mock,
+            project="my-project",
+            location="us-central1",
+        )
+        return document
+
+    test_flow._run()
+
+def test_firestore_query_collection(gcp_credentials_mock):
+    @Flow
+    def test_flow():
+        documents = firestore_query_collection(
+            collection="users",
+            gcp_credentials=gcp_credentials_mock,
+            query_key="age",
+            query_value=30,
+            return_whole_document=False,
+            project="my-project",
+            location="us-central1",
+        )
+        return documents
 
     test_flow._run()
