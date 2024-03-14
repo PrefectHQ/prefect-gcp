@@ -1,5 +1,10 @@
 """
-<span class="badge-api experimental"/>
+DEPRECATION WARNING:
+
+This module is deprecated as of March 2024 and will not be available after September 2024.
+It has been replaced by the Vertex AI worker, which offers enhanced functionality and better performance.
+
+For upgrade instructions, see https://docs.prefect.io/latest/guides/upgrade-guide-agents-to-workers/.
 
 Integrations with Google AI Platform.
 
@@ -50,7 +55,7 @@ Examples:
     )
     job.preview()
     ```
-"""
+"""  # noqa
 
 import datetime
 import re
@@ -60,6 +65,7 @@ from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from anyio.abc import TaskStatus
+from prefect._internal.compatibility.deprecated import deprecated_class
 from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
@@ -107,6 +113,14 @@ class VertexAICustomTrainingJobResult(InfrastructureResult):
     """Result from a Vertex AI custom training job."""
 
 
+@deprecated_class(
+    start_date="Mar 2024",
+    help=(
+        "Use the Vertex AI worker instead."
+        " Refer to the upgrade guide for more information:"
+        " https://docs.prefect.io/latest/guides/upgrade-guide-agents-to-workers/."
+    ),
+)
 class VertexAICustomTrainingJob(Infrastructure):
     """
     Infrastructure block used to run Vertex AI custom training jobs.
