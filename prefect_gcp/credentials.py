@@ -14,6 +14,9 @@ from prefect.blocks.fields import SecretDict
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import VERSION as PYDANTIC_VERSION
 
+import firebase_admin
+from firebase_admin import initialize_app, firestore
+
 if PYDANTIC_VERSION.startswith("2."):
     from pydantic.v1 import Field, root_validator, validator
 else:
@@ -477,7 +480,7 @@ class GcpCredentials(CredentialsBlock):
     def get_firestore_client(
         self,
         project: Optional[str] = None,
-        location: str = "us-central1"
+        location: Optional[str] = None,
     ) -> "firestore.Client":
         """
         Gets an authenticated Firestore client.
@@ -510,5 +513,6 @@ class GcpCredentials(CredentialsBlock):
 
         # override class project if method project is provided
         project = project or self.project
-        firestore_client = firestore.Client(credentials=credentials, project=project, location=location)
+        app = firebase_admin.initialize_app(credentials)
+        firestore_client = firestore.Client(app, credentials=credentials, project=project, location=location)
         return firestore_client

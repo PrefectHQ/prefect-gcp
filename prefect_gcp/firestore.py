@@ -1,10 +1,17 @@
 import os
 from google.cloud import firestore
+import firebase_admin
+from firebase_admin import initialize_app, firestore, credentials
 from google.cloud.firestore_v1 import DocumentReference
+from google.cloud.firestore_v1.query import BaseQuery
+
+from google.cloud.firestore_v1.collection import CollectionReference
 from prefect import get_run_logger, task
 from typing import Optional, List, Dict, Any
 from typing import Union
 from prefect_gcp.credentials import GcpCredentials
+import pytest
+
 
 
 @task
@@ -357,6 +364,7 @@ async def firestore_query_collection(
         return_whole_document: bool = False,
         project: Optional[str] = None,
         location: Optional[str] = None,
+        limit_value: Optional[int] = 50,
     ) -> Union[List[str], List[Dict[str, Any]]]:
         """
         Queries a Firestore collection for a specific value.
@@ -404,8 +412,8 @@ async def firestore_query_collection(
 
         firestore_client = gcp_credentials.get_firestore_client(project=project, location=location)
 
-        query = firestore_client.collection(collection).where(query_key, "==", query_value)
-        query.limit(50)
+        query = firestore_client.collection(collection).where(field_path= query_key, op_string="==", value=query_value)
+        query.limit(limit_value)
 
         documents = await query.get()
 

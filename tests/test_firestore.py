@@ -23,12 +23,12 @@ def gcp_credentials_mock():
 
     return mock_credentials
 
-def test_firestore_create_collection(gcp_credentials_mock):
+def test_firestore_create_collection(gcp_credentials):
     @Flow
     def test_flow():
         collection_ref = firestore_create_collection(
             collection="users",
-            gcp_credentials=gcp_credentials_mock,
+            gcp_credentials=gcp_credentials,
             project="my-project",
             location="us-central1",
         )
@@ -36,14 +36,14 @@ def test_firestore_create_collection(gcp_credentials_mock):
 
     test_flow._run()
 
-def test_firestore_create_document(gcp_credentials_mock):
+def test_firestore_create_document(gcp_credentials):
     @Flow
     def test_flow():
         document_data = {"name": "John", "age": 30}
         document_ref = firestore_create_document(
             collection="users",
             document_data=document_data,
-            gcp_credentials=gcp_credentials_mock,
+            gcp_credentials=gcp_credentials,
             project="my-project",
             location="us-central1",
         )
@@ -51,12 +51,12 @@ def test_firestore_create_document(gcp_credentials_mock):
 
     test_flow._run()
 
-def test_firestore_read_collection(gcp_credentials_mock):
+def test_firestore_read_collection(gcp_credentials):
     @Flow
     def test_flow():
         documents = firestore_read_collection(
             collection="users",
-            gcp_credentials=gcp_credentials_mock,
+            gcp_credentials=gcp_credentials,
             project="my-project",
             location="us-central1",
         )
@@ -64,7 +64,7 @@ def test_firestore_read_collection(gcp_credentials_mock):
 
     test_flow._run()
 
-def test_firestore_update_document(gcp_credentials_mock):
+def test_firestore_update_document(gcp_credentials):
     @Flow
     def test_flow():
         update_data = {"age": 35}
@@ -72,7 +72,7 @@ def test_firestore_update_document(gcp_credentials_mock):
             collection="users",
             document_id="document_id",
             update_data=update_data,
-            gcp_credentials=gcp_credentials_mock,
+            gcp_credentials=gcp_credentials,
             project="my-project",
             location="us-central1",
         )
@@ -80,26 +80,26 @@ def test_firestore_update_document(gcp_credentials_mock):
 
     test_flow._run()
 
-def test_firestore_delete_document(gcp_credentials_mock):
+def test_firestore_delete_document(gcp_credentials):
     @Flow
     def test_flow():
         firestore_delete_document(
             collection="users",
             document_id="document_id",
-            gcp_credentials=gcp_credentials_mock,
+            gcp_credentials=gcp_credentials,
             project="my-project",
             location="us-central1",
         )
 
     test_flow._run()
 
-def test_firestore_read_document(gcp_credentials_mock):
+def test_firestore_read_document(gcp_credentials):
     @Flow
     def test_flow():
         document = firestore_read_document(
             collection="users",
             document_id="document_id",
-            gcp_credentials=gcp_credentials_mock,
+            gcp_credentials=gcp_credentials,
             project="my-project",
             location="us-central1",
         )
@@ -107,12 +107,12 @@ def test_firestore_read_document(gcp_credentials_mock):
 
     test_flow._run()
 
-def test_firestore_query_collection(gcp_credentials_mock):
+def test_firestore_query_collection(gcp_credentials):
     @Flow
     def test_flow():
         documents = firestore_query_collection(
             collection="users",
-            gcp_credentials=gcp_credentials_mock,
+            gcp_credentials=gcp_credentials,
             query_key="age",
             query_value=30,
             return_whole_document=False,
