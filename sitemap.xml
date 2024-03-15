@@ -2,77 +2,77 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/aiplatform/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/bigquery/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/blocks_catalog/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/cloud_run/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/cloud_run_worker/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/cloud_run_worker_v2/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/cloud_storage/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/contributing/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/credentials/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/examples_catalog/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/gcp-worker-guide/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/secret_manager/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/vertex_worker/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://PrefectHQ.github.io/prefect-gcp/deployments/steps/</loc>
-         <lastmod>2024-03-05</lastmod>
+         <lastmod>2024-03-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
