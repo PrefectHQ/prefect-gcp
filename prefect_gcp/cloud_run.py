@@ -1,5 +1,10 @@
 """
-<span class="badge-api experimental"/>
+DEPRECATION WARNING:
+
+This module is deprecated as of March 2024 and will not be available after September 2024.
+It has been replaced by the Cloud Run and Cloud Run V2 workers, which offer enhanced functionality and better performance.
+
+For upgrade instructions, see https://docs.prefect.io/latest/guides/upgrade-guide-agents-to-workers/.
 
 Integrations with Google Cloud Run Job.
 
@@ -26,7 +31,7 @@ Examples:
     ).run()
     ```
 
-"""
+"""  # noqa
 
 from __future__ import annotations
 
@@ -42,6 +47,7 @@ from anyio.abc import TaskStatus
 from google.api_core.client_options import ClientOptions
 from googleapiclient import discovery
 from googleapiclient.discovery import Resource
+from prefect._internal.compatibility.deprecated import deprecated_class
 from prefect.exceptions import InfrastructureNotFound
 from prefect.infrastructure.base import Infrastructure, InfrastructureResult
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
@@ -210,6 +216,14 @@ class CloudRunJobResult(InfrastructureResult):
     """Result from a Cloud Run Job."""
 
 
+@deprecated_class(
+    start_date="Mar 2024",
+    help=(
+        "Use the Cloud Run or Cloud Run v2 worker instead."
+        " Refer to the upgrade guide for more information:"
+        " https://docs.prefect.io/latest/guides/upgrade-guide-agents-to-workers/."
+    ),
+)
 class CloudRunJob(Infrastructure):
     """
     <span class="badge-api experimental"/>
