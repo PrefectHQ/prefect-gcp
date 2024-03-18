@@ -306,7 +306,7 @@ class CloudRunJob(Infrastructure):
     timeout: Optional[int] = Field(
         default=600,
         gt=0,
-        le=3600,
+        le=86400,
         title="Job Timeout",
         description=(
             "The length of time that Prefect will wait for a Cloud Run Job to complete "
@@ -392,9 +392,9 @@ class CloudRunJob(Infrastructure):
         ), "Failed to generate default base job template for Cloud Run worker."
         for key, value in self.dict(exclude_unset=True, exclude_defaults=True).items():
             if key == "command":
-                base_job_template["variables"]["properties"]["command"][
-                    "default"
-                ] = shlex.join(value)
+                base_job_template["variables"]["properties"]["command"]["default"] = (
+                    shlex.join(value)
+                )
             elif key in [
                 "type",
                 "block_type_slug",
@@ -681,9 +681,9 @@ class CloudRunJob(Infrastructure):
         }
         # add vpc connector if specified
         if self.vpc_connector_name:
-            annotations[
-                "run.googleapis.com/vpc-access-connector"
-            ] = self.vpc_connector_name
+            annotations["run.googleapis.com/vpc-access-connector"] = (
+                self.vpc_connector_name
+            )
 
         # env and command here
         containers = [self._add_container_settings({"image": self.image})]

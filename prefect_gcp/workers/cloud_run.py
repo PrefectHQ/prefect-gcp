@@ -292,7 +292,7 @@ class CloudRunWorkerJobConfiguration(BaseJobConfiguration):
     timeout: Optional[int] = Field(
         default=600,
         gt=0,
-        le=3600,
+        le=86400,
         title="Job Timeout",
         description=(
             "The length of time that Prefect will wait for a Cloud Run Job to complete "
