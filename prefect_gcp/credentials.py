@@ -6,6 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
+import firebase_admin
 import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
@@ -13,9 +14,6 @@ from prefect.blocks.abstract import CredentialsBlock
 from prefect.blocks.fields import SecretDict
 from prefect.utilities.asyncutils import run_sync_in_worker_thread, sync_compatible
 from pydantic import VERSION as PYDANTIC_VERSION
-
-import firebase_admin
-from firebase_admin import initialize_app, firestore
 
 if PYDANTIC_VERSION.startswith("2."):
     from pydantic.v1 import Field, root_validator, validator
@@ -46,7 +44,6 @@ try:
     from google.cloud import firestore
 except ModuleNotFoundError:
     pass
-
 
 
 def _raise_help_msg(key: str):
@@ -476,6 +473,7 @@ class GcpCredentials(CredentialsBlock):
             credentials=credentials, client_options=client_options
         )
         return job_service_client
+
     @_raise_help_msg("firestore")
     def get_firestore_client(
         self,
@@ -486,7 +484,7 @@ class GcpCredentials(CredentialsBlock):
         Gets an authenticated Firestore client.
 
         Args:
-            project: Name of the project to use; overrides the base class's project if provided.
+            project: Name of the project to use.
             location: Location of the Firestore instance.
 
         Returns:
@@ -506,7 +504,7 @@ class GcpCredentials(CredentialsBlock):
             from credentials import GcpCredentials
 
             gcp_credentials = GcpCredentials()
-            firestore_client = gcp_credentials.get_firestore_client(project="my-project")
+            firestore_client = gcp_credentials.get_firestore_client(project="my-project"
             ```
         """
         credentials = self.get_credentials_from_service_account()
@@ -514,5 +512,7 @@ class GcpCredentials(CredentialsBlock):
         # override class project if method project is provided
         project = project or self.project
         app = firebase_admin.initialize_app(credentials)
-        firestore_client = firestore.Client(app, credentials=credentials, project=project, location=location)
+        firestore_client = firestore.Client(
+            app, credentials=credentials, project=project, location=location
+        )
         return firestore_client
