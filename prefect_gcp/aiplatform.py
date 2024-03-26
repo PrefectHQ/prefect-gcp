@@ -12,52 +12,52 @@ Note this module is experimental. The intefaces within may change without notice
 
 Examples:
 
-Run a job using Vertex AI Custom Training:
+    Run a job using Vertex AI Custom Training:
 
-```python
-from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.aiplatform import VertexAICustomTrainingJob
+    ```python
+    from prefect_gcp.credentials import GcpCredentials
+    from prefect_gcp.aiplatform import VertexAICustomTrainingJob
 
-gcp_credentials = GcpCredentials.load("BLOCK_NAME")
-job = VertexAICustomTrainingJob(
-    region="us-east1",
-    image="us-docker.pkg.dev/cloudrun/container/job:latest",
-    gcp_credentials=gcp_credentials,
-)
-job.run()
-```
+    gcp_credentials = GcpCredentials.load("BLOCK_NAME")
+    job = VertexAICustomTrainingJob(
+        region="us-east1",
+        image="us-docker.pkg.dev/cloudrun/container/job:latest",
+        gcp_credentials=gcp_credentials,
+    )
+    job.run()
+    ```
 
-Run a job that runs the command `echo hello world` using Google Cloud Run Jobs:
+    Run a job that runs the command `echo hello world` using Google Cloud Run Jobs:
 
-```python
-from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.aiplatform import VertexAICustomTrainingJob
+    ```python
+    from prefect_gcp.credentials import GcpCredentials
+    from prefect_gcp.aiplatform import VertexAICustomTrainingJob
 
-gcp_credentials = GcpCredentials.load("BLOCK_NAME")
-job = VertexAICustomTrainingJob(
-    command=["echo", "hello world"],
-    region="us-east1",
-    image="us-docker.pkg.dev/cloudrun/container/job:latest",
-    gcp_credentials=gcp_credentials,
-)
-job.run()
-```
+    gcp_credentials = GcpCredentials.load("BLOCK_NAME")
+    job = VertexAICustomTrainingJob(
+        command=["echo", "hello world"],
+        region="us-east1",
+        image="us-docker.pkg.dev/cloudrun/container/job:latest",
+        gcp_credentials=gcp_credentials,
+    )
+    job.run()
+    ```
 
-Preview job specs:
+    Preview job specs:
 
-```python
-from prefect_gcp.credentials import GcpCredentials
-from prefect_gcp.aiplatform import VertexAICustomTrainingJob
+    ```python
+    from prefect_gcp.credentials import GcpCredentials
+    from prefect_gcp.aiplatform import VertexAICustomTrainingJob
 
-gcp_credentials = GcpCredentials.load("BLOCK_NAME")
-job = VertexAICustomTrainingJob(
-    command=["echo", "hello world"],
-    region="us-east1",
-    image="us-docker.pkg.dev/cloudrun/container/job:latest",
-    gcp_credentials=gcp_credentials,
-)
-job.preview()
-```
+    gcp_credentials = GcpCredentials.load("BLOCK_NAME")
+    job = VertexAICustomTrainingJob(
+        command=["echo", "hello world"],
+        region="us-east1",
+        image="us-docker.pkg.dev/cloudrun/container/job:latest",
+        gcp_credentials=gcp_credentials,
+    )
+    job.preview()
+    ```
 
 """  # noqa
 
