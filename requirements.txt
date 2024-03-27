@@ -3,5 +3,5 @@ google-api-python-client>=2.20.0
 google-cloud-storage>=2.0.0
 tenacity>=8.0.0
 python-slugify>=8.0.0
-firebase-admin>=5.0.0
+firebase-admin
 ```
