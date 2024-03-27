@@ -6,6 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
+import firebase_admin
 import google.auth
 import google.auth.transport.requests
 from google.oauth2.service_account import Credentials
@@ -36,6 +37,11 @@ except ModuleNotFoundError:
 
 try:
     from google.cloud.aiplatform.gapic import JobServiceClient
+except ModuleNotFoundError:
+    pass
+
+try:
+    from google.cloud import firestore
 except ModuleNotFoundError:
     pass
 
@@ -467,3 +473,46 @@ class GcpCredentials(CredentialsBlock):
             credentials=credentials, client_options=client_options
         )
         return job_service_client
+
+    @_raise_help_msg("firestore")
+    def get_firestore_client(
+        self,
+        project: Optional[str] = None,
+        location: Optional[str] = None,
+    ) -> "firestore.Client":
+        """
+        Gets an authenticated Firestore client.
+
+        Args:
+            project: Name of the project to use.
+            location: Location of the Firestore instance.
+
+        Returns:
+            An authenticated Firestore client.
+
+        Examples:
+            Gets a GCP Firestore client.
+            ```python
+            from credentials import GcpCredentials
+
+            gcp_credentials = GcpCredentials()
+            firestore_client = gcp_credentials.get_firestore_client()
+            ```
+
+            Gets a GCP Firestore client with a specific project.
+            ```python
+            from credentials import GcpCredentials
+
+            gcp_credentials = GcpCredentials()
+            firestore_client = gcp_credentials.get_firestore_client(project="my-project"
+            ```
+        """
+        credentials = self.get_credentials_from_service_account()
+
+        # override class project if method project is provided
+        project = project or self.project
+        app = firebase_admin.initialize_app(credentials)
+        firestore_client = firestore.Client(
+            app, credentials=credentials, project=project, location=location
+        )
+        return firestore_client

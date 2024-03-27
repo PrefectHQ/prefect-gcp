@@ -245,7 +245,10 @@ def base_job_template_with_defaults(default_base_job_template, credentials_block
     ] = "my-network"
     base_job_template_with_defaults["variables"]["properties"]["reserved_ip_ranges"][
         "default"
-    ] = ["172.31.0.0/16", "192.168.0.0./16"]
+    ] = [
+        "172.31.0.0/16",
+        "192.168.0.0./16",
+    ]
     base_job_template_with_defaults["variables"]["properties"]["service_account_name"][
         "default"
     ] = "my-service-account"
