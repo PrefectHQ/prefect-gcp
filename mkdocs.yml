@@ -87,6 +87,7 @@ nav:
         - Cloud Run V2: cloud_run_v2.md
         - AI Platform: aiplatform.md
         - Deployment Steps: deployments/steps.md
+        - Firestore: firestore.md
         - Workers:
           - Cloud Run: cloud_run_worker.md
           - Cloud Run V2: cloud_run_worker_v2.md
