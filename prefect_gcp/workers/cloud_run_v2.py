@@ -54,7 +54,7 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                 "serviceAccount": "{{ service_account_name }}",
                 "maxRetries": "{{ max_retries }}",
                 "timeout": "{{ timeout }}",
-                "vpcAccess": "{{ vpc_connector_name }}",
+                "vpcAccess": {"connector": "{{ vpc_connector_name }}"},
                 "containers": [
                     {
                         "env": [],
@@ -184,7 +184,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         self._format_args_if_present()
         self._populate_image_if_not_present()
         self._populate_timeout()
-        self._populate_vpc_if_present()
+        self._remove_vpc_access_if_unset()
 
     def _populate_timeout(self):
         """
@@ -235,14 +235,19 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
                 "args"
             ] = shlex.split(args)
 
-    def _populate_vpc_if_present(self):
+    def _remove_vpc_access_if_unset(self):
         """
-        Populates the job body with the VPC connector if present.
+        Removes vpcAccess if unset.
         """
-        if self.job_body["template"]["template"].get("vpcAccess") is not None:
-            self.job_body["template"]["template"]["vpcAccess"] = {
-                "connector": self.job_body["template"]["template"]["vpcAccess"],
-            }
+        vpc_access = self.job_body["template"]["template"].get("vpcAccess")
+
+        if not vpc_access:
+            return
+
+        # if connector is the only key and it's not set, we'll remove it.
+        # otherwise we'll pass whatever the user has provided.
+        if len(vpc_access) == 1 and vpc_access.get("connector") is None:
+            self.job_body["template"]["template"]["vpcAccess"] = None
 
     # noinspection PyMethodParameters
     @validator("job_body")
