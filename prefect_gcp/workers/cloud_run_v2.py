@@ -54,8 +54,7 @@ def _get_default_job_body_template() -> Dict[str, Any]:
                 "serviceAccount": "{{ service_account_name }}",
                 "maxRetries": "{{ max_retries }}",
                 "timeout": "{{ timeout }}",
-                "vpcAccess":
-                    {"connector": "{{ vpc_connector_name }}"},
+                "vpcAccess": {"connector": "{{ vpc_connector_name }}"},
                 "containers": [
                     {
                         "env": [],

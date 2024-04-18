@@ -124,7 +124,6 @@ class TestCloudRunWorkerJobV2Configuration:
             "containers"
         ][0]["args"] == ["-m", "prefect.engine"]
 
-
     def test_remove_vpc_access_if_unset(self, cloud_run_worker_v2_job_config):
         assert cloud_run_worker_v2_job_config.job_body["template"]["template"][
             "vpcAccess"
@@ -149,7 +148,7 @@ class TestCloudRunWorkerJobV2Configuration:
         assert cloud_run_worker_v2_job_config.job_body["template"]["template"][
             "vpcAccess"
         ] == {
-            "connector": "projects/my_project/locations/us-central1/connectors/my-connector"
+            "connector": "projects/my_project/locations/us-central1/connectors/my-connector"  # noqa: E501
         }
 
     def test_vpc_access_left_alone_if_network_config_set(
