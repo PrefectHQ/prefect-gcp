@@ -132,8 +132,8 @@ class TestCloudRunWorkerJobV2Configuration:
         cloud_run_worker_v2_job_config._remove_vpc_access_if_unset()
 
         assert (
-            cloud_run_worker_v2_job_config.job_body["template"]["template"]["vpcAccess"]
-            is None
+            "vpcAccess"
+            not in cloud_run_worker_v2_job_config.job_body["template"]["template"]
         )
 
     def test_vpc_access_left_alone_if_connector_set(

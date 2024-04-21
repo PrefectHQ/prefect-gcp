@@ -247,7 +247,7 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         # if connector is the only key and it's not set, we'll remove it.
         # otherwise we'll pass whatever the user has provided.
         if len(vpc_access) == 1 and vpc_access.get("connector") is None:
-            self.job_body["template"]["template"]["vpcAccess"] = None
+            self.job_body["template"]["template"].pop("vpcAccess")
 
     # noinspection PyMethodParameters
     @validator("job_body")
