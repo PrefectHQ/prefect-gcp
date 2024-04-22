@@ -239,15 +239,20 @@ class CloudRunWorkerJobV2Configuration(BaseJobConfiguration):
         """
         Removes vpcAccess if unset.
         """
-        vpc_access = self.job_body["template"]["template"].get("vpcAccess")
 
-        if not vpc_access:
+        if "vpcAccess" not in self.job_body["template"]["template"]:
             return
 
-        # if connector is the only key and it's not set, we'll remove it.
-        # otherwise we'll pass whatever the user has provided.
-        if len(vpc_access) == 1 and vpc_access.get("connector") is None:
-            self.job_body["template"]["template"]["vpcAccess"] = None
+        vpc_access = self.job_body["template"]["template"]["vpcAccess"]
+
+        # if vpcAccess is unset or connector is unset, remove the entire vpcAccess block
+        # otherwise leave the user provided value.
+        if not vpc_access or (
+            len(vpc_access) == 1
+            and "connector" in vpc_access
+            and vpc_access["connector"] is None
+        ):
+            self.job_body["template"]["template"].pop("vpcAccess")
 
     # noinspection PyMethodParameters
     @validator("job_body")

@@ -124,16 +124,31 @@ class TestCloudRunWorkerJobV2Configuration:
             "containers"
         ][0]["args"] == ["-m", "prefect.engine"]
 
-    def test_remove_vpc_access_if_unset(self, cloud_run_worker_v2_job_config):
-        assert cloud_run_worker_v2_job_config.job_body["template"]["template"][
+    @pytest.mark.parametrize("vpc_access", [{"connector": None}, {}, None])
+    def test_remove_vpc_access_if_connector_unset(
+        self, cloud_run_worker_v2_job_config, vpc_access
+    ):
+        cloud_run_worker_v2_job_config.job_body["template"]["template"][
             "vpcAccess"
-        ] == {"connector": None}
+        ] = vpc_access
 
         cloud_run_worker_v2_job_config._remove_vpc_access_if_unset()
 
         assert (
-            cloud_run_worker_v2_job_config.job_body["template"]["template"]["vpcAccess"]
-            is None
+            "vpcAccess"
+            not in cloud_run_worker_v2_job_config.job_body["template"]["template"]
+        )
+
+    def test_remove_vpc_access_originally_not_present(
+        self, cloud_run_worker_v2_job_config
+    ):
+        cloud_run_worker_v2_job_config.job_body["template"]["template"].pop("vpcAccess")
+
+        cloud_run_worker_v2_job_config._remove_vpc_access_if_unset()
+
+        assert (
+            "vpcAccess"
+            not in cloud_run_worker_v2_job_config.job_body["template"]["template"]
         )
 
     def test_vpc_access_left_alone_if_connector_set(
@@ -148,7 +163,7 @@ class TestCloudRunWorkerJobV2Configuration:
         assert cloud_run_worker_v2_job_config.job_body["template"]["template"][
             "vpcAccess"
         ] == {
-            "connector": "projects/my_project/locations/us-central1/connectors/my-connector"  # noqa: E501
+            "connector": "projects/my_project/locations/us-central1/connectors/my-connector"  # noqa E501
         }
 
     def test_vpc_access_left_alone_if_network_config_set(
